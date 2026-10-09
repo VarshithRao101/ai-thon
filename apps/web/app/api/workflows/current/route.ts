@@ -1,142 +1,88 @@
 import { and, desc, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
+import { HttpError, tenantRoute } from "@/lib/api/route";
+import type { RequestContext } from "@/lib/auth/context";
 import { workflows } from "@/lib/db/schema";
+import { tdb } from "@/lib/db/tenant";
 import { generateId } from "@/lib/utils/id";
 
 const CURRENT_WORKFLOW_NAME = "~~__CURRENT__~~";
 
-export async function GET(request: Request) {
-  try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const [currentWorkflow] = await db
-      .select()
-      .from(workflows)
-      .where(
-        and(
-          eq(workflows.name, CURRENT_WORKFLOW_NAME),
-          eq(workflows.userId, session.user.id)
-        )
-      )
-      .orderBy(desc(workflows.updatedAt))
-      .limit(1);
-
-    if (!currentWorkflow) {
-      // Return empty workflow if no current state exists
-      return NextResponse.json({
-        nodes: [],
-        edges: [],
-      });
-    }
-
-    return NextResponse.json({
-      id: currentWorkflow.id,
-      nodes: currentWorkflow.nodes,
-      edges: currentWorkflow.edges,
-    });
-  } catch (error) {
-    console.error("Failed to get current workflow:", error);
-    return NextResponse.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Failed to get current workflow",
-      },
-      { status: 500 }
-    );
-  }
+// The auto-saved scratch workflow belongs to one user inside one workspace.
+function scratchFilter(ctx: RequestContext) {
+  return and(
+    eq(workflows.workspaceId, ctx.workspaceId),
+    eq(workflows.userId, ctx.userId),
+    eq(workflows.name, CURRENT_WORKFLOW_NAME)
+  );
 }
 
-export async function POST(request: Request) {
-  try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+export const GET = tenantRoute(
+  "workflows.current.get",
+  async (ctx) => {
+    const [current] = await tdb((tx) =>
+      tx
+        .select()
+        .from(workflows)
+        .where(scratchFilter(ctx))
+        .orderBy(desc(workflows.updatedAt))
+        .limit(1)
+    );
+    if (!current) {
+      return NextResponse.json({ nodes: [], edges: [] });
     }
+    return NextResponse.json({
+      id: current.id,
+      nodes: current.nodes,
+      edges: current.edges,
+    });
+  },
+  { permission: "workflow:read" }
+);
 
+export const POST = tenantRoute(
+  "workflows.current.save",
+  async (ctx, request) => {
     const body = await request.json();
     const { nodes, edges } = body;
-
     if (!(nodes && edges)) {
-      return NextResponse.json(
-        { error: "Nodes and edges are required" },
-        { status: 400 }
-      );
+      throw new HttpError(400, "Nodes and edges are required");
     }
 
-    // Check if current workflow exists
-    const [existingWorkflow] = await db
-      .select()
-      .from(workflows)
-      .where(
-        and(
-          eq(workflows.name, CURRENT_WORKFLOW_NAME),
-          eq(workflows.userId, session.user.id)
-        )
-      )
-      .limit(1);
-
-    if (existingWorkflow) {
-      // Update existing current workflow
-      const [updatedWorkflow] = await db
-        .update(workflows)
-        .set({
+    const saved = await tdb(async (tx) => {
+      const [existing] = await tx
+        .select({ id: workflows.id })
+        .from(workflows)
+        .where(scratchFilter(ctx))
+        .limit(1);
+      if (existing) {
+        const [updated] = await tx
+          .update(workflows)
+          .set({ nodes, edges, updatedAt: new Date() })
+          .where(eq(workflows.id, existing.id))
+          .returning();
+        return updated;
+      }
+      const [created] = await tx
+        .insert(workflows)
+        .values({
+          id: generateId(),
+          workspaceId: ctx.workspaceId,
+          userId: ctx.userId,
+          name: CURRENT_WORKFLOW_NAME,
+          description: "Auto-saved current workflow",
           nodes,
           edges,
-          updatedAt: new Date(),
         })
-        .where(eq(workflows.id, existingWorkflow.id))
         .returning();
-
-      return NextResponse.json({
-        id: updatedWorkflow.id,
-        nodes: updatedWorkflow.nodes,
-        edges: updatedWorkflow.edges,
-      });
-    }
-
-    // Create new current workflow
-    const workflowId = generateId();
-
-    const [savedWorkflow] = await db
-      .insert(workflows)
-      .values({
-        id: workflowId,
-        name: CURRENT_WORKFLOW_NAME,
-        description: "Auto-saved current workflow",
-        nodes,
-        edges,
-        userId: session.user.id,
-      })
-      .returning();
+      return created;
+    });
 
     return NextResponse.json({
-      id: savedWorkflow.id,
-      nodes: savedWorkflow.nodes,
-      edges: savedWorkflow.edges,
+      id: saved?.id,
+      nodes: saved?.nodes,
+      edges: saved?.edges,
     });
-  } catch (error) {
-    console.error("Failed to save current workflow:", error);
-    return NextResponse.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Failed to save current workflow",
-      },
-      { status: 500 }
-    );
-  }
-}
+  },
+  { permission: "workflow:write" }
+);

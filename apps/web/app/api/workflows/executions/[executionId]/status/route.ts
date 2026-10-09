@@ -1,73 +1,46 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
+import { HttpError, tenantRoute } from "@/lib/api/route";
 import { workflowExecutionLogs, workflowExecutions } from "@/lib/db/schema";
+import { tdb } from "@/lib/db/tenant";
 
 type NodeStatus = {
   nodeId: string;
   status: "pending" | "running" | "success" | "error";
 };
 
-export async function GET(
-  request: Request,
-  context: { params: Promise<{ executionId: string }> }
-) {
-  try {
-    const { executionId } = await context.params;
-    const session = await auth.api.getSession({
-      headers: request.headers,
+export const GET = tenantRoute<{ executionId: string }>(
+  "executions.status",
+  async (ctx, _request, { executionId }) => {
+    const result = await tdb(async (tx) => {
+      const [execution] = await tx
+        .select({ status: workflowExecutions.status })
+        .from(workflowExecutions)
+        .where(
+          and(
+            eq(workflowExecutions.id, executionId),
+            eq(workflowExecutions.workspaceId, ctx.workspaceId)
+          )
+        )
+        .limit(1);
+      if (!execution) {
+        return null;
+      }
+      const logs = await tx
+        .select({
+          nodeId: workflowExecutionLogs.nodeId,
+          status: workflowExecutionLogs.status,
+        })
+        .from(workflowExecutionLogs)
+        .where(eq(workflowExecutionLogs.executionId, executionId));
+      return { status: execution.status, logs };
     });
 
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!result) {
+      throw new HttpError(404, "Execution not found");
     }
-
-    // Get the execution and verify ownership
-    const execution = await db.query.workflowExecutions.findFirst({
-      where: eq(workflowExecutions.id, executionId),
-      with: {
-        workflow: true,
-      },
-    });
-
-    if (!execution) {
-      return NextResponse.json(
-        { error: "Execution not found" },
-        { status: 404 }
-      );
-    }
-
-    // Verify the workflow belongs to the user
-    if (execution.workflow.userId !== session.user.id) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    // Get logs for all nodes
-    const logs = await db.query.workflowExecutionLogs.findMany({
-      where: eq(workflowExecutionLogs.executionId, executionId),
-    });
-
-    // Map logs to node statuses
-    const nodeStatuses: NodeStatus[] = logs.map((log) => ({
-      nodeId: log.nodeId,
-      status: log.status,
-    }));
-
-    return NextResponse.json({
-      status: execution.status,
-      nodeStatuses,
-    });
-  } catch (error) {
-    console.error("Failed to get execution status:", error);
-    return NextResponse.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Failed to get execution status",
-      },
-      { status: 500 }
-    );
-  }
-}
+    const nodeStatuses: NodeStatus[] = result.logs;
+    return NextResponse.json({ status: result.status, nodeStatuses });
+  },
+  { permission: "workflow:read" }
+);

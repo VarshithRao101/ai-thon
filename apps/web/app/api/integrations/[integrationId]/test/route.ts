@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 import postgres from "postgres";
-import { auth } from "@/lib/auth";
-import { getIntegration as getIntegrationFromDb } from "@/lib/db/integrations";
+import { getRequestContext } from "@/lib/auth/context";
+import { can } from "@/lib/auth/rbac";
+import {
+  getIntegration as getIntegrationFromDb,
+  markIntegrationTested,
+} from "@/lib/db/integrations";
+import { runWithTenant } from "@/lib/db/tenant";
 import {
   getCredentialMapping,
   getIntegration as getPluginFromRegistry,
@@ -17,12 +22,12 @@ export async function POST(
   { params }: { params: Promise<{ integrationId: string }> }
 ) {
   try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    if (!session?.user) {
+    const ctx = await getRequestContext(request.headers);
+    if (!ctx) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    if (!can(ctx.role, "run:operate")) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const { integrationId } = await params;
@@ -34,52 +39,61 @@ export async function POST(
       );
     }
 
-    const integration = await getIntegrationFromDb(
-      integrationId,
-      session.user.id
-    );
+    return await runWithTenant(ctx, async () => {
+      const integration = await getIntegrationFromDb(integrationId);
 
-    if (!integration) {
-      return NextResponse.json(
-        { error: "Integration not found" },
-        { status: 404 }
+      if (!integration) {
+        return NextResponse.json(
+          { error: "Integration not found" },
+          { status: 404 }
+        );
+      }
+
+      if (integration.type === "database") {
+        const result = await testDatabaseConnection(integration.config.url);
+        await markIntegrationTested(
+          integrationId,
+          result.status === "success",
+          result.message
+        );
+        return NextResponse.json(result);
+      }
+
+      const plugin = getPluginFromRegistry(integration.type);
+
+      if (!plugin) {
+        return NextResponse.json(
+          { error: "Invalid integration type" },
+          { status: 400 }
+        );
+      }
+
+      if (!plugin.testConfig) {
+        return NextResponse.json(
+          { error: "Integration does not support testing" },
+          { status: 400 }
+        );
+      }
+
+      const credentials = getCredentialMapping(plugin, integration.config);
+
+      const testFn = await plugin.testConfig.getTestFunction();
+      const testResult = await testFn(credentials);
+
+      const result: TestConnectionResult = {
+        status: testResult.success ? "success" : "error",
+        message: testResult.success
+          ? "Connection successful"
+          : testResult.error || "Connection failed",
+      };
+
+      await markIntegrationTested(
+        integrationId,
+        testResult.success,
+        result.message
       );
-    }
-
-    if (integration.type === "database") {
-      const result = await testDatabaseConnection(integration.config.url);
       return NextResponse.json(result);
-    }
-
-    const plugin = getPluginFromRegistry(integration.type);
-
-    if (!plugin) {
-      return NextResponse.json(
-        { error: "Invalid integration type" },
-        { status: 400 }
-      );
-    }
-
-    if (!plugin.testConfig) {
-      return NextResponse.json(
-        { error: "Integration does not support testing" },
-        { status: 400 }
-      );
-    }
-
-    const credentials = getCredentialMapping(plugin, integration.config);
-
-    const testFn = await plugin.testConfig.getTestFunction();
-    const testResult = await testFn(credentials);
-
-    const result: TestConnectionResult = {
-      status: testResult.success ? "success" : "error",
-      message: testResult.success
-        ? "Connection successful"
-        : testResult.error || "Connection failed",
-    };
-
-    return NextResponse.json(result);
+    });
   } catch (error) {
     console.error("Failed to test connection:", error);
     return NextResponse.json(

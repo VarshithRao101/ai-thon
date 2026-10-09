@@ -1,0 +1,45 @@
+{
+  "name": "flowledger",
+  "private": true,
+  "description": "FlowLedger: AI-powered no-code automation with blockchain-verified execution. By TRNT BEE.",
+  "license": "Apache-2.0",
+  "packageManager": "pnpm@10.34.6",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "turbo run dev --filter=@flowledger/web",
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "db:local": "node scripts/dev-db.mjs",
+    "db:stop": "node scripts/dev-db-stop.mjs",
+    "db:migrate": "pnpm --filter @flowledger/web db:migrate"
+  },
+  "devDependencies": {
+    "embedded-postgres": "17.10.0-beta.17",
+    "turbo": "2.11.7"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@embedded-postgres/windows-x64",
+      "@swc/core",
+      "esbuild",
+      "sharp"
+    ],
+    "overrides": {
+      "defu@<6.1.5": "^6.1.7",
+      "axios@<1.15.0": "^1.20.0",
+      "ws@>=8.0.0 <8.21.0": "^8.22.0",
+      "form-data@>=4.0.0 <4.0.6": "^4.0.6",
+      "browserslist@<4.28.7": "^4.29.3",
+      "source-map-js@<1.2.2": "^1.2.2",
+      "esbuild@<0.25.0": "^0.25.12",
+      "dompurify@<3.3.2": "^3.4.16",
+      "follow-redirects@<1.16.0": "^1.16.1",
+      "uuid@<11.1.1": "^11.1.1",
+      "fflate@<0.7.5": "^0.8.3"
+    }
+  }
+}

@@ -1,9 +1,25 @@
 import { relations } from "drizzle-orm";
-import { boolean, jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  index,
+  integer,
+  jsonb,
+  pgTable,
+  text,
+  timestamp,
+  uniqueIndex,
+} from "drizzle-orm/pg-core";
 import type { IntegrationType } from "../types/integration";
 import { generateId } from "../utils/id";
 
-// Better Auth tables
+// Workspace roles (docs/10 RBAC matrix). Stored as text in members.role.
+export type WorkspaceRole = "owner" | "admin" | "editor" | "viewer";
+export type WorkspacePlan = "free" | "pro" | "business";
+
+// ---------------------------------------------------------------------------
+// Identity: Better Auth core tables (no RLS: auth needs cross-tenant lookups)
+// ---------------------------------------------------------------------------
+
 export const users = pgTable("users", {
   id: text("id").primaryKey(),
   name: text("name"),
@@ -26,7 +42,9 @@ export const sessions = pgTable("sessions", {
   userAgent: text("user_agent"),
   userId: text("user_id")
     .notNull()
-    .references(() => users.id),
+    .references(() => users.id, { onDelete: "cascade" }),
+  // Better Auth organization plugin: the workspace this session acts in
+  activeOrganizationId: text("active_organization_id"),
 });
 
 export const accounts = pgTable("accounts", {
@@ -35,7 +53,7 @@ export const accounts = pgTable("accounts", {
   providerId: text("provider_id").notNull(),
   userId: text("user_id")
     .notNull()
-    .references(() => users.id),
+    .references(() => users.id, { onDelete: "cascade" }),
   accessToken: text("access_token"),
   refreshToken: text("refresh_token"),
   idToken: text("id_token"),
@@ -56,112 +74,260 @@ export const verifications = pgTable("verifications", {
   updatedAt: timestamp("updated_at"),
 });
 
+// ---------------------------------------------------------------------------
+// Workspaces: Better Auth organization plugin (organization/member/invitation)
+// plus FlowLedger columns. Field keys must match Better Auth field names.
+// ---------------------------------------------------------------------------
+
+export const workspaces = pgTable("workspaces", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => generateId()),
+  name: text("name").notNull(),
+  slug: text("slug").notNull().unique(),
+  logo: text("logo"),
+  metadata: text("metadata"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  plan: text("plan").notNull().default("free").$type<WorkspacePlan>(),
+  // Vault: workspace data-encryption key, wrapped by a versioned master key
+  dekEnc: text("dek_enc"),
+  dekKeyVersion: integer("dek_key_version"),
+  aiDataSharing: boolean("ai_data_sharing").notNull().default(false),
+  isDemo: boolean("is_demo").notNull().default(false),
+});
+
+export const members = pgTable(
+  "members",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => generateId()),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    role: text("role").notNull().default("viewer").$type<WorkspaceRole>(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("members_workspace_user_uq").on(t.organizationId, t.userId),
+    index("members_user_idx").on(t.userId),
+  ]
+);
+
+export const invitations = pgTable(
+  "invitations",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => generateId()),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    email: text("email").notNull(),
+    role: text("role").$type<WorkspaceRole>(),
+    status: text("status").notNull().default("pending"),
+    expiresAt: timestamp("expires_at").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    inviterId: text("inviter_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+  },
+  (t) => [
+    index("invitations_workspace_idx").on(t.organizationId),
+    index("invitations_email_idx").on(t.email),
+  ]
+);
+
+// ---------------------------------------------------------------------------
+// Tenant data: every row carries workspace_id and is protected by Postgres
+// row-level security (drizzle/0006_*_rls.sql). userId = creator ("created by").
+// ---------------------------------------------------------------------------
+
 // Workflow visibility type
 export type WorkflowVisibility = "private" | "public";
 
-// Workflows table with user association
-export const workflows = pgTable("workflows", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => generateId()),
-  name: text("name").notNull(),
-  description: text("description"),
-  userId: text("user_id")
-    .notNull()
-    .references(() => users.id),
-  // biome-ignore lint/suspicious/noExplicitAny: JSONB type - structure validated at application level
-  nodes: jsonb("nodes").notNull().$type<any[]>(),
-  // biome-ignore lint/suspicious/noExplicitAny: JSONB type - structure validated at application level
-  edges: jsonb("edges").notNull().$type<any[]>(),
-  visibility: text("visibility")
-    .notNull()
-    .default("private")
-    .$type<WorkflowVisibility>(),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
+export const workflows = pgTable(
+  "workflows",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => generateId()),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    description: text("description"),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id),
+    // biome-ignore lint/suspicious/noExplicitAny: JSONB type - structure validated at application level
+    nodes: jsonb("nodes").notNull().$type<any[]>(),
+    // biome-ignore lint/suspicious/noExplicitAny: JSONB type - structure validated at application level
+    edges: jsonb("edges").notNull().$type<any[]>(),
+    visibility: text("visibility")
+      .notNull()
+      .default("private")
+      .$type<WorkflowVisibility>(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (t) => [
+    index("workflows_workspace_updated_idx").on(t.workspaceId, t.updatedAt),
+  ]
+);
 
-// Integrations table for storing user credentials
-export const integrations = pgTable("integrations", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => generateId()),
-  userId: text("user_id")
-    .notNull()
-    .references(() => users.id),
-  name: text("name").notNull(),
-  type: text("type").notNull().$type<IntegrationType>(),
-  // biome-ignore lint/suspicious/noExplicitAny: JSONB type - encrypted credentials stored as JSON
-  config: jsonb("config").notNull().$type<any>(),
-  // Whether this integration was created via OAuth (managed by app) vs manual entry
-  isManaged: boolean("is_managed").default(false),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
+// Integrations table: credentials sealed with the workspace data key (lib/vault)
+export const integrations = pgTable(
+  "integrations",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => generateId()),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id),
+    name: text("name").notNull(),
+    type: text("type").notNull().$type<IntegrationType>(),
+    // biome-ignore lint/suspicious/noExplicitAny: JSONB type - encrypted credentials stored as JSON
+    config: jsonb("config").notNull().$type<any>(),
+    // Whether this integration was created via OAuth (managed by app) vs manual entry
+    isManaged: boolean("is_managed").default(false),
+    status: text("status")
+      .notNull()
+      .default("untested")
+      .$type<"ok" | "error" | "untested">(),
+    lastTestedAt: timestamp("last_tested_at"),
+    lastError: text("last_error"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (t) => [index("integrations_workspace_type_idx").on(t.workspaceId, t.type)]
+);
 
 // Workflow executions table to track workflow runs
-export const workflowExecutions = pgTable("workflow_executions", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => generateId()),
-  workflowId: text("workflow_id")
-    .notNull()
-    .references(() => workflows.id),
-  userId: text("user_id")
-    .notNull()
-    .references(() => users.id),
-  status: text("status")
-    .notNull()
-    .$type<"pending" | "running" | "success" | "error" | "cancelled">(),
-  // biome-ignore lint/suspicious/noExplicitAny: JSONB type - structure validated at application level
-  input: jsonb("input").$type<Record<string, any>>(),
-  // biome-ignore lint/suspicious/noExplicitAny: JSONB type - structure validated at application level
-  output: jsonb("output").$type<any>(),
-  error: text("error"),
-  startedAt: timestamp("started_at").notNull().defaultNow(),
-  completedAt: timestamp("completed_at"),
-  duration: text("duration"), // Duration in milliseconds
-});
+export const workflowExecutions = pgTable(
+  "workflow_executions",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => generateId()),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    workflowId: text("workflow_id")
+      .notNull()
+      .references(() => workflows.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id),
+    status: text("status")
+      .notNull()
+      .$type<"pending" | "running" | "success" | "error" | "cancelled">(),
+    // biome-ignore lint/suspicious/noExplicitAny: JSONB type - structure validated at application level
+    input: jsonb("input").$type<Record<string, any>>(),
+    // biome-ignore lint/suspicious/noExplicitAny: JSONB type - structure validated at application level
+    output: jsonb("output").$type<any>(),
+    error: text("error"),
+    startedAt: timestamp("started_at").notNull().defaultNow(),
+    completedAt: timestamp("completed_at"),
+    duration: text("duration"), // Duration in milliseconds
+  },
+  (t) => [
+    index("executions_workspace_started_idx").on(t.workspaceId, t.startedAt),
+    index("executions_workflow_started_idx").on(t.workflowId, t.startedAt),
+  ]
+);
 
 // Workflow execution logs to track individual node executions
-export const workflowExecutionLogs = pgTable("workflow_execution_logs", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => generateId()),
-  executionId: text("execution_id")
-    .notNull()
-    .references(() => workflowExecutions.id),
-  nodeId: text("node_id").notNull(),
-  nodeName: text("node_name").notNull(),
-  nodeType: text("node_type").notNull(),
-  status: text("status")
-    .notNull()
-    .$type<"pending" | "running" | "success" | "error">(),
-  // biome-ignore lint/suspicious/noExplicitAny: JSONB type - structure validated at application level
-  input: jsonb("input").$type<any>(),
-  // biome-ignore lint/suspicious/noExplicitAny: JSONB type - structure validated at application level
-  output: jsonb("output").$type<any>(),
-  error: text("error"),
-  startedAt: timestamp("started_at").notNull().defaultNow(),
-  completedAt: timestamp("completed_at"),
-  duration: text("duration"), // Duration in milliseconds
-  timestamp: timestamp("timestamp").notNull().defaultNow(),
-});
+export const workflowExecutionLogs = pgTable(
+  "workflow_execution_logs",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => generateId()),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    executionId: text("execution_id")
+      .notNull()
+      .references(() => workflowExecutions.id, { onDelete: "cascade" }),
+    nodeId: text("node_id").notNull(),
+    nodeName: text("node_name").notNull(),
+    nodeType: text("node_type").notNull(),
+    status: text("status")
+      .notNull()
+      .$type<"pending" | "running" | "success" | "error">(),
+    // biome-ignore lint/suspicious/noExplicitAny: JSONB type - structure validated at application level
+    input: jsonb("input").$type<any>(),
+    // biome-ignore lint/suspicious/noExplicitAny: JSONB type - structure validated at application level
+    output: jsonb("output").$type<any>(),
+    error: text("error"),
+    startedAt: timestamp("started_at").notNull().defaultNow(),
+    completedAt: timestamp("completed_at"),
+    duration: text("duration"), // Duration in milliseconds
+    timestamp: timestamp("timestamp").notNull().defaultNow(),
+  },
+  (t) => [index("execution_logs_execution_idx").on(t.executionId)]
+);
 
-// API Keys table for webhook authentication
-export const apiKeys = pgTable("api_keys", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => generateId()),
-  userId: text("user_id")
-    .notNull()
-    .references(() => users.id),
-  name: text("name"), // Optional label for the API key
-  keyHash: text("key_hash").notNull(), // Store hashed version of the key
-  keyPrefix: text("key_prefix").notNull(), // Store first few chars for display (e.g., "wf_abc...")
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  lastUsedAt: timestamp("last_used_at"),
-});
+// API keys for webhook authentication (sha256-hashed at rest)
+export const apiKeys = pgTable(
+  "api_keys",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => generateId()),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id),
+    name: text("name"), // Optional label for the API key
+    keyHash: text("key_hash").notNull(), // Store hashed version of the key
+    keyPrefix: text("key_prefix").notNull(), // Store first few chars for display (e.g., "flk_abc...")
+    scopes: jsonb("scopes")
+      .notNull()
+      .default(["runs:trigger"])
+      .$type<string[]>(),
+    expiresAt: timestamp("expires_at"),
+    revokedAt: timestamp("revoked_at"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    lastUsedAt: timestamp("last_used_at"),
+  },
+  (t) => [uniqueIndex("api_keys_key_hash_uq").on(t.keyHash)]
+);
+
+// Security audit trail (docs/10): who did what, in which workspace
+export const auditEvents = pgTable(
+  "audit_events",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => generateId()),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    actorUserId: text("actor_user_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    action: text("action").notNull(),
+    targetType: text("target_type"),
+    targetId: text("target_id"),
+    ipHash: text("ip_hash"),
+    userAgent: text("user_agent"),
+    // biome-ignore lint/suspicious/noExplicitAny: JSONB type - free-form context per action
+    metadata: jsonb("metadata").$type<Record<string, any>>(),
+    at: timestamp("at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("audit_events_workspace_at_idx").on(t.workspaceId, t.at)]
+);
 
 // Relations
 export const workflowExecutionsRelations = relations(
@@ -176,6 +342,8 @@ export const workflowExecutionsRelations = relations(
 
 export type User = typeof users.$inferSelect;
 export type Session = typeof sessions.$inferSelect;
+export type Workspace = typeof workspaces.$inferSelect;
+export type Member = typeof members.$inferSelect;
 export type Workflow = typeof workflows.$inferSelect;
 export type NewWorkflow = typeof workflows.$inferInsert;
 export type Integration = typeof integrations.$inferSelect;
@@ -186,3 +354,4 @@ export type WorkflowExecutionLog = typeof workflowExecutionLogs.$inferSelect;
 export type NewWorkflowExecutionLog = typeof workflowExecutionLogs.$inferInsert;
 export type ApiKey = typeof apiKeys.$inferSelect;
 export type NewApiKey = typeof apiKeys.$inferInsert;
+export type AuditEvent = typeof auditEvents.$inferSelect;

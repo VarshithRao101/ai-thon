@@ -5,8 +5,11 @@
 import "server-only";
 
 import { eq } from "drizzle-orm";
-import { db } from "@/lib/db";
 import { workflowExecutionLogs, workflowExecutions } from "@/lib/db/schema";
+import { requireTenant, tdb } from "@/lib/db/tenant";
+
+// All writes run in the run's tenant context (set by lib/runtime/dispatch.ts),
+// so Postgres RLS confines them to that workspace.
 
 export type LogStepStartParams = {
   executionId: string;
@@ -27,21 +30,25 @@ export type LogStepStartResult = {
 export async function logStepStartDb(
   params: LogStepStartParams
 ): Promise<LogStepStartResult> {
-  const [log] = await db
-    .insert(workflowExecutionLogs)
-    .values({
-      executionId: params.executionId,
-      nodeId: params.nodeId,
-      nodeName: params.nodeName,
-      nodeType: params.nodeType,
-      status: "running",
-      input: params.input,
-      startedAt: new Date(),
-    })
-    .returning();
+  const { workspaceId } = requireTenant();
+  const [log] = await tdb((tx) =>
+    tx
+      .insert(workflowExecutionLogs)
+      .values({
+        workspaceId,
+        executionId: params.executionId,
+        nodeId: params.nodeId,
+        nodeName: params.nodeName,
+        nodeType: params.nodeType,
+        status: "running",
+        input: params.input,
+        startedAt: new Date(),
+      })
+      .returning()
+  );
 
   return {
-    logId: log.id,
+    logId: (log as { id: string }).id,
     startTime: Date.now(),
   };
 }
@@ -62,16 +69,18 @@ export async function logStepCompleteDb(
 ): Promise<void> {
   const duration = Date.now() - params.startTime;
 
-  await db
-    .update(workflowExecutionLogs)
-    .set({
-      status: params.status,
-      output: params.output,
-      error: params.error,
-      completedAt: new Date(),
-      duration: duration.toString(),
-    })
-    .where(eq(workflowExecutionLogs.id, params.logId));
+  await tdb((tx) =>
+    tx
+      .update(workflowExecutionLogs)
+      .set({
+        status: params.status,
+        output: params.output,
+        error: params.error,
+        completedAt: new Date(),
+        duration: duration.toString(),
+      })
+      .where(eq(workflowExecutionLogs.id, params.logId))
+  );
 }
 
 export type LogWorkflowCompleteParams = {
@@ -90,14 +99,16 @@ export async function logWorkflowCompleteDb(
 ): Promise<void> {
   const duration = Date.now() - params.startTime;
 
-  await db
-    .update(workflowExecutions)
-    .set({
-      status: params.status,
-      output: params.output,
-      error: params.error,
-      completedAt: new Date(),
-      duration: duration.toString(),
-    })
-    .where(eq(workflowExecutions.id, params.executionId));
+  await tdb((tx) =>
+    tx
+      .update(workflowExecutions)
+      .set({
+        status: params.status,
+        output: params.output,
+        error: params.error,
+        completedAt: new Date(),
+        duration: duration.toString(),
+      })
+      .where(eq(workflowExecutions.id, params.executionId))
+  );
 }

@@ -70,8 +70,7 @@ import {
   getIntegrationLabels,
 } from "@/plugins";
 import { Panel } from "../ai-elements/panel";
-import { DeployButton } from "../deploy-button";
-import { GitHubStarsButton } from "../github-stars-button";
+import { BrandLockup } from "../brand/brand-lockup";
 import { ConfigurationOverlay } from "../overlays/configuration-overlay";
 import { ConfirmOverlay } from "../overlays/confirm-overlay";
 import { ExportWorkflowOverlay } from "../overlays/export-workflow-overlay";
@@ -797,7 +796,9 @@ function useWorkflowActions(state: ReturnType<typeof useWorkflowState>) {
       confirmVariant: "destructive" as const,
       destructive: true,
       onConfirm: async () => {
-        if (!currentWorkflowId) return;
+        if (!currentWorkflowId) {
+          return;
+        }
         try {
           await api.workflow.delete(currentWorkflowId);
           toast.success("Workflow deleted successfully");
@@ -1468,10 +1469,7 @@ export const WorkflowToolbar = ({ workflowId }: WorkflowToolbarProps) => {
           />
           <div className="flex items-center gap-2">
             {!workflowId && (
-              <>
-                <GitHubStarsButton />
-                <DeployButton />
-              </>
+              <BrandLockup className="rounded-full border bg-background/80 px-3 py-1.5 backdrop-blur" />
             )}
             {workflowId && !state.isOwner && (
               <DuplicateButton

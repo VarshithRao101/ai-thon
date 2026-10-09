@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import postgres from "postgres";
-import { auth } from "@/lib/auth";
+import { getRequestContext } from "@/lib/auth/context";
+import { can } from "@/lib/auth/rbac";
 import type {
   IntegrationConfig,
   IntegrationType,
@@ -26,12 +27,13 @@ export type TestConnectionResult = {
  */
 export async function POST(request: Request) {
   try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    if (!session?.user) {
+    const ctx = await getRequestContext(request.headers);
+    if (!ctx) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    // Testing raw credentials is part of creating a connection.
+    if (!can(ctx.role, "integration:manage")) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const body: TestConnectionRequest = await request.json();

@@ -1,9 +1,10 @@
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
+import { HttpError, tenantRoute } from "@/lib/api/route";
+import { recordAudit } from "@/lib/audit";
 import { workflows } from "@/lib/db/schema";
+import { tdb } from "@/lib/db/tenant";
 import { generateId } from "@/lib/utils/id";
 
 // Node type for type-safe node manipulation
@@ -66,100 +67,80 @@ function updateEdgeReferences(
   }));
 }
 
-export async function POST(
-  request: Request,
-  context: { params: Promise<{ workflowId: string }> }
-) {
-  try {
-    const { workflowId } = await context.params;
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Find the workflow to duplicate
-    const sourceWorkflow = await db.query.workflows.findFirst({
-      where: eq(workflows.id, workflowId),
-    });
-
-    if (!sourceWorkflow) {
-      return NextResponse.json(
-        { error: "Workflow not found" },
-        { status: 404 }
-      );
-    }
-
-    const isOwner = session.user.id === sourceWorkflow.userId;
-
-    // If not owner, check if workflow is public
-    if (!isOwner && sourceWorkflow.visibility !== "public") {
-      return NextResponse.json(
-        { error: "Workflow not found" },
-        { status: 404 }
-      );
-    }
-
-    // Generate new IDs for nodes
-    const oldNodes = sourceWorkflow.nodes as WorkflowNodeLike[];
-    const newNodes = stripIntegrationIds(oldNodes);
-    const newEdges = updateEdgeReferences(
-      sourceWorkflow.edges as WorkflowEdgeLike[],
-      oldNodes,
-      newNodes
-    );
-
-    // Count user's workflows to generate unique name
-    const userWorkflows = await db.query.workflows.findMany({
-      where: eq(workflows.userId, session.user.id),
-    });
-
-    // Generate a unique name
-    const baseName = `${sourceWorkflow.name} (Copy)`;
-    let workflowName = baseName;
-    const existingNames = new Set(userWorkflows.map((w) => w.name));
-
-    if (existingNames.has(workflowName)) {
-      let counter = 2;
-      while (existingNames.has(`${baseName} ${counter}`)) {
-        counter += 1;
+// Copy a workflow (own workspace or any public one) into the active workspace.
+export const POST = tenantRoute<{ workflowId: string }>(
+  "workflows.duplicate",
+  async (ctx, _request, { workflowId }) => {
+    const created = await tdb(async (tx) => {
+      // RLS: visible only if it is in this workspace or public.
+      const [source] = await tx
+        .select()
+        .from(workflows)
+        .where(eq(workflows.id, workflowId))
+        .limit(1);
+      if (!source) {
+        return null;
       }
-      workflowName = `${baseName} ${counter}`;
-    }
 
-    // Create the duplicated workflow
-    const newWorkflowId = generateId();
-    const [newWorkflow] = await db
-      .insert(workflows)
-      .values({
-        id: newWorkflowId,
-        name: workflowName,
-        description: sourceWorkflow.description,
-        nodes: newNodes,
-        edges: newEdges,
-        userId: session.user.id,
-        visibility: "private", // Duplicated workflows are always private
-      })
-      .returning();
+      // Generate new IDs for nodes (integration references are never copied)
+      const oldNodes = source.nodes as WorkflowNodeLike[];
+      const newNodes = stripIntegrationIds(oldNodes);
+      const newEdges = updateEdgeReferences(
+        source.edges as WorkflowEdgeLike[],
+        oldNodes,
+        newNodes
+      );
+
+      // Generate a unique name within this workspace
+      const existingNames = new Set(
+        (
+          await tx
+            .select({ name: workflows.name })
+            .from(workflows)
+            .where(eq(workflows.workspaceId, ctx.workspaceId))
+        ).map((w) => w.name)
+      );
+      const baseName = `${source.name} (Copy)`;
+      let workflowName = baseName;
+      if (existingNames.has(workflowName)) {
+        let counter = 2;
+        while (existingNames.has(`${baseName} ${counter}`)) {
+          counter += 1;
+        }
+        workflowName = `${baseName} ${counter}`;
+      }
+
+      const [row] = await tx
+        .insert(workflows)
+        .values({
+          id: generateId(),
+          workspaceId: ctx.workspaceId,
+          userId: ctx.userId,
+          name: workflowName,
+          description: source.description,
+          nodes: newNodes,
+          edges: newEdges,
+          visibility: "private", // Duplicated workflows are always private
+        })
+        .returning();
+      return row;
+    });
+
+    if (!created) {
+      throw new HttpError(404, "Workflow not found");
+    }
+    await recordAudit(
+      "workflow.create",
+      { type: "workflow", id: created.id },
+      { duplicatedFrom: workflowId }
+    );
 
     return NextResponse.json({
-      ...newWorkflow,
-      createdAt: newWorkflow.createdAt.toISOString(),
-      updatedAt: newWorkflow.updatedAt.toISOString(),
+      ...created,
+      createdAt: created.createdAt.toISOString(),
+      updatedAt: created.updatedAt.toISOString(),
       isOwner: true,
     });
-  } catch (error) {
-    console.error("Failed to duplicate workflow:", error);
-    return NextResponse.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Failed to duplicate workflow",
-      },
-      { status: 500 }
-    );
-  }
-}
+  },
+  { permission: "workflow:write" }
+);

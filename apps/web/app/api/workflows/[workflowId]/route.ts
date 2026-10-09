@@ -1,9 +1,12 @@
 import { and, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
-import { validateWorkflowIntegrations } from "@/lib/db/integrations";
+import { HttpError, optionalTenantRoute, tenantRoute } from "@/lib/api/route";
+import { recordAudit } from "@/lib/audit";
+import { can } from "@/lib/auth/rbac";
 import { workflows } from "@/lib/db/schema";
+import { publicDb, tdb } from "@/lib/db/tenant";
+
+type Params = { workflowId: string };
 
 // Helper to strip sensitive data from nodes for public viewing
 function sanitizeNodesForPublicView(
@@ -33,42 +36,30 @@ function sanitizeNodesForPublicView(
   });
 }
 
-export async function GET(
-  request: Request,
-  context: { params: Promise<{ workflowId: string }> }
-) {
-  try {
-    const { workflowId } = await context.params;
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
+const notFound = () => new HttpError(404, "Workflow not found");
 
-    // First, try to find the workflow
-    const workflow = await db.query.workflows.findFirst({
-      where: eq(workflows.id, workflowId),
-    });
-
+// GET: members see their workspace's workflow; anyone sees a public one (sanitized).
+export const GET = optionalTenantRoute<Params>(
+  "workflows.get",
+  async (ctx, _request, { workflowId }) => {
+    const query = (tx: Parameters<Parameters<typeof tdb>[0]>[0]) =>
+      tx.select().from(workflows).where(eq(workflows.id, workflowId)).limit(1);
+    // RLS returns only own-workspace rows plus public ones.
+    const [workflow] = ctx ? await tdb(query) : await publicDb(query);
     if (!workflow) {
-      return NextResponse.json(
-        { error: "Workflow not found" },
-        { status: 404 }
-      );
+      throw notFound();
     }
 
-    const isOwner = session?.user?.id === workflow.userId;
-
-    // If not owner, check if workflow is public
-    if (!isOwner && workflow.visibility !== "public") {
-      return NextResponse.json(
-        { error: "Workflow not found" },
-        { status: 404 }
-      );
+    const isMember = ctx !== null && workflow.workspaceId === ctx.workspaceId;
+    if (!isMember && workflow.visibility !== "public") {
+      throw notFound();
     }
+    // "isOwner" drives the editor UI: members who may write get edit controls.
+    const isOwner = isMember && can(ctx?.role, "workflow:write");
 
-    // For public workflows viewed by non-owners, sanitize sensitive data
-    const responseData = {
+    return NextResponse.json({
       ...workflow,
-      nodes: isOwner
+      nodes: isMember
         ? workflow.nodes
         : sanitizeNodesForPublicView(
             workflow.nodes as Record<string, unknown>[]
@@ -76,20 +67,9 @@ export async function GET(
       createdAt: workflow.createdAt.toISOString(),
       updatedAt: workflow.updatedAt.toISOString(),
       isOwner,
-    };
-
-    return NextResponse.json(responseData);
-  } catch (error) {
-    console.error("Failed to get workflow:", error);
-    return NextResponse.json(
-      {
-        error:
-          error instanceof Error ? error.message : "Failed to get workflow",
-      },
-      { status: 500 }
-    );
+    });
   }
-}
+);
 
 // Helper to build update data from request body
 function buildUpdateData(
@@ -118,136 +98,98 @@ function buildUpdateData(
   return updateData;
 }
 
-export async function PATCH(
-  request: Request,
-  context: { params: Promise<{ workflowId: string }> }
-) {
-  try {
-    const { workflowId } = await context.params;
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Verify ownership
-    const existingWorkflow = await db.query.workflows.findFirst({
-      where: and(
-        eq(workflows.id, workflowId),
-        eq(workflows.userId, session.user.id)
-      ),
-    });
-
-    if (!existingWorkflow) {
-      return NextResponse.json(
-        { error: "Workflow not found" },
-        { status: 404 }
-      );
-    }
-
+export const PATCH = tenantRoute<Params>(
+  "workflows.update",
+  async (ctx, request, { workflowId }) => {
     const body = await request.json();
 
-    // Validate that all integrationIds in nodes belong to the current user
-    if (Array.isArray(body.nodes)) {
-      const validation = await validateWorkflowIntegrations(
-        body.nodes,
-        session.user.id
-      );
-      if (!validation.valid) {
-        return NextResponse.json(
-          { error: "Invalid integration references in workflow" },
-          { status: 403 }
-        );
-      }
-    }
-
-    // Validate visibility value if provided
     if (
       body.visibility !== undefined &&
       body.visibility !== "private" &&
       body.visibility !== "public"
     ) {
-      return NextResponse.json(
-        { error: "Invalid visibility value. Must be 'private' or 'public'" },
-        { status: 400 }
+      throw new HttpError(
+        400,
+        "Invalid visibility value. Must be 'private' or 'public'"
       );
     }
 
-    const updateData = buildUpdateData(body);
+    const result = await tdb(async (tx) => {
+      const [existing] = await tx
+        .select({ visibility: workflows.visibility })
+        .from(workflows)
+        .where(
+          and(
+            eq(workflows.id, workflowId),
+            eq(workflows.workspaceId, ctx.workspaceId)
+          )
+        )
+        .limit(1);
+      if (!existing) {
+        return null;
+      }
+      const [row] = await tx
+        .update(workflows)
+        .set(buildUpdateData(body))
+        .where(
+          and(
+            eq(workflows.id, workflowId),
+            eq(workflows.workspaceId, ctx.workspaceId)
+          )
+        )
+        .returning();
+      return { previousVisibility: existing.visibility, updated: row };
+    });
 
-    const [updatedWorkflow] = await db
-      .update(workflows)
-      .set(updateData)
-      .where(eq(workflows.id, workflowId))
-      .returning();
-
-    if (!updatedWorkflow) {
-      return NextResponse.json(
-        { error: "Workflow not found" },
-        { status: 404 }
+    if (!result?.updated) {
+      throw notFound();
+    }
+    const { updated, previousVisibility } = result;
+    if (
+      body.visibility !== undefined &&
+      body.visibility !== previousVisibility
+    ) {
+      await recordAudit(
+        "workflow.visibility_change",
+        { type: "workflow", id: workflowId },
+        { from: previousVisibility, to: body.visibility }
       );
     }
 
     return NextResponse.json({
-      ...updatedWorkflow,
-      createdAt: updatedWorkflow.createdAt.toISOString(),
-      updatedAt: updatedWorkflow.updatedAt.toISOString(),
+      ...updated,
+      createdAt: updated.createdAt.toISOString(),
+      updatedAt: updated.updatedAt.toISOString(),
       isOwner: true,
     });
-  } catch (error) {
-    console.error("Failed to update workflow:", error);
-    return NextResponse.json(
-      {
-        error:
-          error instanceof Error ? error.message : "Failed to update workflow",
-      },
-      { status: 500 }
+  },
+  { permission: "workflow:write" }
+);
+
+export const DELETE = tenantRoute<Params>(
+  "workflows.delete",
+  async (ctx, _request, { workflowId }) => {
+    // Executions and their logs cascade (FK on delete cascade).
+    const deleted = await tdb((tx) =>
+      tx
+        .delete(workflows)
+        .where(
+          and(
+            eq(workflows.id, workflowId),
+            eq(workflows.workspaceId, ctx.workspaceId)
+          )
+        )
+        .returning({ id: workflows.id, name: workflows.name })
     );
-  }
-}
-
-export async function DELETE(
-  request: Request,
-  context: { params: Promise<{ workflowId: string }> }
-) {
-  try {
-    const { workflowId } = await context.params;
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (deleted.length === 0) {
+      throw notFound();
     }
-
-    // Verify ownership
-    const existingWorkflow = await db.query.workflows.findFirst({
-      where: and(
-        eq(workflows.id, workflowId),
-        eq(workflows.userId, session.user.id)
-      ),
-    });
-
-    if (!existingWorkflow) {
-      return NextResponse.json(
-        { error: "Workflow not found" },
-        { status: 404 }
-      );
-    }
-
-    await db.delete(workflows).where(eq(workflows.id, workflowId));
-
+    await recordAudit(
+      "workflow.delete",
+      { type: "workflow", id: workflowId },
+      { name: deleted[0]?.name }
+    );
     return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("Failed to delete workflow:", error);
-    return NextResponse.json(
-      {
-        error:
-          error instanceof Error ? error.message : "Failed to delete workflow",
-      },
-      { status: 500 }
-    );
-  }
-}
+  },
+  { permission: "workflow:write" }
+);

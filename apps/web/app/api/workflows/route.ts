@@ -1,40 +1,27 @@
 import { desc, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
+import { optionalTenantRoute } from "@/lib/api/route";
 import { workflows } from "@/lib/db/schema";
+import { tdb } from "@/lib/db/tenant";
 
-export async function GET(request: Request) {
-  try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    if (!session?.user) {
-      return NextResponse.json([], { status: 200 });
-    }
-
-    const userWorkflows = await db
+// GET /api/workflows: the active workspace's workflows (signed out: none)
+export const GET = optionalTenantRoute("workflows.list", async (ctx) => {
+  if (!ctx) {
+    return NextResponse.json([]);
+  }
+  // Explicit workspace filter: RLS would also show other tenants' public workflows.
+  const rows = await tdb((tx) =>
+    tx
       .select()
       .from(workflows)
-      .where(eq(workflows.userId, session.user.id))
-      .orderBy(desc(workflows.updatedAt));
-
-    const mappedWorkflows = userWorkflows.map((workflow) => ({
+      .where(eq(workflows.workspaceId, ctx.workspaceId))
+      .orderBy(desc(workflows.updatedAt))
+  );
+  return NextResponse.json(
+    rows.map((workflow) => ({
       ...workflow,
       createdAt: workflow.createdAt.toISOString(),
       updatedAt: workflow.updatedAt.toISOString(),
-    }));
-
-    return NextResponse.json(mappedWorkflows);
-  } catch (error) {
-    console.error("Failed to get workflows:", error);
-    return NextResponse.json(
-      {
-        error:
-          error instanceof Error ? error.message : "Failed to get workflows",
-      },
-      { status: 500 }
-    );
-  }
-}
+    }))
+  );
+});

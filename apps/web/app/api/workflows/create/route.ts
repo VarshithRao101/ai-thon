@@ -1,10 +1,10 @@
-import { eq } from "drizzle-orm";
+import { count, eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
-import { validateWorkflowIntegrations } from "@/lib/db/integrations";
+import { HttpError, tenantRoute } from "@/lib/api/route";
+import { recordAudit } from "@/lib/audit";
 import { workflows } from "@/lib/db/schema";
+import { tdb } from "@/lib/db/tenant";
 import { generateId } from "@/lib/utils/id";
 
 // Helper function to create a default trigger node
@@ -23,81 +23,53 @@ function createDefaultTriggerNode() {
   };
 }
 
-export async function POST(request: Request) {
-  try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
+export const POST = tenantRoute(
+  "workflows.create",
+  async (ctx, request) => {
     const body = await request.json();
-
     if (!(body.name && body.nodes && body.edges)) {
-      return NextResponse.json(
-        { error: "Name, nodes, and edges are required" },
-        { status: 400 }
-      );
-    }
-
-    // Validate that all integrationIds in nodes belong to the current user
-    const validation = await validateWorkflowIntegrations(
-      body.nodes,
-      session.user.id
-    );
-    if (!validation.valid) {
-      return NextResponse.json(
-        { error: "Invalid integration references in workflow" },
-        { status: 403 }
-      );
+      throw new HttpError(400, "Name, nodes, and edges are required");
     }
 
     // Ensure there's always a trigger node (only add one if nodes array is empty)
-    let nodes = body.nodes;
-    if (nodes.length === 0) {
-      nodes = [createDefaultTriggerNode()];
+    const nodes =
+      body.nodes.length === 0 ? [createDefaultTriggerNode()] : body.nodes;
+
+    const created = await tdb(async (tx) => {
+      // Generate "Untitled N" name if the provided name is "Untitled Workflow"
+      let name: string = body.name;
+      if (name === "Untitled Workflow") {
+        const [existing] = await tx
+          .select({ n: count() })
+          .from(workflows)
+          .where(eq(workflows.workspaceId, ctx.workspaceId));
+        name = `Untitled ${(existing?.n ?? 0) + 1}`;
+      }
+      const [row] = await tx
+        .insert(workflows)
+        .values({
+          id: generateId(),
+          workspaceId: ctx.workspaceId,
+          userId: ctx.userId,
+          name,
+          description: body.description,
+          nodes,
+          edges: body.edges,
+        })
+        .returning();
+      return row;
+    });
+
+    if (!created) {
+      throw new HttpError(500, "Failed to create workflow");
     }
-
-    // Generate "Untitled N" name if the provided name is "Untitled Workflow"
-    let workflowName = body.name;
-    if (body.name === "Untitled Workflow") {
-      const userWorkflows = await db.query.workflows.findMany({
-        where: eq(workflows.userId, session.user.id),
-      });
-      const count = userWorkflows.length + 1;
-      workflowName = `Untitled ${count}`;
-    }
-
-    // Generate workflow ID first
-    const workflowId = generateId();
-
-    const [newWorkflow] = await db
-      .insert(workflows)
-      .values({
-        id: workflowId,
-        name: workflowName,
-        description: body.description,
-        nodes,
-        edges: body.edges,
-        userId: session.user.id,
-      })
-      .returning();
+    await recordAudit("workflow.create", { type: "workflow", id: created.id });
 
     return NextResponse.json({
-      ...newWorkflow,
-      createdAt: newWorkflow.createdAt.toISOString(),
-      updatedAt: newWorkflow.updatedAt.toISOString(),
+      ...created,
+      createdAt: created.createdAt.toISOString(),
+      updatedAt: created.updatedAt.toISOString(),
     });
-  } catch (error) {
-    console.error("Failed to create workflow:", error);
-    return NextResponse.json(
-      {
-        error:
-          error instanceof Error ? error.message : "Failed to create workflow",
-      },
-      { status: 500 }
-    );
-  }
-}
+  },
+  { permission: "workflow:write" }
+);

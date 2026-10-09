@@ -2,6 +2,7 @@
 
 import type { NodeProps } from "@xyflow/react";
 import { Plus } from "lucide-react";
+import { BeeMark } from "@/components/brand/brand-lockup";
 import { Button } from "@/components/ui/button";
 
 type AddNodeData = {
@@ -12,46 +13,15 @@ export function AddNode({ data }: NodeProps & { data?: AddNodeData }) {
   return (
     <div className="flex flex-col items-center justify-center gap-8 rounded-lg border border-border border-dashed bg-background/50 p-8 backdrop-blur-sm">
       <div className="text-center">
-        <h1 className="mb-2 font-bold text-3xl">
-          AI Workflow Builder Template
+        <BeeMark className="mx-auto mb-4 size-14" />
+        <h1 className="mb-2 font-bold font-display text-3xl tracking-tight">
+          Flow<span className="text-brand-gradient">Ledger</span>
         </h1>
         <p className="text-muted-foreground text-sm">
-          Powered by{" "}
-          <a
-            className="underline underline-offset-2 transition duration-200 ease-out hover:text-foreground"
-            href="https://useworkflow.dev/"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            Workflow
-          </a>
-          ,{" "}
-          <a
-            className="underline underline-offset-2 transition duration-200 ease-out hover:text-foreground"
-            href="https://ai-sdk.dev/"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            AI SDK
-          </a>
-          ,{" "}
-          <a
-            className="underline underline-offset-2 transition duration-200 ease-out hover:text-foreground"
-            href="https://vercel.com/ai-gateway"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            AI Gateway
-          </a>{" "}
-          and{" "}
-          <a
-            className="underline underline-offset-2 transition duration-200 ease-out hover:text-foreground"
-            href="https://ai-sdk.dev/elements"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            AI Elements
-          </a>
+          Automate anything. Prove everything.
+        </p>
+        <p className="mt-1 text-muted-foreground/70 text-xs uppercase tracking-[0.14em]">
+          by TRNT BEE
         </p>
       </div>
       <Button className="gap-2 shadow-lg" onClick={data.onClick} size="default">

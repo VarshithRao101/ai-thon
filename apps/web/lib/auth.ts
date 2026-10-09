@@ -1,31 +1,29 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { anonymous, genericOAuth } from "better-auth/plugins";
-import { eq } from "drizzle-orm";
+import { anonymous, genericOAuth, organization } from "better-auth/plugins";
 import { isAiGatewayManagedKeysEnabled } from "./ai-gateway/config";
+import { ac, roles } from "./auth/permissions";
+import { firstWorkspaceId, linkAnonymousWorkspaces } from "./auth/workspaces";
 import { db } from "./db";
 import {
   accounts,
-  integrations,
+  invitations,
+  members,
   sessions,
   users,
   verifications,
-  workflowExecutionLogs,
-  workflowExecutions,
-  workflowExecutionsRelations,
-  workflows,
+  workspaces,
 } from "./db/schema";
 
-// Construct schema object for drizzle adapter
+// Better Auth models -> FlowLedger tables (organization = workspace)
 const schema = {
   user: users,
   session: sessions,
   account: accounts,
   verification: verifications,
-  workflows,
-  workflowExecutions,
-  workflowExecutionLogs,
-  workflowExecutionsRelations,
+  organization: workspaces,
+  member: members,
+  invitation: invitations,
 };
 
 // Determine the base URL for authentication
@@ -55,44 +53,23 @@ function getBaseURL() {
 // Build plugins array conditionally
 const plugins = [
   anonymous({
-    async onLinkAccount(data) {
-      // When an anonymous user links to a real account, migrate their data
-      const fromUserId = data.anonymousUser.user.id;
-      const toUserId = data.newUser.user.id;
-
-      console.log(
-        `[Anonymous Migration] Migrating from user ${fromUserId} to ${toUserId}`
-      );
-
-      try {
-        // Migrate workflows
-        await db
-          .update(workflows)
-          .set({ userId: toUserId })
-          .where(eq(workflows.userId, fromUserId));
-
-        // Migrate workflow executions
-        await db
-          .update(workflowExecutions)
-          .set({ userId: toUserId })
-          .where(eq(workflowExecutions.userId, fromUserId));
-
-        // Migrate integrations
-        await db
-          .update(integrations)
-          .set({ userId: toUserId })
-          .where(eq(integrations.userId, fromUserId));
-
-        console.log(
-          `[Anonymous Migration] Successfully migrated data from ${fromUserId} to ${toUserId}`
-        );
-      } catch (error) {
-        console.error(
-          "[Anonymous Migration] Error migrating user data:",
-          error
-        );
-        throw error;
-      }
+    // A guest who signs up or signs in keeps everything they built.
+    async onLinkAccount({ anonymousUser, newUser }) {
+      await linkAnonymousWorkspaces(anonymousUser.user.id, newUser.user.id);
+    },
+  }),
+  organization({
+    ac,
+    roles,
+    creatorRole: "owner",
+    // Guests work in their personal workspace only.
+    allowUserToCreateOrganization: (user) =>
+      !(user as { isAnonymous?: boolean | null }).isAnonymous,
+    invitationExpiresIn: 7 * 24 * 60 * 60,
+    sendInvitationEmail: ({ id, organization: workspace }) => {
+      // P1E wires SMTP. Never log the invitee's email address.
+      console.info(`[invite] created ${id} for workspace ${workspace.id}`);
+      return Promise.resolve();
     },
   }),
   ...(process.env.VERCEL_CLIENT_ID
@@ -162,4 +139,18 @@ export const auth = betterAuth({
     },
   },
   plugins,
+  databaseHooks: {
+    // Personal workspaces are created lazily (lib/auth/workspaces.ts) to avoid
+    // racing guest-account linking; new sessions start in the oldest workspace.
+    session: {
+      create: {
+        before: async (session) => ({
+          data: {
+            ...session,
+            activeOrganizationId: await firstWorkspaceId(session.userId),
+          },
+        }),
+      },
+    },
+  },
 });

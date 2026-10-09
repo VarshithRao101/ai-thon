@@ -1,0 +1,17 @@
+FlowLedger
+Copyright 2026 TRNT BEE (Team Hydra)
+
+This product includes software developed by Vercel, Inc.:
+  AI Workflow Builder Template
+  https://github.com/vercel-labs/workflow-builder-template
+  Commit 24fb0fd4524ee10491ea6b73f6df94137ecbf9e1
+  Copyright 2025 Vercel, Inc.
+  Licensed under the Apache License, Version 2.0 (see apps/web/LICENSE).
+
+Files originating from that template live under apps/web/ and have been
+modified by the FlowLedger team. Modifications include: monorepo packaging,
+rebranding and theme, the Hive execution engine (replacing the Workflow DevKit
+runtime), workspaces and RBAC, hosted forms, new integrations, the
+Proof-of-Execution ledger, AI features, and deployment infrastructure.
+
+Third-party dependency licenses are listed at /legal/open-source in the app.

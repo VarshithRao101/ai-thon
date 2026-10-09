@@ -36,6 +36,20 @@
       "when": 1765834764376,
       "tag": "0004_real_wither",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791536512633,
+      "tag": "0005_workspaces_tenancy",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791536535384,
+      "tag": "0006_rls_tenant_isolation",
+      "breakpoints": true
     }
   ]
 }

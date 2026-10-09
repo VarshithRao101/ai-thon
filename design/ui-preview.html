@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FlowLedger Design Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Sora:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0A0A; --surface:#121212; --surface-2:#1A1A1A; --border:#2A2A2A; --graphite:#3F3F46;
+    --text:#F5F5F4; --text-muted:#A1A1AA;
+    --yellow:#FFE73C; --honey:#FFC326; --amber:#FFBC12; --gold:#E49000; --gold-deep:#C27503; --metal:#D4AF37;
+    --success:#4ADE80; --danger:#F87171; --info:#93C5FD;
+    --grad:linear-gradient(135deg,#FFE73C 0%,#FFC326 35%,#E49000 75%,#C27503 100%);
+    --r-ctl:10px; --r-card:14px;
+    --shadow:0 0 0 1px var(--border),0 8px 30px rgba(0,0,0,.45);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--text);font:400 15px/1.5 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.05;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='98' viewBox='0 0 56 98'%3E%3Cpath d='M28 66L0 50V16L28 0l28 16v34L28 66zm0 32L0 82V66l28 16 28-16v16L28 98z' fill='none' stroke='%23FFC326' stroke-width='1'/%3E%3C/svg%3E")}
+  h1,h2,h3{font-family:Sora,Inter,sans-serif;margin:0;line-height:1.15}
+  .mono{font-family:"JetBrains Mono",monospace}
+  a{color:var(--honey)}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+  /* top nav */
+  .nav{position:sticky;top:0;z-index:20;background:rgba(10,10,10,.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+  .nav .wrap{display:flex;align-items:center;gap:20px;height:60px;overflow-x:auto}
+  .lockup{display:flex;align-items:center;gap:10px;white-space:nowrap}
+  .lockup img{width:32px;height:32px;border-radius:8px}
+  .lockup b{font:700 18px Sora}.lockup b span{color:var(--honey)}
+  .lockup small{color:var(--text-muted);font-size:11px}
+  .nav nav{display:flex;gap:16px;margin-left:auto}
+  .nav nav a{color:var(--text-muted);text-decoration:none;font-size:13px;white-space:nowrap}
+  .nav nav a:hover{color:var(--honey)}
+  section{padding:56px 0;border-bottom:1px solid var(--border)}
+  .eyebrow{font:600 11px Inter;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+  .sec-title{font-size:28px;margin-bottom:6px}
+  .sec-sub{color:var(--text-muted);margin:0 0 28px;max-width:720px}
+  .grid{display:grid;gap:16px}
+  .card{background:var(--surface);border-radius:var(--r-card);box-shadow:var(--shadow);padding:20px}
+  .card.metal{box-shadow:0 0 0 1px rgba(212,175,55,.45),0 8px 30px rgba(0,0,0,.45)}
+  /* brand */
+  .brand-row{display:grid;grid-template-columns:260px 1fr;gap:24px;align-items:start}
+  .logo-tile{border-radius:20px;overflow:hidden;box-shadow:0 0 0 1px var(--border),0 20px 60px rgba(228,144,0,.18)}
+  .logo-tile img{display:block;width:100%}
+  .swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+  .sw{border-radius:12px;overflow:hidden;box-shadow:var(--shadow);background:var(--surface)}
+  .sw i{display:block;height:58px}
+  .sw div{padding:8px 10px;font-size:12px}.sw div span{display:block;color:var(--text-muted)}
+  .type-specimen{display:grid;gap:10px;margin-top:20px}
+  .type-specimen .d{font:700 48px/1.05 Sora;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  /* components */
+  .btn{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:var(--r-ctl);padding:10px 16px;font:600 14px Inter;cursor:pointer;transition:transform .12s,box-shadow .12s}
+  .btn:active{transform:translateY(1px)}
+  .btn:focus-visible{outline:none;box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--honey)}
+  .btn-primary{background:var(--honey);color:#0A0A0A}
+  .btn-primary:hover{box-shadow:0 0 24px rgba(255,195,38,.35)}
+  .btn-grad{background:var(--grad);color:#0A0A0A}
+  .btn-ghost{background:transparent;color:var(--text);box-shadow:inset 0 0 0 1px var(--border)}
+  .btn-metal{background:transparent;color:var(--metal);box-shadow:inset 0 0 0 1px rgba(212,175,55,.6)}
+  .badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 10px;font:600 12px Inter;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--border)}
+  .dot{width:8px;height:8px;border-radius:50%}
+  .b-queued .dot{background:var(--graphite)}
+  .b-running{color:var(--amber)}.b-running .dot{background:var(--amber);animation:pulse 1s infinite}
+  .b-success{color:var(--success)}.b-success .dot{background:var(--success)}
+  .b-error{color:var(--danger)}.b-error .dot{background:var(--danger)}
+  .b-skipped{color:var(--text-muted)}.b-skipped .dot{background:var(--graphite)}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,188,18,.6)}50%{box-shadow:0 0 0 6px rgba(255,188,18,0)}}
+  .hex{width:46px;height:52px;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);background:var(--grad);display:grid;place-items:center;color:#0A0A0A;font:700 18px Sora}
+  .hexbadge{display:inline-flex;align-items:center;gap:10px}
+  .hexbadge small{display:block;color:var(--text-muted);font-size:11px}
+  .toggle{width:44px;height:24px;border-radius:999px;background:var(--graphite);position:relative;cursor:pointer;border:0;transition:background .2s}
+  .toggle::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:left .2s}
+  .toggle[aria-checked="true"]{background:var(--honey)}
+  .toggle[aria-checked="true"]::after{left:23px;background:#0A0A0A}
+  .input{width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-ctl);padding:10px 12px;color:var(--text);font:400 14px Inter}
+  .input:focus{outline:none;border-color:var(--honey);box-shadow:0 0 0 3px rgba(255,195,38,.18)}
+  label{font-size:12px;color:var(--text-muted);display:block;margin-bottom:6px}
+  /* landing */
+  .hero{display:grid;grid-template-columns:1.05fr 1fr;gap:32px;align-items:center}
+  .hero h1{font-size:52px;letter-spacing:-.02em}
+  .hero h1 em{font-style:normal;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p{color:var(--text-muted);font-size:17px;max-width:520px}
+  .beam svg{width:100%;height:auto}
+  .beam .flow{stroke-dasharray:4 10;animation:dash 1.2s linear infinite}
+  @keyframes dash{to{stroke-dashoffset:-28}}
+  .beam .chip{fill:var(--surface-2);stroke:var(--border)}
+  .beam text{fill:var(--text);font:500 12px Inter}
+  /* dashboard */
+  .kpis{grid-template-columns:repeat(5,1fr)}
+  .kpi small{color:var(--text-muted);font-size:12px}
+  .kpi b{display:block;font:700 28px Sora;margin-top:4px}
+  .kpi .delta{font-size:12px;color:var(--success)}
+  .dash2{grid-template-columns:2fr 1fr;margin-top:16px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;color:var(--text-muted);font-weight:500;padding:8px;border-bottom:1px solid var(--border)}
+  td{padding:10px 8px;border-bottom:1px solid var(--border)}
+  /* builder */
+  .builder{display:grid;grid-template-columns:200px 1fr 280px;min-height:520px;border-radius:var(--r-card);overflow:hidden;box-shadow:var(--shadow)}
+  .palette,.config{background:var(--surface);padding:14px;overflow:auto}
+  .palette h4,.config h4{font:600 11px Inter;letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted);margin:14px 0 8px}
+  .pal-item{display:flex;align-items:center;gap:8px;padding:8px;border-radius:8px;font-size:13px;cursor:grab}
+  .pal-item:hover{background:var(--surface-2)}
+  .ico{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;font-size:13px;flex:none;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--border)}
+  .canvas-wrap{position:relative;background:#0C0C0C radial-gradient(circle,#262626 1px,transparent 1px) 0 0/22px 22px;overflow:auto}
+  .canvas-top{position:sticky;top:0;left:0;z-index:3;display:flex;gap:10px;align-items:center;padding:10px 12px;background:rgba(12,12,12,.9);border-bottom:1px solid var(--border);flex-wrap:wrap}
+  .canvas{position:relative;width:1050px;height:400px;margin:10px}
+  .canvas svg{position:absolute;inset:0;width:1050px;height:400px}
+  .edge{fill:none;stroke:var(--graphite);stroke-width:2}
+  .edge.live{stroke:var(--honey);stroke-dasharray:3 9;animation:dash .9s linear infinite;filter:drop-shadow(0 0 4px rgba(255,195,38,.6))}
+  .edge.done{stroke:var(--gold)}
+  .node{position:absolute;width:190px;height:64px;background:var(--surface-2);border-radius:12px;box-shadow:0 0 0 1px var(--border);display:flex;align-items:center;gap:10px;padding:0 12px;transition:box-shadow .25s,transform .25s}
+  .node .t{font:600 13px Inter}.node .s{font-size:11px;color:var(--text-muted)}
+  .node .st{margin-left:auto;font-size:14px}
+  .node.running{box-shadow:0 0 0 2px var(--amber),0 0 24px rgba(255,188,18,.35);animation:nodepulse 1s infinite}
+  .node.success{box-shadow:0 0 0 2px var(--gold),0 0 18px rgba(228,144,0,.25)}
+  .node.error{box-shadow:0 0 0 2px var(--danger);animation:shake .3s}
+  .node.selected{outline:2px dashed rgba(255,195,38,.5);outline-offset:4px}
+  @keyframes nodepulse{50%{transform:scale(1.02)}}
+  @keyframes shake{25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
+  .copilot{position:absolute;right:14px;bottom:14px;width:320px;background:rgba(18,18,18,.96);border-radius:14px;box-shadow:0 0 0 1px rgba(212,175,55,.45),0 14px 40px rgba(0,0,0,.6);padding:12px;z-index:4}
+  .copilot .msg{background:var(--surface-2);border-radius:10px;padding:8px 10px;font-size:12.5px;margin-bottom:8px}
+  .copilot .msg.ai{border-left:2px solid var(--honey)}
+  .logline{font:400 12px "JetBrains Mono";color:var(--text-muted);padding:2px 0}
+  .logline b{color:var(--honey);font-weight:500}
+  /* run + verify */
+  .two{grid-template-columns:1.2fr 1fr}
+  .tl{position:relative;padding-left:22px}
+  .tl::before{content:"";position:absolute;left:7px;top:6px;bottom:6px;width:2px;background:var(--border)}
+  .tl-item{position:relative;padding:8px 0 12px}
+  .tl-item::before{content:"";position:absolute;left:-19px;top:13px;width:10px;height:10px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 3px var(--bg)}
+  .tl-item.err::before{background:var(--danger)}
+  .tl-item .row{display:flex;justify-content:space-between;gap:10px;font-size:13.5px}
+  .tl-item .meta{font-size:12px;color:var(--text-muted)}
+  .hash{font:400 12px "JetBrains Mono";color:var(--metal);word-break:break-all}
+  .layer{display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--border)}
+  .layer:last-child{border-bottom:0}
+  .lc{width:28px;height:28px;border-radius:50%;flex:none;display:grid;place-items:center;font:700 14px Inter;background:var(--surface-2);color:var(--text-muted);box-shadow:inset 0 0 0 1px var(--border);transition:all .3s}
+  .lc.ok{background:var(--gold);color:#0A0A0A;box-shadow:0 0 16px rgba(228,144,0,.4)}
+  .lc.bad{background:var(--danger);color:#0A0A0A}
+  .layer b{font-size:14px}.layer p{margin:2px 0 0;font-size:12.5px;color:var(--text-muted)}
+  .stamp{display:inline-flex;align-items:center;gap:12px;margin-top:14px;opacity:0;transform:scale(.9);transition:all .35s}
+  .stamp.show{opacity:1;transform:none}
+  .stamp .hex{width:64px;height:72px;font-size:24px}
+  .stamp.tampered .hex{background:linear-gradient(135deg,#FCA5A5,#DC2626)}
+  /* phone */
+  .phone{width:320px;max-width:100%;margin:0 auto;border-radius:36px;padding:14px;background:#000;box-shadow:0 0 0 2px #222,0 30px 80px rgba(0,0,0,.6)}
+  .phone .screen{border-radius:26px;background:var(--surface);padding:22px 18px;min-height:560px}
+  .phone .ws{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+  .phone .ws img{width:36px;height:36px;border-radius:9px}
+  .field{margin-bottom:12px}
+  .consent{display:flex;gap:8px;font-size:12px;color:var(--text-muted);margin:6px 0 14px}
+  .consent input{accent-color:var(--honey)}
+  .pricing{grid-template-columns:repeat(3,1fr)}
+  .price b{font:700 32px Sora}
+  .price ul{padding-left:18px;color:var(--text-muted);font-size:13px}
+  .border-beam{position:relative}
+  .border-beam::after{content:"";position:absolute;inset:-1px;border-radius:var(--r-card);padding:1px;background:conic-gradient(from var(--a,0deg),transparent 70%,var(--honey) 85%,transparent 100%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:spin 4s linear infinite}
+  @property --a{syntax:"<angle>";inherits:false;initial-value:0deg}
+  @keyframes spin{to{--a:360deg}}
+  footer{padding:40px 0;color:var(--text-muted);font-size:13px}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+  @media (max-width:960px){
+    .brand-row,.hero,.two,.dash2{grid-template-columns:1fr}
+    .kpis{grid-template-columns:repeat(2,1fr)}
+    .pricing{grid-template-columns:1fr}
+    .builder{grid-template-columns:1fr}
+    .palette,.config{display:none}
+    .hero h1{font-size:38px}
+    .copilot{position:static;width:auto;margin:10px}
+  }
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap">
+    <div class="lockup"><img src="../brand/trntbee-logo.jpeg" alt="TRNT BEE logo"><div><b>Flow<span>Ledger</span></b><br><small>by TRNT BEE · design board v0 (P0)</small></div></div>
+    <nav>
+      <a href="#brand">Brand</a><a href="#components">Components</a><a href="#landing">Landing</a><a href="#dashboard">Dashboard</a><a href="#builder">Builder</a><a href="#run">Run + Receipt</a><a href="#verify">Verify</a><a href="#form">Hosted form</a>
+    </nav>
+  </div>
+</header>
+
+<!-- BRAND -->
+<section id="brand"><div class="wrap">
+  <div class="eyebrow">01 · Brand</div>
+  <h2 class="sec-title">Black, graphite, honey and gold</h2>
+  <p class="sec-sub">Colors sampled from the TRNT BEE logo. The UI is dark-first: honey is the main color for actions, metallic gold marks premium elements and verified proofs, and black text sits on any honey surface.</p>
+  <div class="brand-row">
+    <div class="logo-tile"><img src="../brand/trntbee-logo.jpeg" alt="TRNT BEE bee mark"></div>
+    <div>
+      <div class="swatches">
+        <div class="sw"><i style="background:#0A0A0A"></i><div>bg<span>#0A0A0A</span></div></div>
+        <div class="sw"><i style="background:#121212"></i><div>surface<span>#121212</span></div></div>
+        <div class="sw"><i style="background:#1A1A1A"></i><div>surface-2<span>#1A1A1A</span></div></div>
+        <div class="sw"><i style="background:#3F3F46"></i><div>graphite<span>#3F3F46</span></div></div>
+        <div class="sw"><i style="background:#A1A1AA"></i><div>text-muted<span>#A1A1AA</span></div></div>
+        <div class="sw"><i style="background:#FFE73C"></i><div>yellow<span>#FFE73C</span></div></div>
+        <div class="sw"><i style="background:#FFC326"></i><div>honey · primary<span>#FFC326</span></div></div>
+        <div class="sw"><i style="background:#FFBC12"></i><div>amber · running<span>#FFBC12</span></div></div>
+        <div class="sw"><i style="background:#E49000"></i><div>gold<span>#E49000</span></div></div>
+        <div class="sw"><i style="background:#C27503"></i><div>gold-deep<span>#C27503</span></div></div>
+        <div class="sw"><i style="background:#D4AF37"></i><div>metal · verified<span>#D4AF37</span></div></div>
+        <div class="sw"><i style="background:var(--grad)"></i><div>primary gradient<span>yellow → gold-deep</span></div></div>
+      </div>
+      <div class="type-specimen">
+        <div class="d">Automate anything. Prove everything.</div>
+        <div style="font:600 22px Sora">Sora 600 / headings: Hive engine, Proof-of-Execution</div>
+        <div>Inter 400 / body: Your automation ran in 2.3 s across 5 steps. Receipt anchored on Polygon Amoy.</div>
+        <div class="mono hash">JetBrains Mono / hashes: 0x8f3c…a91e · leaf #42 · batch 17</div>
+      </div>
+    </div>
+  </div>
+</div></section>
+
+<!-- COMPONENTS -->
+<section id="components"><div class="wrap">
+  <div class="eyebrow">02 · Components</div>
+  <h2 class="sec-title">Building blocks</h2>
+  <p class="sec-sub">These are shadcn/ui components re-themed for FlowLedger. Status is always shown with an icon and text, never by color alone.</p>
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))">
+    <div class="card"><h3 style="font-size:15px;margin-bottom:12px">Buttons</h3>
+      <div style="display:flex;flex-wrap:wrap;gap:10px">
+        <button class="btn btn-primary">Publish</button><button class="btn btn-grad">Start free</button>
+        <button class="btn btn-ghost">Test run</button><button class="btn btn-metal">⬡ Verify</button>
+      </div></div>
+    <div class="card"><h3 style="font-size:15px;margin-bottom:12px">Run status</h3>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        <span class="badge b-queued"><i class="dot"></i>Queued</span><span class="badge b-running"><i class="dot"></i>Running</span>
+        <span class="badge b-success"><i class="dot"></i>✓ Success</span><span class="badge b-error"><i class="dot"></i>✗ Error</span><span class="badge b-skipped"><i class="dot"></i>Skipped</span>
+      </div></div>
+    <div class="card"><h3 style="font-size:15px;margin-bottom:12px">Receipt badge + toggle</h3>
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div class="hexbadge"><div class="hex">✓</div><div><b style="font-size:13px">On-chain</b><small>batch 17 · Amoy</small></div></div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px">Enabled <button class="toggle" role="switch" aria-checked="true" aria-label="Enable workflow" onclick="this.setAttribute('aria-checked',this.getAttribute('aria-checked')!=='true')"></button></div>
+      </div></div>
+    <div class="card"><h3 style="font-size:15px;margin-bottom:12px">Input</h3>
+      <label for="c-in">Spreadsheet</label><input id="c-in" class="input" value="Tri-City Registrations 2026"></div>
+  </div>
+</div></section>
+
+<!-- LANDING -->
+<section id="landing"><div class="wrap">
+  <div class="eyebrow">03 · Landing</div>
+  <div class="hero">
+    <div>
+      <span class="badge" style="color:var(--honey);margin-bottom:16px">⬡ Proof-of-Execution on Polygon</span>
+      <h1 style="margin:14px 0">Automate anything.<br><em>Prove</em> everything.</h1>
+      <p>Describe it in plain English. FlowLedger builds the workflow, runs it on an autoscaling engine, and anchors a receipt of every run on-chain, so anyone can verify it.</p>
+      <div style="display:flex;gap:10px;margin-top:22px;flex-wrap:wrap"><button class="btn btn-grad">Start free, ₹0</button><button class="btn btn-ghost">▶ Watch it run</button></div>
+      <p style="font-size:13px;margin-top:18px"><span class="mono" style="color:var(--metal)" id="counter">12,480</span> receipts anchored (live counter in the product, from the API)</p>
+    </div>
+    <div class="beam card">
+      <svg viewBox="0 0 460 300" role="img" aria-label="Data flowing from a form through FlowLedger to Sheets, Gmail, Telegram and Polygon">
+        <defs><linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="#FFE73C"/><stop offset="1" stop-color="#E49000"/></linearGradient></defs>
+        <path class="flow" d="M95 150 C150 150,160 150,195 150" stroke="url(#g)" stroke-width="2.5" fill="none"/>
+        <path class="flow" d="M265 150 C320 150,320 50,360 50" stroke="url(#g)" stroke-width="2.5" fill="none"/>
+        <path class="flow" d="M265 150 C320 150,320 117,360 117" stroke="url(#g)" stroke-width="2.5" fill="none"/>
+        <path class="flow" d="M265 150 C320 150,320 184,360 184" stroke="url(#g)" stroke-width="2.5" fill="none"/>
+        <path class="flow" d="M265 150 C320 150,320 251,360 251" stroke="url(#g)" stroke-width="2.5" fill="none"/>
+        <rect class="chip" x="20" y="128" width="75" height="44" rx="10"/><text x="57" y="155" text-anchor="middle">📝 Form</text>
+        <polygon points="230,105 268,127 268,173 230,195 192,173 192,127" fill="url(#g)"/><text x="230" y="155" text-anchor="middle" style="fill:#0A0A0A;font:700 13px Sora">Hive</text>
+        <rect class="chip" x="360" y="30" width="86" height="40" rx="10"/><text x="403" y="55" text-anchor="middle">📊 Sheets</text>
+        <rect class="chip" x="360" y="97" width="86" height="40" rx="10"/><text x="403" y="122" text-anchor="middle">✉️ Gmail</text>
+        <rect class="chip" x="360" y="164" width="86" height="40" rx="10"/><text x="403" y="189" text-anchor="middle">✈️ Telegram</text>
+        <rect class="chip" x="360" y="231" width="86" height="40" rx="10" style="stroke:#D4AF37"/><text x="403" y="256" text-anchor="middle">⬡ Polygon</text>
+      </svg>
+    </div>
+  </div>
+  <div class="grid pricing" style="margin-top:36px">
+    <div class="card price"><small style="color:var(--text-muted)">Free</small><br><b>₹0</b><ul><li>3 active workflows</li><li>300 runs / month</li><li>Daily anchoring</li></ul></div>
+    <div class="card price border-beam"><small style="color:var(--honey)">Pro · most popular</small><br><b>₹499</b><span style="color:var(--text-muted)">/mo</span><ul><li>20 workflows, 5,000 runs</li><li>AI nodes + Run Doctor</li><li>Anchoring every 5 min</li></ul><button class="btn btn-primary" style="width:100%">Upgrade</button></div>
+    <div class="card price"><small style="color:var(--text-muted)">Business</small><br><b>₹1,999</b><span style="color:var(--text-muted)">/mo</span><ul><li>50,000 runs, 10 members</li><li>Roles + audit export</li><li>Custom form domain</li></ul></div>
+  </div>
+  <p style="font-size:12px;color:var(--text-muted);margin-top:10px">Prices are planning estimates (D-017). Not yet validated with customers.</p>
+</div></section>
+
+<!-- DASHBOARD -->
+<section id="dashboard"><div class="wrap">
+  <div class="eyebrow">04 · Dashboard</div>
+  <h2 class="sec-title">Workspace overview</h2>
+  <p class="sec-sub">KPI tiles count up with a Number Ticker, and recent runs stream in live over SSE. Every number here is placeholder data.</p>
+  <div class="grid kpis">
+    <div class="card kpi"><small>Runs today</small><b>128</b><span class="delta">▲ 18% vs. yesterday</span></div>
+    <div class="card kpi"><small>Success rate</small><b>98.4%</b><span class="delta">2 failed → Doctor</span></div>
+    <div class="card kpi"><small>p95 run time</small><b>3.1 s</b><span class="delta" style="color:var(--text-muted)">5-step flows</span></div>
+    <div class="card kpi metal"><small>Receipts anchored</small><b style="color:var(--metal)">126</b><span class="delta" style="color:var(--text-muted)">batch 17 · Amoy</span></div>
+    <div class="card kpi"><small>AI tokens (month)</small><b>41.2k</b><span class="delta" style="color:var(--text-muted)">of 200k</span></div>
+  </div>
+  <div class="grid dash2">
+    <div class="card"><div style="display:flex;justify-content:space-between;margin-bottom:8px"><b>Runs per day</b><span class="badge">Last 7 days</span></div>
+      <svg viewBox="0 0 600 180" style="width:100%;height:auto" role="img" aria-label="Runs per day area chart">
+        <defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFC326" stop-opacity=".45"/><stop offset="1" stop-color="#FFC326" stop-opacity="0"/></linearGradient></defs>
+        <g stroke="#2A2A2A"><line x1="0" y1="45" x2="600" y2="45"/><line x1="0" y1="90" x2="600" y2="90"/><line x1="0" y1="135" x2="600" y2="135"/></g>
+        <path d="M0 140 L100 120 L200 128 L300 90 L400 96 L500 60 L600 38 L600 180 L0 180Z" fill="url(#ag)"/>
+        <path d="M0 140 L100 120 L200 128 L300 90 L400 96 L500 60 L600 38" fill="none" stroke="#FFC326" stroke-width="2.5"/>
+        <g fill="#0A0A0A" stroke="#FFC326" stroke-width="2"><circle cx="500" cy="60" r="4"/><circle cx="600" cy="38" r="4"/></g>
+      </svg></div>
+    <div class="card"><b>Recent runs</b>
+      <table><tbody>
+        <tr><td>Hackathon registration</td><td><span class="badge b-success"><i class="dot"></i>✓</span></td><td class="mono" style="color:var(--metal)">⬡</td></tr>
+        <tr><td>Lead scoring</td><td><span class="badge b-running"><i class="dot"></i>Running</span></td><td class="mono" style="color:var(--text-muted)">…</td></tr>
+        <tr><td>Clinic reminder</td><td><span class="badge b-error"><i class="dot"></i>✗</span></td><td><a href="#run" style="font-size:12px">Doctor →</a></td></tr>
+        <tr><td>Daily digest</td><td><span class="badge b-success"><i class="dot"></i>✓</span></td><td class="mono" style="color:var(--metal)">⬡</td></tr>
+      </tbody></table></div>
+  </div>
+</div></section>
+
+<!-- BUILDER -->
+<section id="builder"><div class="wrap">
+  <div class="eyebrow">05 · Builder</div>
+  <h2 class="sec-title">Canvas, live run and Copilot</h2>
+  <p class="sec-sub">Press <b>Simulate run</b>. Gold dots flow along the edges, nodes pulse amber while running and turn gold when done, and branches run in parallel (Kahn scheduler, doc 07).</p>
+  <div class="builder">
+    <aside class="palette" aria-label="Node palette">
+      <input class="input" placeholder="Search nodes…" aria-label="Search nodes">
+      <h4>Triggers</h4>
+      <div class="pal-item"><span class="ico">📝</span>Form submitted</div><div class="pal-item"><span class="ico">🔗</span>Webhook</div><div class="pal-item"><span class="ico">⏰</span>Schedule</div>
+      <h4>Actions</h4>
+      <div class="pal-item"><span class="ico">📊</span>Sheets: Append</div><div class="pal-item"><span class="ico">✉️</span>Email (SMTP)</div><div class="pal-item"><span class="ico">✈️</span>Telegram</div><div class="pal-item"><span class="ico">💬</span>Discord</div>
+      <h4>AI</h4>
+      <div class="pal-item"><span class="ico">🏷️</span>Classify</div><div class="pal-item"><span class="ico">✍️</span>Draft email</div><div class="pal-item"><span class="ico">🧩</span>Extract JSON</div>
+      <h4>Logic</h4>
+      <div class="pal-item"><span class="ico">◇</span>Condition</div><div class="pal-item"><span class="ico">⏳</span>Delay</div>
+    </aside>
+    <div class="canvas-wrap">
+      <div class="canvas-top">
+        <b style="font-size:14px">Hackathon registration</b><span class="badge" style="color:var(--metal)">Published v3 · 0x8f3c…</span>
+        <span style="margin-left:auto;display:flex;gap:8px;align-items:center;font-size:13px">Enabled <button class="toggle" role="switch" aria-checked="true" aria-label="Enable workflow" onclick="this.setAttribute('aria-checked',this.getAttribute('aria-checked')!=='true')"></button>
+        <button class="btn btn-ghost" id="simBtn">▶ Simulate run</button><button class="btn btn-primary">Publish</button></span>
+      </div>
+      <div class="canvas" id="canvas">
+        <svg aria-hidden="true">
+          <path class="edge" id="e-n1-n2" d="M220 202 C260 202,250 102,290 102"/>
+          <path class="edge" id="e-n1-n3" d="M220 202 C260 202,250 302,290 302"/>
+          <path class="edge" id="e-n2-n4" d="M480 102 C520 102,520 202,560 202"/>
+          <path class="edge" id="e-n3-n4" d="M480 302 C520 302,520 202,560 202"/>
+          <path class="edge" id="e-n4-n5" d="M750 202 C790 202,790 102,830 102"/>
+          <path class="edge" id="e-n4-n6" d="M750 202 C790 202,790 302,830 302"/>
+        </svg>
+        <div class="node" id="n1" style="left:30px;top:170px"><span class="ico">📝</span><div><div class="t">Form submitted</div><div class="s">Registration · QR</div></div><span class="st"></span></div>
+        <div class="node" id="n2" style="left:290px;top:70px"><span class="ico">🏷️</span><div><div class="t">AI: Classify track</div><div class="s">AI / Web / Chain</div></div><span class="st"></span></div>
+        <div class="node selected" id="n3" style="left:290px;top:270px"><span class="ico">✍️</span><div><div class="t">AI: Draft email</div><div class="s">personal, friendly</div></div><span class="st"></span></div>
+        <div class="node" id="n4" style="left:560px;top:170px"><span class="ico">📊</span><div><div class="t">Sheets: Append row</div><div class="s">Registrations 2026</div></div><span class="st"></span></div>
+        <div class="node" id="n5" style="left:830px;top:70px"><span class="ico">✉️</span><div><div class="t">Email: Send</div><div class="s">to {{email}}</div></div><span class="st"></span></div>
+        <div class="node" id="n6" style="left:830px;top:270px"><span class="ico">✈️</span><div><div class="t">Telegram: Alert</div><div class="s">Team Hydra group</div></div><span class="st"></span></div>
+      </div>
+      <div class="copilot" aria-label="AI Copilot">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span class="hex" style="width:22px;height:25px;font-size:11px">AI</span><b style="font-size:13px">Copilot</b></div>
+        <div class="msg">When someone registers, figure out their track, save them to our sheet, email them a personal confirmation and alert our team on Telegram.</div>
+        <div class="msg ai">Built 6 nodes and mapped 5 fields. <span style="color:var(--honey)">1 connection needed:</span> Google Sheets → <a href="#">Connect</a></div>
+        <input class="input" placeholder="Ask Copilot to change something…" aria-label="Copilot prompt">
+      </div>
+    </div>
+    <aside class="config" aria-label="Node configuration">
+      <h4 style="margin-top:0">AI: Draft email</h4>
+      <div class="field"><label for="c1">Goal</label><input id="c1" class="input" value="Confirm registration, mention their track"></div>
+      <div class="field"><label for="c2">Recipient name</label><input id="c2" class="input mono" value="{{Form.name}}"></div>
+      <div class="field"><label for="c3">Tone</label><input id="c3" class="input" value="Warm, short"></div>
+      <h4>Reliability</h4>
+      <div class="field"><label for="c4">Retries · backoff</label><input id="c4" class="input" value="3 · exponential + jitter"></div>
+      <div class="field"><label for="c5">On error</label><input id="c5" class="input" value="Stop run"></div>
+      <h4>Live log</h4>
+      <div id="log"><div class="logline">Press “Simulate run”…</div></div>
+    </aside>
+  </div>
+</div></section>
+
+<!-- RUN DETAIL -->
+<section id="run"><div class="wrap">
+  <div class="eyebrow">06 · Run detail</div>
+  <h2 class="sec-title">Timeline, Run Doctor and receipt</h2>
+  <div class="grid two">
+    <div class="card">
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap"><span class="badge b-error"><i class="dot"></i>✗ Error at step 4</span><span class="mono" style="font-size:12px;color:var(--text-muted)">ex_9fK2 · form · 2.1 s · v3</span><button class="btn btn-ghost" style="margin-left:auto;padding:6px 12px">↻ Retry from failed step</button></div>
+      <div class="tl">
+        <div class="tl-item"><div class="row"><b>Form submitted</b><span class="meta">12 ms</span></div><div class="meta">name: R••• K•••, email: r•••@gmail.com, college: NIT W•••</div></div>
+        <div class="tl-item"><div class="row"><b>AI: Classify track</b><span class="meta">640 ms</span></div><div class="meta">→ label “AI”, confidence 0.86 (model-reported)</div></div>
+        <div class="tl-item"><div class="row"><b>AI: Draft email</b><span class="meta">910 ms</span></div><div class="meta">→ subject “You're in, Ravi! 🐝”</div></div>
+        <div class="tl-item err"><div class="row"><b>Sheets: Append row</b><span class="meta">3 attempts</span></div><div class="meta" style="color:var(--danger)">validation: column “Track” not found in header row</div></div>
+      </div>
+      <div class="card metal" style="margin-top:12px;background:var(--surface-2)">
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px"><span class="hex" style="width:22px;height:25px;font-size:11px">Dr</span><b style="font-size:14px">Run Doctor</b><span class="badge" style="margin-left:auto">confidence: high</span></div>
+        <p style="margin:0 0 8px;font-size:13.5px">The sheet's column was renamed from <b>Track</b> to <b>Domain</b> after this workflow was published. I'll map the AI label to <b>Domain</b> instead.</p>
+        <div class="mono" style="font-size:12px;background:#0C0C0C;border-radius:8px;padding:8px"><span style="color:var(--danger)">- "columns.Track": "{{Classify.label}}"</span><br><span style="color:var(--success)">+ "columns.Domain": "{{Classify.label}}"</span></div>
+        <button class="btn btn-primary" style="margin-top:10px">Apply fix &amp; retry</button>
+      </div>
+    </div>
+    <div class="card metal">
+      <div class="hexbadge" style="margin-bottom:12px"><div class="hex">⬡</div><div><b>Proof-of-Execution receipt</b><small>Anchored · Polygon Amoy · batch 17 · leaf 42</small></div></div>
+      <label>Receipt hash</label><div class="hash">0x8f3cb27d1e0a49c6f2d58b7e13a0c94f6e21d07b3a95c48e1f6d2b09c7a4a91e</div>
+      <label style="margin-top:10px">Merkle root (on-chain)</label><div class="hash">0x5d1e…c03b</div>
+      <label style="margin-top:10px">Transaction</label><div class="hash"><a href="#verify">0x7aa2…19f0 ↗ amoy.polygonscan.com</a></div>
+      <label style="margin-top:10px">Previous receipt</label><div class="hash">0x31b9…7e22</div>
+      <button class="btn btn-metal" style="margin-top:14px;width:100%" onclick="location.hash='verify'">Open public verify page</button>
+    </div>
+  </div>
+</div></section>
+
+<!-- VERIFY -->
+<section id="verify"><div class="wrap">
+  <div class="eyebrow">07 · Public verify page</div>
+  <h2 class="sec-title">Don't trust us. Verify it.</h2>
+  <p class="sec-sub">The checks run in the visitor's own browser: the Merkle proof, a root read straight from the chain, and (for the owner) a re-hash of the stored data. Try both buttons.</p>
+  <div class="card" style="max-width:760px">
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:6px"><button class="btn btn-primary" id="verifyBtn">Run verification</button><button class="btn btn-ghost" id="tamperBtn">Tamper simulator (demo workspace)</button></div>
+    <div class="layer"><span class="lc" id="l1">1</span><div><b>Inclusion</b><p>Receipt hash is a leaf of Merkle root 0x5d1e…c03b (OpenZeppelin StandardMerkleTree)</p></div></div>
+    <div class="layer"><span class="lc" id="l2">2</span><div><b>Anchoring</b><p>Root read from FlowLedgerAnchor.batch(17) on Polygon Amoy at block 1,284,551</p></div></div>
+    <div class="layer"><span class="lc" id="l3">3</span><div><b>Data integrity <span class="badge" style="font-size:10px">owner</span></b><p id="l3t">Re-hashing the stored step data with the run's salt matches every step hash</p></div></div>
+    <div class="layer"><span class="lc" id="l4">4</span><div><b>Chain continuity</b><p>The previous-receipt links are unbroken for the last 20 runs in this workspace</p></div></div>
+    <div class="stamp" id="stamp"><div class="hex" id="stampHex">✓</div><div><b id="stampT" style="font:700 20px Sora">VERIFIED</b><br><small style="color:var(--text-muted)" id="stampS">Recorded at 10:00:03 IST and unchanged since</small></div></div>
+  </div>
+</div></section>
+
+<!-- HOSTED FORM -->
+<section id="form"><div class="wrap">
+  <div class="eyebrow">08 · Hosted form (mobile-first)</div>
+  <h2 class="sec-title">What the judge sees after scanning the QR</h2>
+  <p class="sec-sub">There is no cookie banner here because the form sets no non-essential cookies. Instead it shows a DPDP consent checkbox, and the submit button stays disabled until the box is ticked.</p>
+  <div class="phone"><div class="screen">
+    <div class="ws"><img src="../brand/trntbee-logo.jpeg" alt=""><div><b style="font-size:14px">Tri-City AI Hackathon</b><br><small style="color:var(--text-muted)">Registration · by Team Hydra</small></div></div>
+    <div class="field"><label for="f1">Full name</label><input id="f1" class="input" placeholder="Your name"></div>
+    <div class="field"><label for="f2">Email</label><input id="f2" class="input" placeholder="you@college.edu"></div>
+    <div class="field"><label for="f3">College</label><input id="f3" class="input" placeholder="NIT Warangal"></div>
+    <div class="field"><label for="f4">What do you want to build?</label><textarea id="f4" class="input" rows="3" placeholder="An AI that…"></textarea></div>
+    <label class="consent"><input type="checkbox" id="cons"> I agree that Team Hydra may use this info to process my registration. <a href="#">Privacy notice</a></label>
+    <button class="btn btn-grad" id="subBtn" style="width:100%;opacity:.5" disabled>Register</button>
+    <p style="text-align:center;font-size:11px;color:var(--text-muted);margin-top:14px">Powered by Flow<b style="color:var(--honey)">Ledger</b> ⬡</p>
+  </div></div>
+</div></section>
+
+<footer><div class="wrap">FlowLedger design board · Phase 0 · TRNT BEE · Every number on this page is placeholder data unless labeled otherwise. See docs/12_UI_UX_DESIGN.md.</div></footer>
+
+<script>
+(function(){
+  var order=[["n1"],["n2","n3"],["n4"],["n5","n6"]];
+  var edges={n1:["n2","n3"],n2:["n4"],n3:["n4"],n4:["n5","n6"]};
+  var labels={n1:"Form submitted",n2:"AI: Classify track",n3:"AI: Draft email",n4:"Sheets: Append row",n5:"Email: Send",n6:"Telegram: Alert"};
+  var logEl=document.getElementById("log"),btn=document.getElementById("simBtn"),busy=false;
+  function log(t){var d=document.createElement("div");d.className="logline";d.innerHTML=t;logEl.appendChild(d);logEl.scrollTop=1e6;}
+  function wait(ms){return new Promise(function(r){setTimeout(r,ms)});}
+  function reset(){document.querySelectorAll(".node").forEach(function(n){n.classList.remove("running","success","error");n.querySelector(".st").textContent="";});
+    document.querySelectorAll(".edge").forEach(function(e){e.classList.remove("live","done");});logEl.innerHTML="";}
+  btn.addEventListener("click",async function(){
+    if(busy)return;busy=true;reset();var t0=performance.now();log("<b>run.queued</b> ex_9fK2 (seeded demo)");
+    for(var i=0;i<order.length;i++){
+      var layer=order[i];
+      layer.forEach(function(id){var n=document.getElementById(id);n.classList.add("running");n.querySelector(".st").textContent="⏳";log("<b>step.started</b> "+labels[id]);});
+      await wait(i===1?900:650);
+      layer.forEach(function(id){var n=document.getElementById(id);n.classList.remove("running");n.classList.add("success");n.querySelector(".st").textContent="✓";log("<b>step.succeeded</b> "+labels[id]);
+        (edges[id]||[]).forEach(function(to){var e=document.getElementById("e-"+id+"-"+to);if(e)e.classList.add("live");});});
+      await wait(350);
+      layer.forEach(function(id){(edges[id]||[]).forEach(function(to){var e=document.getElementById("e-"+id+"-"+to);if(e){e.classList.remove("live");e.classList.add("done");}});});
+    }
+    log("<b>run.completed</b> success in "+((performance.now()-t0)/1000).toFixed(1)+" s (simulated)");
+    await wait(600);log("<b>receipt.anchored</b> batch 17 ⬡");busy=false;
+  });
+  // verify + tamper
+  var tampered=false,vb=document.getElementById("verifyBtn"),tb=document.getElementById("tamperBtn");
+  async function verify(){
+    ["l1","l2","l3","l4"].forEach(function(id){var e=document.getElementById(id);e.className="lc";e.textContent=id.slice(1);});
+    var st=document.getElementById("stamp");st.className="stamp";
+    for(var i=1;i<=4;i++){await wait(320);var e=document.getElementById("l"+i);
+      if(i===3&&tampered){e.className="lc bad";e.textContent="✗";}else{e.className="lc ok";e.textContent="✓";}}
+    document.getElementById("l3t").textContent=tampered?"Mismatch at step 4 “Sheets: Append row”: the output changed after anchoring":"Re-hashing the stored step data with the run's salt matches every step hash";
+    document.getElementById("stampHex").textContent=tampered?"✗":"✓";
+    document.getElementById("stampT").textContent=tampered?"TAMPERED":"VERIFIED";
+    document.getElementById("stampS").textContent=tampered?"Original receipt is intact on-chain (layers 1–2 pass); the stored data was edited":"Recorded at 10:00:03 IST and unchanged since";
+    await wait(150);st.className="stamp show"+(tampered?" tampered":"");
+  }
+  vb.addEventListener("click",verify);
+  tb.addEventListener("click",function(){tampered=!tampered;tb.textContent=tampered?"Restore original data":"Tamper simulator (demo workspace)";verify();});
+  // consent gate
+  var c=document.getElementById("cons"),s=document.getElementById("subBtn");
+  c.addEventListener("change",function(){s.disabled=!c.checked;s.style.opacity=c.checked?1:.5;});
+})();
+</script>
+</body>
+</html>

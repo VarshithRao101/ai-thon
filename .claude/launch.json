@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "flowledger-web",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@flowledger/web", "dev"],
+      "port": 3000
+    },
+    {
+      "name": "flowledger-design",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "5180", "--bind", "127.0.0.1", "--directory", "D:/TRNT BEE/TRNT BEE/ai-thon workflow"],
+      "port": 5180
+    }
+  ]
+}

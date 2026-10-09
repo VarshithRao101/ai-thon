@@ -1,66 +1,11 @@
 import { createHash } from "node:crypto";
-import { eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
-import { start } from "workflow/api";
 import { db } from "@/lib/db";
-import { validateWorkflowIntegrations } from "@/lib/db/integrations";
 import { apiKeys, workflowExecutions, workflows } from "@/lib/db/schema";
-import { executeWorkflow } from "@/lib/workflow-executor.workflow";
+import { runWithTenant, tdb } from "@/lib/db/tenant";
+import { dispatchExecution } from "@/lib/runtime/dispatch";
 import type { WorkflowEdge, WorkflowNode } from "@/lib/workflow-store";
-
-// Validate API key and return the user ID if valid
-async function validateApiKey(
-  authHeader: string | null,
-  workflowUserId: string
-): Promise<{ valid: boolean; error?: string; statusCode?: number }> {
-  if (!authHeader) {
-    return {
-      valid: false,
-      error: "Missing Authorization header",
-      statusCode: 401,
-    };
-  }
-
-  // Support "Bearer <key>" format
-  const key = authHeader.startsWith("Bearer ")
-    ? authHeader.slice(7)
-    : authHeader;
-
-  if (!key?.startsWith("wfb_")) {
-    return { valid: false, error: "Invalid API key format", statusCode: 401 };
-  }
-
-  // Hash the key to compare with stored hash
-  const keyHash = createHash("sha256").update(key).digest("hex");
-
-  // Find the API key in the database
-  const apiKey = await db.query.apiKeys.findFirst({
-    where: eq(apiKeys.keyHash, keyHash),
-  });
-
-  if (!apiKey) {
-    return { valid: false, error: "Invalid API key", statusCode: 401 };
-  }
-
-  // Verify the API key belongs to the workflow owner
-  if (apiKey.userId !== workflowUserId) {
-    return {
-      valid: false,
-      error: "You do not have permission to run this workflow",
-      statusCode: 403,
-    };
-  }
-
-  // Update last used timestamp (don't await, fire and forget)
-  db.update(apiKeys)
-    .set({ lastUsedAt: new Date() })
-    .where(eq(apiKeys.id, apiKey.id))
-    .catch(() => {
-      // Fire and forget - ignore errors
-    });
-
-  return { valid: true };
-}
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -68,51 +13,55 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
-// biome-ignore lint/nursery/useMaxParams: Background execution requires all workflow context
-async function executeWorkflowBackground(
-  executionId: string,
-  workflowId: string,
-  nodes: WorkflowNode[],
-  edges: WorkflowEdge[],
-  input: Record<string, unknown>
-) {
-  try {
-    console.log("[Webhook] Starting execution:", executionId);
+// flk_ = FlowLedger keys; wfb_ = keys issued by the base template
+const KEY_PREFIXES = ["flk_", "wfb_"];
 
-    console.log("[Webhook] Calling executeWorkflow with:", {
-      nodeCount: nodes.length,
-      edgeCount: edges.length,
-      hasExecutionId: !!executionId,
-      workflowId,
-    });
+function json(body: unknown, status = 200) {
+  return NextResponse.json(body, { status, headers: corsHeaders });
+}
 
-    start(executeWorkflow, [
-      {
-        nodes,
-        edges,
-        triggerInput: input,
-        executionId,
-        workflowId,
-      },
-    ]);
+type ResolvedKey = {
+  id: string;
+  workspace_id: string;
+  user_id: string;
+  scopes: string[] | null;
+};
 
-    console.log("[Webhook] Workflow started successfully");
-  } catch (error) {
-    console.error("[Webhook] Error during execution:", error);
-    console.error(
-      "[Webhook] Error stack:",
-      error instanceof Error ? error.stack : "N/A"
-    );
-
-    await db
-      .update(workflowExecutions)
-      .set({
-        status: "error",
-        error: error instanceof Error ? error.message : "Unknown error",
-        completedAt: new Date(),
-      })
-      .where(eq(workflowExecutions.id, executionId));
+/**
+ * Map a presented API key to its workspace. The key hash is looked up through
+ * the SECURITY DEFINER function resolve_api_key() (drizzle/0006): the only
+ * cross-tenant read, and it returns nothing for revoked or expired keys.
+ */
+async function resolveApiKey(
+  authHeader: string | null
+): Promise<
+  { ok: true; key: ResolvedKey } | { ok: false; status: number; error: string }
+> {
+  if (!authHeader) {
+    return { ok: false, status: 401, error: "Missing Authorization header" };
   }
+  const key = authHeader.startsWith("Bearer ")
+    ? authHeader.slice(7)
+    : authHeader;
+  if (!KEY_PREFIXES.some((prefix) => key.startsWith(prefix))) {
+    return { ok: false, status: 401, error: "Invalid API key format" };
+  }
+  const keyHash = createHash("sha256").update(key).digest("hex");
+  const rows = (await db.execute(
+    sql`select id, workspace_id, user_id, scopes from resolve_api_key(${keyHash})`
+  )) as unknown as ResolvedKey[];
+  const resolved = rows[0];
+  if (!resolved) {
+    return { ok: false, status: 401, error: "Invalid API key" };
+  }
+  if (!(resolved.scopes ?? []).includes("runs:trigger")) {
+    return {
+      ok: false,
+      status: 403,
+      error: "API key lacks the runs:trigger scope",
+    };
+  }
+  return { ok: true, key: resolved };
 }
 
 export function OPTIONS() {
@@ -125,99 +74,85 @@ export async function POST(
 ) {
   try {
     const { workflowId } = await context.params;
+    const auth = await resolveApiKey(request.headers.get("Authorization"));
+    if (!auth.ok) {
+      return json({ error: auth.error }, auth.status);
+    }
+    const tenant = {
+      workspaceId: auth.key.workspace_id,
+      userId: auth.key.user_id,
+    };
 
-    // Get workflow
-    const workflow = await db.query.workflows.findFirst({
-      where: eq(workflows.id, workflowId),
+    return await runWithTenant(tenant, async () => {
+      // A key only reaches workflows in its own workspace (404 otherwise: no existence leak).
+      const [workflow] = await tdb((tx) =>
+        tx
+          .select()
+          .from(workflows)
+          .where(
+            and(
+              eq(workflows.id, workflowId),
+              eq(workflows.workspaceId, tenant.workspaceId)
+            )
+          )
+          .limit(1)
+      );
+      if (!workflow) {
+        return json({ error: "Workflow not found" }, 404);
+      }
+
+      const triggerNode = (workflow.nodes as WorkflowNode[]).find(
+        (node) => node.data.type === "trigger"
+      );
+      if (!triggerNode || triggerNode.data.config?.triggerType !== "Webhook") {
+        return json(
+          { error: "This workflow is not configured for webhook triggers" },
+          400
+        );
+      }
+
+      const body = await request.json().catch(() => ({}));
+      const [execution] = await tdb((tx) =>
+        tx
+          .insert(workflowExecutions)
+          .values({
+            workspaceId: tenant.workspaceId,
+            workflowId,
+            userId: tenant.userId,
+            status: "running",
+            input: body,
+          })
+          .returning({ id: workflowExecutions.id })
+      );
+      if (!execution) {
+        return json({ error: "Failed to create execution" }, 500);
+      }
+
+      // Fire and forget: usage timestamp for the key list
+      tdb((tx) =>
+        tx
+          .update(apiKeys)
+          .set({ lastUsedAt: new Date() })
+          .where(eq(apiKeys.id, auth.key.id))
+      ).catch(() => {
+        // Non-critical
+      });
+
+      dispatchExecution(
+        {
+          nodes: workflow.nodes as WorkflowNode[],
+          edges: workflow.edges as WorkflowEdge[],
+          triggerInput: body,
+          executionId: execution.id,
+          workflowId,
+        },
+        tenant
+      );
+
+      return json({ executionId: execution.id, status: "running" });
     });
-
-    if (!workflow) {
-      return NextResponse.json(
-        { error: "Workflow not found" },
-        { status: 404, headers: corsHeaders }
-      );
-    }
-
-    // Validate API key - must belong to the workflow owner
-    const authHeader = request.headers.get("Authorization");
-    const apiKeyValidation = await validateApiKey(authHeader, workflow.userId);
-
-    if (!apiKeyValidation.valid) {
-      return NextResponse.json(
-        { error: apiKeyValidation.error },
-        { status: apiKeyValidation.statusCode || 401, headers: corsHeaders }
-      );
-    }
-
-    // Verify this is a webhook-triggered workflow
-    const triggerNode = (workflow.nodes as WorkflowNode[]).find(
-      (node) => node.data.type === "trigger"
-    );
-
-    if (!triggerNode || triggerNode.data.config?.triggerType !== "Webhook") {
-      return NextResponse.json(
-        { error: "This workflow is not configured for webhook triggers" },
-        { status: 400, headers: corsHeaders }
-      );
-    }
-
-    // Validate that all integrationIds in workflow nodes belong to the workflow owner
-    const validation = await validateWorkflowIntegrations(
-      workflow.nodes as WorkflowNode[],
-      workflow.userId
-    );
-    if (!validation.valid) {
-      console.error(
-        "[Webhook] Invalid integration references:",
-        validation.invalidIds
-      );
-      return NextResponse.json(
-        { error: "Workflow contains invalid integration references" },
-        { status: 403, headers: corsHeaders }
-      );
-    }
-
-    // Parse request body
-    const body = await request.json().catch(() => ({}));
-
-    // Create execution record
-    const [execution] = await db
-      .insert(workflowExecutions)
-      .values({
-        workflowId,
-        userId: workflow.userId,
-        status: "running",
-        input: body,
-      })
-      .returning();
-
-    console.log("[Webhook] Created execution:", execution.id);
-
-    // Execute the workflow in the background (don't await)
-    executeWorkflowBackground(
-      execution.id,
-      workflowId,
-      workflow.nodes as WorkflowNode[],
-      workflow.edges as WorkflowEdge[],
-      body
-    );
-
-    // Return immediately with the execution ID
-    return NextResponse.json(
-      {
-        executionId: execution.id,
-        status: "running",
-      },
-      { headers: corsHeaders }
-    );
   } catch (error) {
     console.error("[Webhook] Failed to start workflow execution:", error);
-    return NextResponse.json(
-      {
-        error:
-          error instanceof Error ? error.message : "Failed to execute workflow",
-      },
-      { status: 500, headers: corsHeaders }
-    );
+    return json({ error: "Failed to execute workflow" }, 500);
   }
 }

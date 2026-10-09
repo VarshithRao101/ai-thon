@@ -1,107 +1,86 @@
 import { createHash, randomBytes } from "node:crypto";
-import { eq } from "drizzle-orm";
+import { and, desc, eq, isNull } from "drizzle-orm";
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
+import { HttpError, tenantRoute } from "@/lib/api/route";
+import { recordAudit } from "@/lib/audit";
 import { apiKeys } from "@/lib/db/schema";
+import { tdb } from "@/lib/db/tenant";
 
-// Generate a secure API key
+// flk_ + 32 random bytes (base64url). Only the sha256 hash is stored.
 function generateApiKey(): { key: string; hash: string; prefix: string } {
-  const randomPart = randomBytes(24).toString("base64url");
-  const key = `wfb_${randomPart}`;
+  const key = `flk_${randomBytes(32).toString("base64url")}`;
   const hash = createHash("sha256").update(key).digest("hex");
-  const prefix = key.slice(0, 11); // "wfb_" + first 7 chars
+  const prefix = key.slice(0, 11); // "flk_" + first 7 chars
   return { key, hash, prefix };
 }
 
-// GET - List all API keys for the current user
-export async function GET(request: Request) {
-  try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const keys = await db.query.apiKeys.findMany({
-      where: eq(apiKeys.userId, session.user.id),
-      columns: {
-        id: true,
-        name: true,
-        keyPrefix: true,
-        createdAt: true,
-        lastUsedAt: true,
-      },
-      orderBy: (table, { desc }) => [desc(table.createdAt)],
-    });
-
-    return NextResponse.json(keys);
-  } catch (error) {
-    console.error("Failed to list API keys:", error);
-    return NextResponse.json(
-      { error: "Failed to list API keys" },
-      { status: 500 }
+// GET: active (non-revoked) keys in the workspace
+export const GET = tenantRoute(
+  "apikeys.list",
+  async (ctx) => {
+    const keys = await tdb((tx) =>
+      tx
+        .select({
+          id: apiKeys.id,
+          name: apiKeys.name,
+          keyPrefix: apiKeys.keyPrefix,
+          scopes: apiKeys.scopes,
+          createdAt: apiKeys.createdAt,
+          lastUsedAt: apiKeys.lastUsedAt,
+          expiresAt: apiKeys.expiresAt,
+        })
+        .from(apiKeys)
+        .where(
+          and(
+            eq(apiKeys.workspaceId, ctx.workspaceId),
+            isNull(apiKeys.revokedAt)
+          )
+        )
+        .orderBy(desc(apiKeys.createdAt))
     );
-  }
-}
+    return NextResponse.json(keys);
+  },
+  { permission: "apikey:manage" }
+);
 
-// POST - Create a new API key
-export async function POST(request: Request) {
-  try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+// POST: create a key; the full key is returned exactly once
+export const POST = tenantRoute(
+  "apikeys.create",
+  async (ctx, request) => {
+    if (ctx.isAnonymous) {
+      throw new HttpError(403, "Sign up to create API keys");
     }
-
-    // Check if user is anonymous
-    const isAnonymous =
-      session.user.name === "Anonymous" ||
-      session.user.email?.startsWith("temp-");
-
-    if (isAnonymous) {
-      return NextResponse.json(
-        { error: "Anonymous users cannot create API keys" },
-        { status: 403 }
-      );
-    }
-
     const body = await request.json().catch(() => ({}));
-    const name = body.name || null;
-
-    // Generate new API key
+    const name = typeof body.name === "string" ? body.name.slice(0, 100) : null;
     const { key, hash, prefix } = generateApiKey();
 
-    // Save to database
-    const [newKey] = await db
-      .insert(apiKeys)
-      .values({
-        userId: session.user.id,
-        name,
-        keyHash: hash,
-        keyPrefix: prefix,
-      })
-      .returning({
-        id: apiKeys.id,
-        name: apiKeys.name,
-        keyPrefix: apiKeys.keyPrefix,
-        createdAt: apiKeys.createdAt,
-      });
-
-    // Return the full key only on creation (won't be shown again)
-    return NextResponse.json({
-      ...newKey,
-      key, // Full key - only returned once!
-    });
-  } catch (error) {
-    console.error("Failed to create API key:", error);
-    return NextResponse.json(
-      { error: "Failed to create API key" },
-      { status: 500 }
+    const [created] = await tdb((tx) =>
+      tx
+        .insert(apiKeys)
+        .values({
+          workspaceId: ctx.workspaceId,
+          userId: ctx.userId,
+          name,
+          keyHash: hash,
+          keyPrefix: prefix,
+        })
+        .returning({
+          id: apiKeys.id,
+          name: apiKeys.name,
+          keyPrefix: apiKeys.keyPrefix,
+          createdAt: apiKeys.createdAt,
+        })
     );
-  }
-}
+    if (!created) {
+      throw new HttpError(500, "Failed to create API key");
+    }
+    await recordAudit(
+      "apikey.create",
+      { type: "api_key", id: created.id },
+      { prefix }
+    );
+
+    return NextResponse.json({ ...created, key });
+  },
+  { permission: "apikey:manage" }
+);

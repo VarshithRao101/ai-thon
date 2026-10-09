@@ -1,0 +1,23 @@
+{
+  "name": "@flowledger/config",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Typed, validated environment configuration for every FlowLedger process role.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/node": "^24",
+    "typescript": "^5",
+    "vitest": "^5.0.3"
+  }
+}

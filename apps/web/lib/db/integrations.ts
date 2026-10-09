@@ -1,269 +1,177 @@
 import "server-only";
 
-import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
-import { and, eq, inArray } from "drizzle-orm";
+import { eq } from "drizzle-orm";
+import { openForWorkspace, sealForWorkspace } from "@/lib/vault";
 import type { IntegrationConfig, IntegrationType } from "../types/integration";
-import { db } from "./index";
 import { integrations, type NewIntegration } from "./schema";
+import { requireTenant, tdb } from "./tenant";
 
-// Encryption configuration
-const ALGORITHM = "aes-256-gcm";
-const IV_LENGTH = 16;
-const ENCRYPTION_KEY_ENV = "INTEGRATION_ENCRYPTION_KEY";
-
-/**
- * Get or generate encryption key from environment
- * Key should be a 32-byte hex string (64 characters)
+/*
+ * Credential vault data layer. Every function runs in the caller's tenant
+ * context (lib/db/tenant.ts): Postgres RLS limits rows to the active workspace,
+ * and configs are sealed with that workspace's data key (lib/vault).
  */
-function getEncryptionKey(): Buffer {
-  const keyHex = process.env[ENCRYPTION_KEY_ENV];
 
-  if (!keyHex) {
-    throw new Error(
-      `${ENCRYPTION_KEY_ENV} environment variable is required for encrypting integration credentials`
-    );
-  }
-
-  if (keyHex.length !== 64) {
-    throw new Error(
-      `${ENCRYPTION_KEY_ENV} must be a 64-character hex string (32 bytes)`
-    );
-  }
-
-  return Buffer.from(keyHex, "hex");
+function sealConfig(
+  workspaceId: string,
+  config: Record<string, unknown>
+): Promise<string> {
+  return sealForWorkspace(workspaceId, JSON.stringify(config));
 }
 
-/**
- * Encrypt sensitive data
- * Returns a string in format: iv:authTag:encryptedData (all hex-encoded)
- */
-export function encrypt(plaintext: string): string {
-  const key = getEncryptionKey();
-  const iv = randomBytes(IV_LENGTH);
-  const cipher = createCipheriv(ALGORITHM, key, iv);
-
-  let encrypted = cipher.update(plaintext, "utf8", "hex");
-  encrypted += cipher.final("hex");
-
-  const authTag = cipher.getAuthTag();
-
-  // Return format: iv:authTag:ciphertext (all hex)
-  return `${iv.toString("hex")}:${authTag.toString("hex")}:${encrypted}`;
-}
-
-/**
- * Decrypt encrypted data
- */
-export function decrypt(ciphertext: string): string {
-  const key = getEncryptionKey();
-  const parts = ciphertext.split(":");
-
-  if (parts.length !== 3) {
-    throw new Error("Invalid encrypted data format");
-  }
-
-  const iv = Buffer.from(parts[0], "hex");
-  const authTag = Buffer.from(parts[1], "hex");
-  const encrypted = parts[2];
-
-  const decipher = createDecipheriv(ALGORITHM, key, iv);
-  decipher.setAuthTag(authTag);
-
-  let decrypted = decipher.update(encrypted, "hex", "utf8");
-  decrypted += decipher.final("utf8");
-
-  return decrypted;
-}
-
-/**
- * Encrypt integration config object
- */
-function encryptConfig(config: Record<string, unknown>): string {
-  return encrypt(JSON.stringify(config));
-}
-
-/**
- * Decrypt integration config object
- */
-function decryptConfig(encryptedConfig: string): Record<string, unknown> {
+async function openConfig(
+  workspaceId: string,
+  sealed: string
+): Promise<Record<string, unknown>> {
   try {
-    const decrypted = decrypt(encryptedConfig);
-    return JSON.parse(decrypted);
+    return JSON.parse(await openForWorkspace(workspaceId, sealed));
   } catch (error) {
-    console.error("Failed to decrypt integration config:", error);
+    // Never log the ciphertext or the error detail (may echo key material).
+    console.error(
+      "[vault] failed to open integration config:",
+      error instanceof Error ? error.name : "unknown"
+    );
     return {};
   }
 }
 
 export type DecryptedIntegration = {
   id: string;
+  workspaceId: string;
   userId: string;
   name: string;
   type: IntegrationType;
   config: IntegrationConfig;
   isManaged: boolean | null;
+  status: "ok" | "error" | "untested";
+  lastTestedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 };
 
-/**
- * Get all integrations for a user, optionally filtered by type
- */
+type IntegrationRow = typeof integrations.$inferSelect;
+
+async function decryptRow(row: IntegrationRow): Promise<DecryptedIntegration> {
+  return {
+    ...row,
+    config: (await openConfig(
+      row.workspaceId,
+      row.config as string
+    )) as IntegrationConfig,
+  };
+}
+
+/** Integrations in the active workspace, optionally filtered by type. */
 export async function getIntegrations(
-  userId: string,
   type?: IntegrationType
 ): Promise<DecryptedIntegration[]> {
-  const conditions = [eq(integrations.userId, userId)];
-
-  if (type) {
-    conditions.push(eq(integrations.type, type));
-  }
-
-  const results = await db
-    .select()
-    .from(integrations)
-    .where(and(...conditions));
-
-  return results.map((integration) => ({
-    ...integration,
-    config: decryptConfig(integration.config as string) as IntegrationConfig,
-  }));
+  const rows = await tdb((tx) =>
+    tx
+      .select()
+      .from(integrations)
+      .where(type ? eq(integrations.type, type) : undefined)
+  );
+  return Promise.all(rows.map(decryptRow));
 }
 
-/**
- * Get a single integration by ID
- */
+/** One integration in the active workspace (null if missing or another tenant's). */
 export async function getIntegration(
-  integrationId: string,
-  userId: string
-): Promise<DecryptedIntegration | null> {
-  const result = await db
-    .select()
-    .from(integrations)
-    .where(
-      and(eq(integrations.id, integrationId), eq(integrations.userId, userId))
-    )
-    .limit(1);
-
-  if (result.length === 0) {
-    return null;
-  }
-
-  return {
-    ...result[0],
-    config: decryptConfig(result[0].config as string) as IntegrationConfig,
-  };
-}
-
-/**
- * Get a single integration by ID without user check (for system use during workflow execution)
- */
-export async function getIntegrationById(
   integrationId: string
 ): Promise<DecryptedIntegration | null> {
-  const result = await db
-    .select()
-    .from(integrations)
-    .where(eq(integrations.id, integrationId))
-    .limit(1);
-
-  if (result.length === 0) {
-    return null;
-  }
-
-  return {
-    ...result[0],
-    config: decryptConfig(result[0].config as string) as IntegrationConfig,
-  };
+  const [row] = await tdb((tx) =>
+    tx
+      .select()
+      .from(integrations)
+      .where(eq(integrations.id, integrationId))
+      .limit(1)
+  );
+  return row ? decryptRow(row) : null;
 }
 
-/**
- * Create a new integration
- */
+/** Used by workflow steps; tenant-scoped like everything else. */
+export const getIntegrationById = getIntegration;
+
 export async function createIntegration(
-  userId: string,
   name: string,
   type: IntegrationType,
   config: IntegrationConfig
 ): Promise<DecryptedIntegration> {
-  const encryptedConfig = encryptConfig(config);
-
-  const [result] = await db
-    .insert(integrations)
-    .values({
-      userId,
-      name,
-      type,
-      config: encryptedConfig,
-    })
-    .returning();
-
-  return {
-    ...result,
-    config,
-  };
+  const ctx = requireTenant();
+  const sealed = await sealConfig(ctx.workspaceId, config);
+  const [row] = await tdb((tx) =>
+    tx
+      .insert(integrations)
+      .values({
+        workspaceId: ctx.workspaceId,
+        userId: ctx.userId as string,
+        name,
+        type,
+        config: sealed,
+      })
+      .returning()
+  );
+  return { ...(row as IntegrationRow), config };
 }
 
-/**
- * Update an integration
- */
 export async function updateIntegration(
   integrationId: string,
-  userId: string,
-  updates: {
-    name?: string;
-    config?: IntegrationConfig;
-  }
+  updates: { name?: string; config?: IntegrationConfig }
 ): Promise<DecryptedIntegration | null> {
-  const updateData: Partial<NewIntegration> = {
-    updatedAt: new Date(),
-  };
-
+  const ctx = requireTenant();
+  const updateData: Partial<NewIntegration> = { updatedAt: new Date() };
   if (updates.name !== undefined) {
     updateData.name = updates.name;
   }
-
   if (updates.config !== undefined) {
-    updateData.config = encryptConfig(updates.config);
+    updateData.config = await sealConfig(ctx.workspaceId, updates.config);
+    // New credentials have not been tested yet.
+    updateData.status = "untested";
+    updateData.lastError = null;
   }
-
-  const [result] = await db
-    .update(integrations)
-    .set(updateData)
-    .where(
-      and(eq(integrations.id, integrationId), eq(integrations.userId, userId))
-    )
-    .returning();
-
-  if (!result) {
-    return null;
-  }
-
-  return {
-    ...result,
-    config: decryptConfig(result.config as string) as IntegrationConfig,
-  };
+  const [row] = await tdb((tx) =>
+    tx
+      .update(integrations)
+      .set(updateData)
+      .where(eq(integrations.id, integrationId))
+      .returning()
+  );
+  return row ? decryptRow(row) : null;
 }
 
-/**
- * Delete an integration
- */
 export async function deleteIntegration(
-  integrationId: string,
-  userId: string
+  integrationId: string
 ): Promise<boolean> {
-  const result = await db
-    .delete(integrations)
-    .where(
-      and(eq(integrations.id, integrationId), eq(integrations.userId, userId))
-    )
-    .returning();
-
-  return result.length > 0;
+  const rows = await tdb((tx) =>
+    tx
+      .delete(integrations)
+      .where(eq(integrations.id, integrationId))
+      .returning({ id: integrations.id })
+  );
+  return rows.length > 0;
 }
 
-/**
- * Workflow node structure for validation
+/** Record the outcome of a live connection test (shown in the vault UI). */
+export async function markIntegrationTested(
+  integrationId: string,
+  ok: boolean,
+  error?: string
+): Promise<void> {
+  await tdb((tx) =>
+    tx
+      .update(integrations)
+      .set({
+        status: ok ? "ok" : "error",
+        lastTestedAt: new Date(),
+        lastError: ok ? null : (error ?? "Connection failed").slice(0, 500),
+      })
+      .where(eq(integrations.id, integrationId))
+  );
+}
+
+/*
+ * Cross-tenant credential use is impossible by construction: steps fetch
+ * credentials through getIntegrationById() under the run's tenant context, so
+ * another workspace's integration id resolves to nothing (same as deleted).
  */
 type WorkflowNodeForValidation = {
   data?: {
@@ -289,45 +197,4 @@ export function extractIntegrationIds(
   }
 
   return [...new Set(integrationIds)];
-}
-
-/**
- * Validate that all integration IDs in workflow nodes either:
- * 1. Belong to the specified user, or
- * 2. Don't exist (deleted integrations - stale references are allowed)
- *
- * This prevents users from accessing other users' credentials by embedding
- * foreign integration IDs in their workflows, while allowing workflows
- * with references to deleted integrations to still be saved.
- *
- * @returns Object with `valid` boolean and optional `invalidIds` array
- */
-export async function validateWorkflowIntegrations(
-  nodes: WorkflowNodeForValidation[],
-  userId: string
-): Promise<{ valid: boolean; invalidIds?: string[] }> {
-  const integrationIds = extractIntegrationIds(nodes);
-
-  if (integrationIds.length === 0) {
-    return { valid: true };
-  }
-
-  // Query for ALL integrations with these IDs (regardless of user)
-  // to check if any belong to other users
-  const existingIntegrations = await db
-    .select({ id: integrations.id, userId: integrations.userId })
-    .from(integrations)
-    .where(inArray(integrations.id, integrationIds));
-
-  // Find integrations that exist but belong to a different user
-  // (deleted integrations won't appear here, which is fine)
-  const invalidIds = existingIntegrations
-    .filter((i) => i.userId !== userId)
-    .map((i) => i.id);
-
-  if (invalidIds.length > 0) {
-    return { valid: false, invalidIds };
-  }
-
-  return { valid: true };
 }

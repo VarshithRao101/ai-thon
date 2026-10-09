@@ -2,9 +2,10 @@ import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { and, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
+import { getRequestContext } from "@/lib/auth/context";
+import { can } from "@/lib/auth/rbac";
 import { workflows } from "@/lib/db/schema";
+import { runWithTenant, tdb } from "@/lib/db/tenant";
 import { generateWorkflowModule } from "@/lib/workflow-codegen";
 import type { WorkflowEdge, WorkflowNode } from "@/lib/workflow-store";
 import { getAllEnvVars, getDependenciesForActions } from "@/plugins";
@@ -209,20 +210,28 @@ export async function GET(
 ) {
   try {
     const { workflowId } = await context.params;
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    if (!session?.user) {
+    const ctx = await getRequestContext(request.headers);
+    if (!ctx) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    if (!can(ctx.role, "workflow:read")) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
 
-    const workflow = await db.query.workflows.findFirst({
-      where: and(
-        eq(workflows.id, workflowId),
-        eq(workflows.userId, session.user.id)
-      ),
-    });
+    const [workflow] = await runWithTenant(ctx, () =>
+      tdb((tx) =>
+        tx
+          .select()
+          .from(workflows)
+          .where(
+            and(
+              eq(workflows.id, workflowId),
+              eq(workflows.workspaceId, ctx.workspaceId)
+            )
+          )
+          .limit(1)
+      )
+    );
 
     if (!workflow) {
       return NextResponse.json(
@@ -283,7 +292,7 @@ export default withWorkflow(nextConfig);
     // Add a README with instructions
     allFiles["README.md"] = `# ${workflow.name}
 
-This is a Next.js workflow project generated from Workflow Builder.
+This is a Next.js workflow project generated from FlowLedger.
 
 ## Getting Started
 

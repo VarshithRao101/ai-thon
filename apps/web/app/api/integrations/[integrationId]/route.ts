@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { HttpError, tenantRoute } from "@/lib/api/route";
+import { recordAudit } from "@/lib/audit";
 import {
   deleteIntegration,
   getIntegration,
@@ -21,146 +22,80 @@ export type UpdateIntegrationRequest = {
   config?: IntegrationConfig;
 };
 
+type Params = { integrationId: string };
+
+const notFound = () => new HttpError(404, "Integration not found");
+
+function toResponse(integration: {
+  id: string;
+  name: string;
+  type: string;
+  config: IntegrationConfig;
+  createdAt: Date;
+  updatedAt: Date;
+}): GetIntegrationResponse {
+  return {
+    id: integration.id,
+    name: integration.name,
+    type: integration.type,
+    config: integration.config,
+    createdAt: integration.createdAt.toISOString(),
+    updatedAt: integration.updatedAt.toISOString(),
+  };
+}
+
 /**
  * GET /api/integrations/[integrationId]
- * Get a single integration with decrypted config
+ * Decrypted config for editing: credential managers only
  */
-export async function GET(
-  request: Request,
-  context: { params: Promise<{ integrationId: string }> }
-) {
-  try {
-    const { integrationId } = await context.params;
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const integration = await getIntegration(integrationId, session.user.id);
-
+export const GET = tenantRoute<Params>(
+  "integrations.get",
+  async (_ctx, _request, { integrationId }) => {
+    const integration = await getIntegration(integrationId);
     if (!integration) {
-      return NextResponse.json(
-        { error: "Integration not found" },
-        { status: 404 }
-      );
+      throw notFound();
     }
-
-    const response: GetIntegrationResponse = {
-      id: integration.id,
-      name: integration.name,
-      type: integration.type,
-      config: integration.config,
-      createdAt: integration.createdAt.toISOString(),
-      updatedAt: integration.updatedAt.toISOString(),
-    };
-
-    return NextResponse.json(response);
-  } catch (error) {
-    console.error("Failed to get integration:", error);
-    return NextResponse.json(
-      {
-        error: "Failed to get integration",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
-    );
-  }
-}
+    return NextResponse.json(toResponse(integration));
+  },
+  { permission: "integration:manage" }
+);
 
 /**
  * PUT /api/integrations/[integrationId]
- * Update an integration
  */
-export async function PUT(
-  request: Request,
-  context: { params: Promise<{ integrationId: string }> }
-) {
-  try {
-    const { integrationId } = await context.params;
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
+export const PUT = tenantRoute<Params>(
+  "integrations.update",
+  async (_ctx, request, { integrationId }) => {
     const body: UpdateIntegrationRequest = await request.json();
-
-    const integration = await updateIntegration(
-      integrationId,
-      session.user.id,
-      body
-    );
-
+    const integration = await updateIntegration(integrationId, body);
     if (!integration) {
-      return NextResponse.json(
-        { error: "Integration not found" },
-        { status: 404 }
-      );
+      throw notFound();
     }
-
-    const response: GetIntegrationResponse = {
-      id: integration.id,
-      name: integration.name,
-      type: integration.type,
-      config: integration.config,
-      createdAt: integration.createdAt.toISOString(),
-      updatedAt: integration.updatedAt.toISOString(),
-    };
-
-    return NextResponse.json(response);
-  } catch (error) {
-    console.error("Failed to update integration:", error);
-    return NextResponse.json(
-      {
-        error: "Failed to update integration",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
+    await recordAudit(
+      "integration.update",
+      { type: "integration", id: integrationId },
+      { credentialsChanged: body.config !== undefined }
     );
-  }
-}
+    return NextResponse.json(toResponse(integration));
+  },
+  { permission: "integration:manage" }
+);
 
 /**
  * DELETE /api/integrations/[integrationId]
- * Delete an integration
  */
-export async function DELETE(
-  request: Request,
-  context: { params: Promise<{ integrationId: string }> }
-) {
-  try {
-    const { integrationId } = await context.params;
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const success = await deleteIntegration(integrationId, session.user.id);
-
+export const DELETE = tenantRoute<Params>(
+  "integrations.delete",
+  async (_ctx, _request, { integrationId }) => {
+    const success = await deleteIntegration(integrationId);
     if (!success) {
-      return NextResponse.json(
-        { error: "Integration not found" },
-        { status: 404 }
-      );
+      throw notFound();
     }
-
+    await recordAudit("integration.delete", {
+      type: "integration",
+      id: integrationId,
+    });
     return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("Failed to delete integration:", error);
-    return NextResponse.json(
-      {
-        error: "Failed to delete integration",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
-    );
-  }
-}
+  },
+  { permission: "integration:manage" }
+);

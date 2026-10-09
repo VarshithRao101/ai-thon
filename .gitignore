@@ -1,0 +1,41 @@
+# dependencies
+node_modules/
+
+# build output
+.next/
+out/
+dist/
+build/
+.turbo/
+*.tsbuildinfo
+next-env.d.ts
+
+# tests
+coverage/
+test-results/
+playwright-report/
+blob-report/
+
+# env + secrets (never commit)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# local data (embedded postgres, chain state)
+.data/
+
+# pristine upstream template copy (for diffs only)
+.upstream/
+
+# contracts
+contracts/artifacts/
+contracts/cache/
+contracts/typechain-types/
+
+# misc
+.DS_Store
+*.log
+tmp/
+.vercel

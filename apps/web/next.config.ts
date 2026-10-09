@@ -1,8 +1,9 @@
 import type { NextConfig } from "next";
-import { withWorkflow } from "workflow/next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Self-contained server bundle for the container image (deploy/docker).
+  output: "standalone",
+  poweredByHeader: false,
 };
 
-export default withWorkflow(nextConfig);
+export default nextConfig;

@@ -4,7 +4,10 @@ import postgres from "postgres";
 import {
   accounts,
   apiKeys,
+  auditEvents,
   integrations,
+  invitations,
+  members,
   sessions,
   users,
   verifications,
@@ -12,6 +15,7 @@ import {
   workflowExecutions,
   workflowExecutionsRelations,
   workflows,
+  workspaces,
 } from "./schema";
 
 // Construct schema object for drizzle
@@ -20,19 +24,21 @@ const schema = {
   sessions,
   accounts,
   verifications,
+  workspaces,
+  members,
+  invitations,
   workflows,
   workflowExecutions,
   workflowExecutionLogs,
   workflowExecutionsRelations,
   apiKeys,
   integrations,
+  auditEvents,
 };
 
+// The app connects as a least-privilege role so Postgres RLS applies (docs/10).
 const connectionString =
   process.env.DATABASE_URL || "postgres://localhost:5432/workflow";
-
-// For migrations
-export const migrationClient = postgres(connectionString, { max: 1 });
 
 // Use global singleton to prevent connection exhaustion during HMR
 const globalForDb = globalThis as unknown as {
