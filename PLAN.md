@@ -3,7 +3,7 @@
 All upcoming work lives here. Update this file whenever the plan changes (and log the reason in [docs/15_DECISIONS.md](docs/15_DECISIONS.md)).
 
 - **Event:** TRI-CITY AI Hackathon, 36-hour build from **12:00 IST, 9 Oct 2026** → ends about **00:00 IST, 11 Oct 2026** (confirm the exact submission time on the dashboard).
-- **Plan updated:** 10 Oct 2026, 15:00 IST. **Hosting: Vercel + Neon Postgres (D-047).** Scope: **the app only** (no deck or video work).
+- **Plan updated:** 10 Oct 2026, 23:30 IST. **Live: https://ai-thon-zeta.vercel.app** (hosted end-to-end verified on real AI + Polygon Amoy). **Hosting: Vercel + Neon Postgres (D-047).** Scope: **the app only** (no deck or video work).
 - **Rule #1:** the hero flow (Form → AI → Sheets + Email + Telegram → on-chain receipt → Verify) must work live on the hosted URL, every time.
 
 ## Who does what

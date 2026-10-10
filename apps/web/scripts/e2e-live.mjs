@@ -44,10 +44,18 @@ const check = (name, ok, detail = "") => {
   console.log(`${ok ? "PASS" : "FAIL"}  ${name}${detail ? `  ${detail}` : ""}`);
 };
 
-check(
-  "test-mode sign-in",
-  (await api("POST", "/api/demo-login")).status === 200
-);
+// Test-mode sign-in while Google OAuth isn't set up; otherwise a throwaway
+// email account (*.example.test), so no Google login is needed.
+let signedIn = (await api("POST", "/api/demo-login")).status === 200;
+if (!signedIn) {
+  const signUp = await api("POST", "/api/auth/sign-up/email", {
+    email: `live-${Date.now()}@example.test`,
+    password: `${crypto.randomUUID()}Aa1`,
+    name: "Live Check",
+  });
+  signedIn = signUp.status === 200;
+}
+check("signed in", signedIn);
 
 let t0 = Date.now();
 const gen = await api("POST", "/api/ai/generate", {

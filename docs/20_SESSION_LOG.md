@@ -118,3 +118,10 @@
 - **`pnpm --filter @flowledger/web check:connections [--email you@gmail.com] [--send]`:** runs every saved Gmail/Sheets/Telegram connection's live test and, with `--send`, one real Telegram message, an email to the sender and a sheet row. No connections are saved yet.
 - Wallet after these runs: ~0.05 POL (about 9 more anchors). Top up before rehearsals.
 - **Google sign-in prep (D-051):** the JSON the owner pasted into `.env.local` was a **service account** (Sheets connector), not an OAuth client; folded into `GOOGLE_SERVICE_ACCOUNT_JSON` (file valid again). Added `scripts/google-setup.mjs` for the OAuth client JSON, Google account linking, and the test-mode → real-account handoff (checked: a workflow made in test mode appears in the real account after sign-in; a second claim is a no-op). 89 unit tests, lint, tenancy suite green.
+
+## 2026-10-10 (late night): hosted on Vercel (D-047 done)
+- Google OAuth: the owner's Web client is in `.env.local` (via `scripts/google-setup.mjs`); Google accepts `http://localhost:3000/api/auth/callback/google`.
+- Vercel: 28 production env vars synced with `pnpm cloud:env --url https://ai-thon-zeta.vercel.app` (Groq primary, Gemini fallback, Google OAuth, Amoy chain, Neon), production redeployed (Ready in 3 min, aliased to **https://ai-thon-zeta.vercel.app**).
+- Hosted checks: `publicUrl` = the zeta URL; test-mode sign-in is off; `/api/hive/tick` → 401 without the secret, 202 with it.
+- **Hosted live end-to-end (`E2E_BASE_URL=https://ai-thon-zeta.vercel.app node scripts/e2e-live.mjs`): all checks pass** — Copilot 1.9 s (groq gpt-oss-120b), run done 3.6 s after submit, anchored on Polygon Amoy 8.5 s after submit (tx `0xba1e02a3…17b3`), `/verify` green. The serverless Hive (drain after response) works on Vercel.
+- Still open: Google rejects the hosted callback (`redirect_uri_mismatch`) until `https://ai-thon-zeta.vercel.app/api/auth/callback/google` is added to the OAuth client; cron-job.org job not created yet; no connectors saved yet.
