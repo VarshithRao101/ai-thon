@@ -1,7 +1,12 @@
 import "server-only";
 
 import { generateObject } from "ai";
-import { type CopilotPlan, catalogPrompt, planSchema } from "./plan";
+import {
+  type Catalog,
+  type CopilotPlan,
+  catalogPrompt,
+  makePlanSchema,
+} from "./plan";
 import { createShield } from "./privacy";
 import { isAiMock, withAi } from "./provider";
 import { closestTemplate } from "./templates";
@@ -16,7 +21,7 @@ export type PlanResult = {
 // Per model attempt; withAi may try a second model after this.
 const TIMEOUT_MS = 20_000;
 
-function systemPrompt(): string {
+function systemPrompt(extra: Catalog): string {
   return `You design automations for ZETA, a no-code workflow tool for Indian colleges, clinics and small businesses.
 Turn the user's request into a plan: one trigger and 1-8 steps.
 
@@ -27,7 +32,7 @@ Triggers:
 - Manual: a test button.
 
 Steps (use ONLY these action ids):
-${catalogPrompt()}
+${catalogPrompt(extra)}
 
 References: write {{trigger.<field>}} or {{<stepId>.<output>}} inside config values. Only reference the trigger or EARLIER steps.
 Connections: steps run after the previous step unless you set "after" (use it to run steps in parallel after the same step).
@@ -40,13 +45,16 @@ Rules:
 - For a Form trigger, formFields MUST include every field you reference as {{trigger.<key>}}, with the SAME key (e.g. if you write {{trigger.fullName}}, add a field with key "fullName"). Include an "email" field (type email) whenever an email goes to the person who filled the form, and send it to {{trigger.email}}.
 - A Condition must compare a classifier's {{<id>.label}} with one of the exact labels you gave that classifier.
 - Keep labels short (2-4 words).
+- When the user names an app (Slack, GitHub, Stripe...), use that app's action ids from the list above.
 - Copy placeholders like [EMAIL_1] or [PHONE_1] exactly where those values are needed.`;
 }
 
 /** Ask the model for a plan; fall back to the closest template if it can't answer. */
 export async function planWorkflow(
   prompt: string,
-  existing?: { name?: string; summary?: string }
+  existing?: { name?: string; summary?: string },
+  // Actions of the other apps in play (lib/ai/plugin-catalog.ts).
+  extra: Catalog = {}
 ): Promise<PlanResult> {
   if (isAiMock()) {
     return {
@@ -65,8 +73,8 @@ export async function planWorkflow(
     return await withAi("smart", async ({ model, label }) => {
       const { object } = await generateObject({
         model,
-        schema: planSchema,
-        system: systemPrompt(),
+        schema: makePlanSchema(extra),
+        system: systemPrompt(extra),
         prompt: userPrompt,
         abortSignal: AbortSignal.timeout(TIMEOUT_MS),
         // A quota error won't clear in seconds; move to the next model instead.

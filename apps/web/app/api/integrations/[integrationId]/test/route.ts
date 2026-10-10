@@ -7,6 +7,7 @@ import {
 } from "@/lib/db/integrations";
 import { runWithTenant } from "@/lib/db/tenant";
 import { connectionTestFor } from "@/lib/integrations/connection-tests";
+import { friendlyTestError } from "@/lib/integrations/friendly";
 import { checkBodySize, checkOrigin, checkRate } from "@/lib/security/guard";
 import {
   getCredentialMapping,
@@ -99,7 +100,7 @@ export async function POST(
         status: testResult.success ? "success" : "error",
         message: testResult.success
           ? "Connection successful"
-          : testResult.error || "Connection failed",
+          : friendlyTestError(plugin.label, testResult.error || ""),
       };
 
       await markIntegrationTested(

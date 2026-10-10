@@ -103,67 +103,88 @@ export const COPILOT_ACTIONS = {
 } as const;
 
 export type CopilotActionId = keyof typeof COPILOT_ACTIONS;
-const ACTION_IDS = Object.keys(COPILOT_ACTIONS) as [
-  CopilotActionId,
-  ...CopilotActionId[],
-];
 
-export const planSchema = z.object({
-  name: z.string().describe("Short workflow name, max 60 characters"),
-  description: z.string().describe("One sentence"),
-  trigger: z.object({
-    type: z.enum(["Form", "Webhook", "Schedule", "Manual"]),
-    formTitle: z.string().optional().describe("Form title (Form trigger only)"),
-    formFields: z
+/** One action the Copilot may use. Other apps add theirs (lib/ai/plugin-catalog.ts). */
+export type CatalogEntry = {
+  label: string;
+  use: string;
+  config: Readonly<Record<string, string>>;
+  outputs: readonly string[];
+  /** Saved connection type this action needs, if any. */
+  integration?: string;
+  /** App name for "Connect …" notes. */
+  app?: string;
+};
+export type Catalog = Readonly<Record<string, CatalogEntry>>;
+
+/** The plan schema, limited to the built-in actions plus `extra`. */
+export function makePlanSchema(extra: Catalog = {}) {
+  const ids = [...Object.keys(COPILOT_ACTIONS), ...Object.keys(extra)] as [
+    string,
+    ...string[],
+  ];
+  return z.object({
+    name: z.string().describe("Short workflow name, max 60 characters"),
+    description: z.string().describe("One sentence"),
+    trigger: z.object({
+      type: z.enum(["Form", "Webhook", "Schedule", "Manual"]),
+      formTitle: z
+        .string()
+        .optional()
+        .describe("Form title (Form trigger only)"),
+      formFields: z
+        .array(
+          z.object({
+            key: z.string().describe("camelCase key, e.g. email"),
+            label: z.string(),
+            type: z.enum([
+              "text",
+              "email",
+              "phone",
+              "number",
+              "textarea",
+              "select",
+            ]),
+            required: z.boolean(),
+            options: z
+              .string()
+              .optional()
+              .describe("comma-separated choices for select"),
+          })
+        )
+        .optional(),
+      scheduleCron: z
+        .string()
+        .optional()
+        .describe("5-field cron in IST, e.g. 0 9 * * *"),
+    }),
+    steps: z
       .array(
         z.object({
-          key: z.string().describe("camelCase key, e.g. email"),
-          label: z.string(),
-          type: z.enum([
-            "text",
-            "email",
-            "phone",
-            "number",
-            "textarea",
-            "select",
-          ]),
-          required: z.boolean(),
-          options: z
-            .string()
+          id: z.string().describe("short snake_case id, unique, e.g. classify"),
+          action: z.enum(ids),
+          label: z.string().describe("Short display label"),
+          config: z.array(z.object({ key: z.string(), value: z.string() })),
+          after: z
+            .array(z.string())
             .optional()
-            .describe("comma-separated choices for select"),
+            .describe(
+              "ids of steps this one runs after; 'trigger' for the first. Omit to run after the previous step"
+            ),
         })
       )
-      .optional(),
-    scheduleCron: z
-      .string()
-      .optional()
-      .describe("5-field cron in IST, e.g. 0 9 * * *"),
-  }),
-  steps: z
-    .array(
-      z.object({
-        id: z.string().describe("short snake_case id, unique, e.g. classify"),
-        action: z.enum(ACTION_IDS),
-        label: z.string().describe("Short display label"),
-        config: z.array(z.object({ key: z.string(), value: z.string() })),
-        after: z
-          .array(z.string())
-          .optional()
-          .describe(
-            "ids of steps this one runs after; 'trigger' for the first. Omit to run after the previous step"
-          ),
-      })
-    )
-    .min(1)
-    .max(10),
-});
+      .min(1)
+      .max(10),
+  });
+}
+
+export const planSchema = makePlanSchema();
 
 export type CopilotPlan = z.infer<typeof planSchema>;
 
 /** The catalog as compact text for the system prompt. */
-export function catalogPrompt(): string {
-  return Object.entries(COPILOT_ACTIONS)
+export function catalogPrompt(extra: Catalog = {}): string {
+  return Object.entries({ ...COPILOT_ACTIONS, ...extra } as Catalog)
     .map(([id, a]) => {
       const keys = Object.entries(a.config)
         .map(([k, v]) => `${k}: ${v}`)
@@ -315,8 +336,11 @@ function cleanId(raw: string, taken: Set<string>): string {
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: a single deterministic pass (ids, edges, references, layout); splitting it hides the order
 export function buildWorkflow(
   plan: CopilotPlan,
-  connections: Partial<Record<string, string>> = {}
+  connections: Partial<Record<string, string>> = {},
+  extra: Catalog = {}
 ): BuiltWorkflow {
+  const catalog: Catalog = { ...COPILOT_ACTIONS, ...extra };
+  const entry = (action: string) => catalog[action] as CatalogEntry;
   const notes: string[] = [];
   const suffix = rand();
   const triggerId = `trigger_${suffix}`;
@@ -326,7 +350,7 @@ export function buildWorkflow(
   // Step ids (as the plan names them) → canvas node ids and labels.
   const taken = new Set<string>();
   const steps = plan.steps
-    .filter((s) => s.action in COPILOT_ACTIONS)
+    .filter((s) => s.action in catalog)
     .map((s) => ({ ...s, cleanId: cleanId(s.id, taken) }));
   const originalToClean = new Map<string, string>();
   plan.steps.forEach((s, i) => {
@@ -339,7 +363,7 @@ export function buildWorkflow(
   const labelOf = new Map<string, string>([["trigger", triggerLabel]]);
   for (const s of steps) {
     nodeIdOf.set(s.cleanId, `${s.cleanId}_${suffix}`);
-    labelOf.set(s.cleanId, s.label || COPILOT_ACTIONS[s.action].label);
+    labelOf.set(s.cleanId, s.label || entry(s.action).label);
   }
 
   const rewrite = (value: string, upstream: Set<string>): string =>
@@ -437,16 +461,17 @@ export function buildWorkflow(
     const upstream = ancestors.get(s.cleanId) ?? new Set<string>();
     const config: Record<string, unknown> = { actionType: s.action };
     for (const { key, value } of s.config) {
-      if (key in COPILOT_ACTIONS[s.action].config) {
+      if (key in entry(s.action).config) {
         config[key] = rewrite(value.replace(/\\n/g, "\n"), upstream);
       }
     }
-    const integration = CONNECTED_ACTIONS[s.action];
+    const integration =
+      CONNECTED_ACTIONS[s.action] ?? entry(s.action).integration;
     if (integration && connections[integration]) {
       config.integrationId = connections[integration];
     } else if (integration) {
       notes.push(
-        `Connect ${COPILOT_ACTIONS[s.action].label} before running (Connections)`
+        `Connect ${entry(s.action).app ?? entry(s.action).label} before running (Connections)`
       );
     }
     nodes.push({
@@ -455,7 +480,7 @@ export function buildWorkflow(
       position: position(s.cleanId),
       data: {
         label: labelOf.get(s.cleanId) as string,
-        description: COPILOT_ACTIONS[s.action].use,
+        description: entry(s.action).use,
         type: "action",
         config,
         status: "idle",

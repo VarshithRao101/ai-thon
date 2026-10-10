@@ -14,12 +14,14 @@ import {
   Search,
   Send,
   ShieldCheck,
+  Sparkles,
   Trash2,
   XCircle,
 } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import {
+  type ComponentType,
   type ReactNode,
   useCallback,
   useEffect,
@@ -33,6 +35,7 @@ import { markSigningOut } from "@/lib/auth/guest";
 import { signOut } from "@/lib/auth-client";
 import { normalizeConfig } from "@/lib/integrations/normalize";
 import { cn } from "@/lib/utils";
+import { getAllIntegrations, type IntegrationPlugin } from "@/plugins";
 
 const BOT_PREFIX = /^bot/i;
 const BOT_TOKEN_SHAPE = /^\d{5,}:[A-Za-z0-9_-]{30,}$/;
@@ -55,14 +58,58 @@ type FieldDef = {
 };
 
 type AppDef = {
-  type: "smtp-email" | "google-sheets" | "telegram";
+  type: string;
   title: string;
-  icon: typeof Mail;
+  icon: ComponentType<{ className?: string }>;
   blurb: string;
   steps: ReactNode[];
   fields: FieldDef[];
-  tryLabel: string;
+  /** One-click real test (send/append); core apps only. */
+  tryLabel?: string;
 };
+
+const CORE_TYPES = new Set(["smtp-email", "google-sheets", "telegram"]);
+const OPTIONAL_LABEL = /\s*\(optional\)/i;
+
+/** Every other plugin, set up from its own form fields (plugins/<name>/index.ts). */
+function pluginApp(plugin: IntegrationPlugin): AppDef {
+  const first =
+    plugin.formFields.find((f) => f.helpLink) ?? plugin.formFields[0];
+  return {
+    type: plugin.type,
+    title: plugin.label,
+    icon: plugin.icon,
+    blurb: plugin.description,
+    steps: [
+      first?.helpLink ? (
+        <>
+          {first.helpText?.trim() || `Get your ${first.label} from`}{" "}
+          <A href={first.helpLink.url}>{first.helpLink.text}</A>.
+        </>
+      ) : (
+        <>
+          Sign in to {plugin.label} and copy your {first?.label ?? "key"}.
+        </>
+      ),
+      <>Paste it below and press Connect. We test it straight away.</>,
+      <>Then ask the AI to use {plugin.label} in any workflow.</>,
+    ],
+    fields: plugin.formFields.map((f) => ({
+      key: f.configKey,
+      label: f.label.replace(OPTIONAL_LABEL, ""),
+      placeholder: f.placeholder,
+      secret: f.type === "password",
+      optional: OPTIONAL_LABEL.test(f.label),
+    })),
+  };
+}
+
+function moreApps(): AppDef[] {
+  return getAllIntegrations()
+    .filter((p) => p.formFields.length > 0 && !CORE_TYPES.has(p.type))
+    .sort((a, b) => a.label.localeCompare(b.label))
+    .map(pluginApp);
+}
 
 const APPS: AppDef[] = [
   {
@@ -233,16 +280,19 @@ function StatusChip({ saved }: { saved?: Saved }) {
   );
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: one card for every app; per-app extras (Telegram chats, Sheets email, try button) are small branches
 function AppCard({
   app,
   saved,
   onChange,
+  startOpen,
 }: {
   app: AppDef;
   saved?: Saved;
   onChange: () => void;
+  startOpen?: boolean;
 }) {
-  const [open, setOpen] = useState(!saved);
+  const [open, setOpen] = useState(startOpen ?? !saved);
   const [values, setValues] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState<string | null>(null);
   const [result, setResult] = useState<{ ok: boolean; message: string } | null>(
@@ -460,19 +510,21 @@ function AppCard({
 
       {saved && (
         <div className="flex flex-wrap gap-2 border-white/[0.06] border-t px-5 py-3">
-          <button
-            className="nf-gold-btn inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-semibold text-xs"
-            disabled={busy !== null}
-            onClick={tryIt}
-            type="button"
-          >
-            {busy === "try" ? (
-              <Loader2 className="size-3.5 animate-spin" />
-            ) : (
-              <Send className="size-3.5" />
-            )}
-            {app.tryLabel}
-          </button>
+          {app.tryLabel && (
+            <button
+              className="nf-gold-btn inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-semibold text-xs"
+              disabled={busy !== null}
+              onClick={tryIt}
+              type="button"
+            >
+              {busy === "try" ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <Send className="size-3.5" />
+              )}
+              {app.tryLabel}
+            </button>
+          )}
           <button
             className="nf-ghost-btn rounded-lg px-3 py-1.5 text-xs"
             disabled={busy !== null}
@@ -664,6 +716,12 @@ function AppCard({
 
 export function ConnectionsPage() {
   const [saved, setSaved] = useState<Saved[] | null>(null);
+  const more = useMemo(moreApps, []);
+  const [query, setQuery] = useState("");
+  const q = query.trim().toLowerCase();
+  const shownMore = q
+    ? more.filter((a) => `${a.title} ${a.blurb}`.toLowerCase().includes(q))
+    : more;
   const load = useCallback(async () => {
     const res = await fetch("/api/integrations", { cache: "no-store" });
     setSaved(res.ok ? ((await res.json()) as Saved[]) : []);
@@ -680,7 +738,8 @@ export function ConnectionsPage() {
     }
     return map;
   }, [saved]);
-  const connected = APPS.filter(
+  const all = [...APPS, ...more];
+  const connected = all.filter(
     (a) => byType.get(a.type)?.status === "ok"
   ).length;
 
@@ -741,7 +800,7 @@ export function ConnectionsPage() {
           AI to build anything with them.
           {saved && (
             <span className="ml-1 text-white/70">
-              {connected} of {APPS.length} connected.
+              {connected} of {all.length} connected.
             </span>
           )}
         </p>
@@ -762,6 +821,54 @@ export function ConnectionsPage() {
                 />
               ))}
         </div>
+        {saved !== null && (
+          <>
+            <div className="mt-12 flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <h2 className="font-display font-semibold text-2xl tracking-tight">
+                  More apps
+                </h2>
+                <p className="mt-1 text-sm text-white/50">
+                  {more.length} more apps. Connect one and the AI can use it in
+                  your workflows.
+                </p>
+              </div>
+              <label className="relative w-full sm:w-64" htmlFor="app-search">
+                <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-white/40" />
+                <input
+                  autoComplete="off"
+                  className="nf-input pl-9"
+                  id="app-search"
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search apps"
+                  value={query}
+                />
+              </label>
+            </div>
+            <div className="mt-5 space-y-3">
+              {shownMore.map((app) => (
+                <AppCard
+                  app={app}
+                  key={app.type}
+                  onChange={() => load()}
+                  saved={byType.get(app.type)}
+                  startOpen={false}
+                />
+              ))}
+              {shownMore.length === 0 && (
+                <p className="py-6 text-center text-sm text-white/40">
+                  No app matches that. An HTTP Request step can reach any other
+                  API.
+                </p>
+              )}
+            </div>
+            <div className="mt-6 flex items-center gap-3 rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4 text-sm text-white/60">
+              <Sparkles className="size-4 shrink-0 text-[#ffc326]" />
+              ZETA AI is built in: classify, draft emails, extract and generate
+              text with no setup.
+            </div>
+          </>
+        )}
         {connected > 0 && (
           <div className="mt-8 flex flex-col items-center gap-3 rounded-2xl border border-[#ffc326]/25 bg-[#ffc326]/[0.05] p-6 text-center">
             <p className="font-display font-semibold text-lg">

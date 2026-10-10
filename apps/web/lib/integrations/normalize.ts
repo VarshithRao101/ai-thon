@@ -96,6 +96,81 @@ function telegram(c: IntegrationConfig, problems: string[]): IntegrationConfig {
 
 const MASK = "••••••••";
 
+const BEARER = /^bearer\s+/i;
+
+// Prefix a pasted key must start with, and what people often paste instead.
+const KEY_SHAPES: Record<
+  string,
+  { key: string; prefix: RegExp; hint: string }
+> = {
+  slack: {
+    key: "apiKey",
+    prefix: /^xox[bp]-/,
+    hint: "A Slack bot token starts with xoxb-",
+  },
+  stripe: {
+    key: "apiKey",
+    prefix: /^(sk|rk)_(test|live)_/,
+    hint: "Use a Stripe secret key (sk_test_… or sk_live_…), not the publishable pk_ key",
+  },
+  github: {
+    key: "token",
+    prefix: /^(ghp_|github_pat_|gho_|ghs_)/,
+    hint: "A GitHub token starts with ghp_ or github_pat_",
+  },
+  linear: {
+    key: "apiKey",
+    prefix: /^lin_api_/,
+    hint: "A Linear API key starts with lin_api_",
+  },
+  resend: {
+    key: "apiKey",
+    prefix: /^re_/,
+    hint: "A Resend API key starts with re_",
+  },
+  clerk: {
+    key: "clerkSecretKey",
+    prefix: /^sk_(test|live)_/,
+    hint: "Use the Clerk secret key (sk_test_… or sk_live_…)",
+  },
+  firecrawl: {
+    key: "firecrawlApiKey",
+    prefix: /^fc-/,
+    hint: "A Firecrawl API key starts with fc-",
+  },
+  perplexity: {
+    key: "apiKey",
+    prefix: /^pplx-/,
+    hint: "A Perplexity API key starts with pplx-",
+  },
+  blob: {
+    key: "token",
+    prefix: /^vercel_blob_rw_/,
+    hint: "Use the Blob read/write token (vercel_blob_rw_…)",
+  },
+};
+
+/** Every other app: trim, drop a pasted "Bearer ", and check key prefixes. */
+function generic(
+  type: string,
+  c: IntegrationConfig,
+  problems: string[]
+): IntegrationConfig {
+  const out: IntegrationConfig = {};
+  for (const [k, v] of Object.entries(c)) {
+    out[k] = v === undefined ? v : clean(v).replace(BEARER, "");
+  }
+  const shape = KEY_SHAPES[type];
+  const value = shape ? out[shape.key] : undefined;
+  if (shape && value && !shape.prefix.test(value)) {
+    problems.push(shape.hint);
+  }
+  if (type === "resend" && out.fromEmail && !EMAIL.test(out.fromEmail)) {
+    problems.push("The default sender should be an email address");
+  }
+  return out;
+}
+
 export function normalizeConfig(
   type: string,
   input: IntegrationConfig
@@ -114,7 +189,7 @@ export function normalizeConfig(
     telegram,
   };
   const fn = fns[type];
-  const cleaned = fn ? fn(config, problems) : config;
+  const cleaned = fn ? fn(config, problems) : generic(type, config, problems);
   // Drop empty values so partial edits keep what is stored.
   const out: IntegrationConfig = {};
   for (const [k, v] of Object.entries(cleaned)) {

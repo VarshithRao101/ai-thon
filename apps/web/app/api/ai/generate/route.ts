@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { planWorkflow, summarizeCanvas } from "@/lib/ai/copilot";
 import { buildWorkflow } from "@/lib/ai/plan";
+import { pluginCatalog } from "@/lib/ai/plugin-catalog";
 import { HttpError, tenantRoute } from "@/lib/api/route";
 import { consumeAiMessage } from "@/lib/billing/usage";
 import { integrations } from "@/lib/db/schema";
@@ -65,6 +66,11 @@ export const POST = tenantRoute(
       connections[row.type] ??= row.id;
     }
 
+    // Other apps: the ones connected, plus any the request names.
+    const extra = pluginCatalog(
+      Object.keys(connections),
+      `${prompt}\n${existing ? summarizeCanvas(existing.nodes ?? []) : ""}`
+    );
     const result = await planWorkflow(
       prompt,
       existing
@@ -72,9 +78,10 @@ export const POST = tenantRoute(
             name: existing.name,
             summary: summarizeCanvas(existing.nodes ?? []),
           }
-        : undefined
+        : undefined,
+      extra
     );
-    const built = buildWorkflow(result.plan, connections);
+    const built = buildWorkflow(result.plan, connections, extra);
     const definition = normalizeDefinition(built.nodes, built.edges);
     const issues = validateGraph(
       toEngineGraph(definition),

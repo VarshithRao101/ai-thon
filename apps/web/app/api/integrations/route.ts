@@ -7,6 +7,7 @@ import type {
   IntegrationConfig,
   IntegrationType,
 } from "@/lib/types/integration";
+import { getIntegration as getPlugin } from "@/plugins";
 
 export type GetIntegrationsResponse = {
   id: string;
@@ -72,6 +73,9 @@ export const POST = tenantRoute(
     const body: CreateIntegrationRequest = await request.json();
     if (!(body.type && body.config)) {
       throw new HttpError(400, "Type and config are required");
+    }
+    if (!getPlugin(body.type)) {
+      throw new HttpError(400, "Unknown app");
     }
     // Forgiving input: trim, fix common paste mistakes, catch obvious ones.
     const { config, problems } = normalizeConfig(body.type, body.config);

@@ -148,3 +148,8 @@
 - Canvas run animations (gold pulse + flowing packets + success pop/error shake), screenshot-verified.
 - Security: CSP/HSTS/frame/nosniff/referrer/permissions headers; origin check, body cap and per-user rate limits in `tenantRoute`; Better Auth sign-in/up rate limits (10/min). 3 guard tests.
 - Gates: 106 unit tests, lint, typecheck; hive, forms, tenancy, e2e-live, e2e-credits green (sign-up rate limit means suites need ~1 min between them on one IP).
+
+## 2026-10-11: all 18 apps + AI uses the app you name (D-057)
+- Connections page: 3 tuned cards + "More apps" (14, searchable) + ZETA AI built in. Live: `node apps/web/scripts/e2e-apps.mjs` — 22/22 (every app saves sealed, never echoes the key, and its real API rejects a placeholder key with a plain message; wrong key kind caught before saving; unknown type refused; Copilot builds Slack, GitHub+Telegram, Stripe+Sheets, Perplexity+Gmail, Firecrawl+Linear flows with real AI).
+- Real keys for the 14 new apps are not tested yet (the owner adds them on the Connections page).
+- Gates: 113 unit tests, lint, typecheck. Golden set re-run: the 3 quota-hit cases pass (33/33 checks).

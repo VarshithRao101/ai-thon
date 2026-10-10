@@ -4,6 +4,7 @@ import { can } from "@/lib/auth/rbac";
 import { getIntegration } from "@/lib/db/integrations";
 import { runWithTenant } from "@/lib/db/tenant";
 import { connectionTestFor } from "@/lib/integrations/connection-tests";
+import { friendlyTestError } from "@/lib/integrations/friendly";
 import { mergeSecrets } from "@/lib/integrations/secrets";
 import { checkBodySize, checkOrigin, checkRate } from "@/lib/security/guard";
 import type {
@@ -109,7 +110,7 @@ export async function POST(request: Request) {
       status: testResult.success ? "success" : "error",
       message: testResult.success
         ? "Connection successful"
-        : testResult.error || "Connection failed",
+        : friendlyTestError(plugin.label, testResult.error || ""),
     };
 
     return NextResponse.json(result);
