@@ -31,3 +31,12 @@ export function safeNext(
   }
   return value;
 }
+
+// Set while logging out so the sign-in gate doesn't bounce to /login first.
+let signingOut = false;
+export function markSigningOut(): void {
+  signingOut = true;
+}
+export function isSigningOut(): boolean {
+  return signingOut;
+}

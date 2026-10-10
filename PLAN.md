@@ -89,6 +89,8 @@ Landing (`/`: 3D hero, live-flow and proof motion graphics, plans) → the promp
 
 ## Known gaps (say them honestly if asked)
 
+- Until step 8b, "Continue with Google" is a **test-mode** sign-in into a per-browser demo account (D-050). It turns off by itself once `GOOGLE_CLIENT_ID` is set.
+
 - Delivery is at-least-once: a network drop after Gmail or Sheets accepted a request can duplicate it (D-019).
 - SSRF guard can be bypassed by DNS rebinding between check and connect (D-041).
 - The anchorer does not yet recover a batch stuck in `submitted` after a crash mid-transaction.

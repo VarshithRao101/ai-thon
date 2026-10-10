@@ -96,3 +96,5 @@
 - **Auth flow:** `/login` (Google first, email fallback); `RequireAuth` gates `/dashboard`, `/build`, `/workflows/*` for guests; the landing prompt carries through sign-in into the Copilot.
 - **Dashboard (`/dashboard`, API `/api/dashboard`):** greeting + composer, checklist, stats, workflow cards with filters/search and on/off switches, "Your apps" (bring your own credentials), recent runs with Verify links, log out (also in the builder's user menu, plus a Dashboard link).
 - Checked in headless Edge (Playwright): no console errors, the flow-demo state machine runs (`diiiii → driiii → ddrrri → dddddr → dddddd`), tamper turns the path red, no horizontal overflow at 390 px.
+- **Scroll fix:** the template's global `overflow:hidden` on html/body now applies only while the builder canvas is mounted; mouse-wheel scrolling works on every other page (`ce00048`).
+- **Test-mode Google button (D-050):** until OAuth keys exist, "Continue with Google" signs into a private per-browser demo account via `/api/demo-login`. Checked in headless Edge: click → dashboard, log out → home, click again → the same account. Logout no longer bounces through `/login`.

@@ -37,6 +37,7 @@ import { toast } from "sonner";
 import { BeeMark } from "@/components/brand/brand-lockup";
 import { IntegrationsOverlay } from "@/components/overlays/integrations-overlay";
 import { useOverlay } from "@/components/overlays/overlay-provider";
+import { markSigningOut } from "@/lib/auth/guest";
 import { signOut, useSession } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 
@@ -343,8 +344,9 @@ export function Dashboard() {
   };
 
   const logout = async () => {
+    markSigningOut();
     await signOut();
-    router.replace("/");
+    window.location.replace("/");
   };
 
   const user = session?.user;

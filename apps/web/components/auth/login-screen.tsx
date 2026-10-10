@@ -51,6 +51,15 @@ export function LoginScreen() {
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const perksRef = useRef<HTMLUListElement>(null);
+  // Until Google OAuth is configured, the Google button signs into a private
+  // demo account instead (temporary, D-050).
+  const [demoLogin, setDemoLogin] = useState(false);
+  useEffect(() => {
+    fetch("/api/demo-login")
+      .then((r) => (r.ok ? r.json() : { enabled: false }))
+      .then((d: { enabled?: boolean }) => setDemoLogin(Boolean(d.enabled)))
+      .catch(() => setDemoLogin(false));
+  }, []);
 
   const pendingPrompt = useMemo(() => {
     const url = new URL(next, "http://local");
@@ -82,6 +91,16 @@ export function LoginScreen() {
   const google = async () => {
     setError(null);
     setBusy("google");
+    if (!providers.google && demoLogin) {
+      const res = await fetch("/api/demo-login", { method: "POST" });
+      if (res.ok) {
+        window.location.href = next;
+        return;
+      }
+      setError("Demo sign-in failed. Try email instead.");
+      setBusy(null);
+      return;
+    }
     try {
       await signIn.social({ provider: "google", callbackURL: next });
     } catch {
@@ -190,7 +209,7 @@ export function LoginScreen() {
           <div className="mt-8 space-y-3">
             <button
               className="flex w-full items-center justify-center gap-3 rounded-xl bg-white px-4 py-3 font-semibold text-[#1f1f1f] transition hover:bg-white/90 disabled:opacity-50"
-              disabled={!providers.google || busy !== null}
+              disabled={!(providers.google || demoLogin) || busy !== null}
               onClick={google}
               type="button"
             >
@@ -201,7 +220,13 @@ export function LoginScreen() {
               )}
               Continue with Google
             </button>
-            {!providers.google && (
+            {!providers.google && demoLogin && (
+              <p className="text-center text-[#ffe08a]/70 text-xs">
+                Test mode: Google isn't connected yet, so this signs you into
+                your own demo account on this browser.
+              </p>
+            )}
+            {!(providers.google || demoLogin) && (
               <p className="text-center text-white/40 text-xs">
                 Google sign-in turns on once its OAuth keys are added. Use email
                 meanwhile.

@@ -35,6 +35,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { api } from "@/lib/api-client";
+import { markSigningOut } from "@/lib/auth/guest";
 import { signOut, useSession } from "@/lib/auth-client";
 
 export const UserMenu = () => {
@@ -54,8 +55,9 @@ export const UserMenu = () => {
   }, [session?.user]);
 
   const handleLogout = async () => {
+    markSigningOut();
     await signOut();
-    window.location.href = "/";
+    window.location.replace("/");
   };
 
   // OAuth users can't edit their profile
