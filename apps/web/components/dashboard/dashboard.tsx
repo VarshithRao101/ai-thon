@@ -278,7 +278,16 @@ export function Dashboard() {
   }, []);
 
   useEffect(() => {
-    load().catch(() => undefined);
+    // Work done in test mode on this browser moves into the real account.
+    fetch("/api/demo-login/claim", { method: "POST" })
+      .then((r) => (r.ok ? r.json() : { moved: false }))
+      .then((d: { moved?: boolean }) => {
+        if (d.moved) {
+          toast.success("Your test-mode workflows are now in your account");
+        }
+        return load();
+      })
+      .catch(() => load().catch(() => undefined));
     const timer = setInterval(() => load().catch(() => undefined), 8000);
     return () => clearInterval(timer);
   }, [load]);

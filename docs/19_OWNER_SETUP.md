@@ -91,7 +91,8 @@ Users sign in with Google, so the app needs an OAuth client.
 2. **Credentials → Create credentials → OAuth client ID → Web application**, name `N-Flow web`.
    - Authorized JavaScript origins: `http://localhost:3000` and `https://<your-app>.vercel.app`
    - Authorized redirect URIs: `http://localhost:3000/api/auth/callback/google` and `https://<your-app>.vercel.app/api/auth/callback/google`
-3. Copy the **Client ID** and **Client secret** into `apps/web/.env.local`:
+3. Press **Download JSON** on the new client (a `client_secret_….json` file), then run `node scripts/google-setup.mjs <that file>` (or paste the JSON into `apps/web/.env.local` and run `node scripts/google-setup.mjs`). It writes the four values below; nothing is printed. A **service-account** JSON is a different credential: it's for the Sheets connector, not sign-in.
+   Manual alternative: copy the **Client ID** and **Client secret** into `apps/web/.env.local`:
    `GOOGLE_CLIENT_ID=`, `GOOGLE_CLIENT_SECRET=`, `NEXT_PUBLIC_GOOGLE_CLIENT_ID=` (the same Client ID) and `NEXT_PUBLIC_AUTH_PROVIDERS=google,email`.
 4. Restart the app. The **Continue with Google** button on `/login` turns on. Claude copies these to Vercel with `pnpm cloud:env`.
 - Report: "done 8b".

@@ -126,6 +126,11 @@ export const auth = betterAuth({
     enabled: true,
     requireEmailVerification: false,
   },
+  // Signing in with Google using an address that already has an N-Flow
+  // account links to it (Google verifies the address), so history is kept.
+  account: {
+    accountLinking: { enabled: true, trustedProviders: ["google"] },
+  },
   socialProviders: {
     github: {
       clientId: process.env.GITHUB_CLIENT_ID || "",
