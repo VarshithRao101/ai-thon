@@ -12,7 +12,8 @@ export type PlanResult = {
   reason?: string;
 };
 
-const TIMEOUT_MS = 25_000;
+// Per model attempt; withAi may try a second model after this.
+const TIMEOUT_MS = 20_000;
 
 function systemPrompt(): string {
   return `You design automations for N-Flow, a no-code workflow tool for Indian colleges, clinics and small businesses.

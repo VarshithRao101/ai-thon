@@ -62,9 +62,14 @@ export function aiCandidates(tier: AiTier): AiCandidate[] {
     : "google";
   const fast = process.env.AI_MODEL_FAST;
   const smart = process.env.AI_MODEL_SMART;
-  const candidates = [
-    build(primary, tier === "smart" ? smart || fast : fast || smart),
-  ];
+  const first = tier === "smart" ? smart || fast : fast || smart;
+  const second = tier === "smart" ? fast : smart;
+  const candidates = [build(primary, first)];
+  // A second model on the same provider: a busy or slow model (503, timeout,
+  // bad structured output) gets one more try before the fallback provider.
+  if (second && second !== first) {
+    candidates.push(build(primary, second));
+  }
   const fallback = process.env.AI_FALLBACK_PROVIDER;
   if (isProvider(fallback)) {
     candidates.push(build(fallback, process.env.AI_FALLBACK_MODEL));
