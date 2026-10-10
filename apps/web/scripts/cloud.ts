@@ -128,6 +128,8 @@ const FROM_LOCAL = [
   "AI_FALLBACK_PROVIDER",
   "AI_FALLBACK_MODEL",
   "CONTACT_EMAIL",
+  "GOOGLE_CLIENT_ID",
+  "GOOGLE_CLIENT_SECRET",
 ];
 const CHAIN_KEYS = [
   "CHAIN_ID",
@@ -147,6 +149,7 @@ const SENSITIVE = new Set([
   "GROQ_API_KEY",
   "ANCHORER_PRIVATE_KEY",
   "CHAIN_RPC_URL",
+  "GOOGLE_CLIENT_SECRET",
 ]);
 
 function vercel(args: string[], input?: string) {
@@ -194,7 +197,11 @@ function productionValues(url: string): Record<string, string> {
     REQUIRE_RLS: "true",
     HIVE_MODE: "serverless",
     DEMO_TAMPER_ENABLED: "true",
+    NEXT_PUBLIC_AUTH_PROVIDERS: local.GOOGLE_CLIENT_ID ? "google,email" : "email",
   };
+  if (local.GOOGLE_CLIENT_ID) {
+    values.NEXT_PUBLIC_GOOGLE_CLIENT_ID = local.GOOGLE_CLIENT_ID;
+  }
   // Only a public testnet goes to the cloud, never the laptop's local chain.
   const publicChain = Boolean(local.CHAIN_ID) && local.CHAIN_ID !== "31337";
   const copy = publicChain ? [...FROM_LOCAL, ...CHAIN_KEYS] : FROM_LOCAL;

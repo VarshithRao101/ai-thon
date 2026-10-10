@@ -689,7 +689,7 @@ const WorkflowEditor = ({ params }: WorkflowPageProps) => {
               The workflow you're looking for doesn't exist or has been deleted.
             </p>
             <Button asChild>
-              <Link href="/">New Workflow</Link>
+              <Link href="/build">New Workflow</Link>
             </Button>
           </div>
         </div>

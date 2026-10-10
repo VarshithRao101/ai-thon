@@ -305,3 +305,223 @@
     bottom: calc(env(safe-area-inset-bottom, 0px) + 5.5rem) !important;
   }
 }
+
+/* ---------- Landing page (components/landing) ---------- */
+.nf-landing {
+  color-scheme: dark;
+}
+.nf-gold-text {
+  background: linear-gradient(100deg, #fff1b8 0%, #ffc326 35%, #ff9f1c 65%, #ffd666 100%);
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: nf-shine 7s ease-in-out infinite;
+}
+@keyframes nf-shine {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+.nf-hero-bg {
+  background:
+    radial-gradient(60% 50% at 70% 45%, rgba(255, 195, 38, 0.13), transparent 70%),
+    radial-gradient(40% 40% at 15% 80%, rgba(255, 159, 28, 0.07), transparent 70%),
+    #0a0a0a;
+}
+.nf-nav {
+  background: rgba(14, 13, 11, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+}
+.nf-gold-btn {
+  position: relative;
+  color: #0a0a0a;
+  background: linear-gradient(180deg, #ffd34d, #ffb300);
+  box-shadow: 0 0 0 1px rgba(255, 214, 102, 0.5) inset, 0 10px 30px -8px rgba(255, 179, 0, 0.55);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.nf-gold-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 0 1px rgba(255, 230, 150, 0.7) inset, 0 16px 40px -8px rgba(255, 179, 0, 0.75);
+}
+.nf-ghost-btn {
+  color: #f5f5f4;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.nf-ghost-btn:hover {
+  background: rgba(255, 195, 38, 0.08);
+  border-color: rgba(255, 195, 38, 0.45);
+}
+.nf-prompt {
+  background: rgba(16, 15, 12, 0.72);
+  border: 1px solid rgba(255, 195, 38, 0.28);
+  box-shadow: 0 0 0 4px rgba(255, 195, 38, 0.05), 0 20px 60px -20px rgba(255, 179, 0, 0.35);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: border-color 0.2s ease;
+}
+.nf-prompt:hover {
+  border-color: rgba(255, 195, 38, 0.6);
+}
+.nf-caret {
+  animation: nf-blink 1s steps(1) infinite;
+}
+@keyframes nf-blink {
+  50% { opacity: 0; }
+}
+.nf-live-dot {
+  box-shadow: 0 0 0 0 rgba(255, 195, 38, 0.7);
+  animation: nf-ping 1.8s ease-out infinite;
+}
+@keyframes nf-ping {
+  0% { box-shadow: 0 0 0 0 rgba(255, 195, 38, 0.7); }
+  100% { box-shadow: 0 0 0 10px rgba(255, 195, 38, 0); }
+}
+.nf-scroll-dot {
+  animation: nf-scroll 1.8s ease-in-out infinite;
+}
+@keyframes nf-scroll {
+  0% { transform: translateY(0); opacity: 1; }
+  80% { transform: translateY(14px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 0; }
+}
+.nf-marquee {
+  animation: nf-marquee 38s linear infinite;
+}
+.nf-marquee-mask {
+  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+}
+@keyframes nf-marquee {
+  to { transform: translateX(-50%); }
+}
+.nf-card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.015));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.nf-spotlight::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  background: radial-gradient(380px circle at var(--x, 50%) var(--y, 50%), rgba(255, 195, 38, 0.13), transparent 60%);
+  transition: opacity 0.3s ease;
+}
+.nf-spotlight:hover::before {
+  opacity: 1;
+}
+.nf-spotlight:hover {
+  border-color: rgba(255, 195, 38, 0.3);
+}
+.nf-grid-bg {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: radial-gradient(ellipse at center, #000 30%, transparent 75%);
+}
+.nf-node {
+  background: rgba(18, 17, 14, 0.92);
+  border-color: rgba(255, 255, 255, 0.1);
+  transition: border-color 0.35s ease, box-shadow 0.35s ease, background 0.35s ease;
+}
+.nf-node-icon {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.7);
+  transition: background 0.35s ease, color 0.35s ease;
+}
+.nf-node[data-state="running"] {
+  border-color: rgba(255, 159, 28, 0.8);
+  box-shadow: 0 0 0 4px rgba(255, 159, 28, 0.12), 0 0 30px rgba(255, 159, 28, 0.25);
+}
+.nf-node[data-state="done"] {
+  border-color: rgba(255, 195, 38, 0.65);
+  background: rgba(36, 29, 10, 0.92);
+}
+.nf-node[data-state="running"] .nf-node-icon,
+.nf-node[data-state="done"] .nf-node-icon {
+  background: #ffc326;
+  color: #0a0a0a;
+}
+.nf-cta {
+  background: linear-gradient(180deg, #17140b, #0e0d0a);
+  border: 1px solid rgba(255, 195, 38, 0.25);
+}
+.nf-cta-glow {
+  background:
+    radial-gradient(50% 60% at 50% 0%, rgba(255, 195, 38, 0.22), transparent 70%),
+    radial-gradient(30% 40% at 85% 100%, rgba(255, 159, 28, 0.12), transparent 70%);
+}
+@media (prefers-reduced-motion: reduce) {
+  .nf-gold-text,
+  .nf-marquee,
+  .nf-caret,
+  .nf-live-dot,
+  .nf-scroll-dot {
+    animation: none;
+  }
+}
+.nf-gold-char {
+  color: #ffc326;
+  text-shadow: 0 0 28px rgba(255, 179, 0, 0.35);
+}
+.nf-input {
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  padding: 0.75rem 0.9rem;
+  color: #f5f5f4;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.nf-input::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+.nf-input:focus {
+  border-color: rgba(255, 195, 38, 0.6);
+  box-shadow: 0 0 0 4px rgba(255, 195, 38, 0.1);
+}
+.nf-orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(80px);
+  pointer-events: none;
+}
+.nf-orb-a {
+  width: 420px;
+  height: 420px;
+  top: -140px;
+  right: -80px;
+  background: rgba(255, 195, 38, 0.18);
+  animation: nf-float 14s ease-in-out infinite;
+}
+.nf-orb-b {
+  width: 320px;
+  height: 320px;
+  bottom: -100px;
+  left: -60px;
+  background: rgba(255, 140, 20, 0.12);
+  animation: nf-float 18s ease-in-out infinite reverse;
+}
+@keyframes nf-float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-40px, 30px) scale(1.08); }
+}
+.nf-new-card {
+  border: 1.5px dashed rgba(255, 195, 38, 0.3);
+  background: rgba(255, 195, 38, 0.03);
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.nf-new-card:hover {
+  border-color: rgba(255, 195, 38, 0.65);
+  background: rgba(255, 195, 38, 0.07);
+}
+.nf-plan-featured {
+  background: linear-gradient(180deg, rgba(255, 195, 38, 0.12), rgba(255, 195, 38, 0.03));
+  border: 1px solid rgba(255, 195, 38, 0.45);
+  box-shadow: 0 30px 80px -30px rgba(255, 179, 0, 0.45);
+}

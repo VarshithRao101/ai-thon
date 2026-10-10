@@ -41,3 +41,6 @@ blob-report/
 *.log
 tmp/
 .vercel
+
+.vercel
+.env*

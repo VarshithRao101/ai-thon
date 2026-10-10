@@ -40,6 +40,14 @@ export function CopilotHome({ ensureSession, onStartBlank, onLeaving }: Props) {
   const [busy, setBusy] = useState<string | null>(null);
   const [templates, setTemplates] = useState<Template[]>([]);
 
+  // A prompt typed on the landing page or dashboard arrives as ?prompt=.
+  useEffect(() => {
+    const incoming = new URLSearchParams(window.location.search).get("prompt");
+    if (incoming) {
+      setPrompt(incoming.slice(0, 1000));
+    }
+  }, []);
+
   useEffect(() => {
     fetch("/api/templates")
       .then((r) => (r.ok ? r.json() : []))

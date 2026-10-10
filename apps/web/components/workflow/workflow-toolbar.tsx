@@ -815,7 +815,7 @@ function useWorkflowActions(state: ReturnType<typeof useWorkflowState>) {
         try {
           await api.workflow.delete(currentWorkflowId);
           toast.success("Workflow deleted successfully");
-          window.location.href = "/";
+          window.location.href = "/build";
         } catch (error) {
           console.error("Failed to delete workflow:", error);
           toast.error("Failed to delete workflow. Please try again.");
@@ -1417,7 +1417,7 @@ function WorkflowMenuComponent({
               asChild
               className="flex items-center justify-between"
             >
-              <a href="/">
+              <a href="/build">
                 New Workflow{" "}
                 {!workflowId && <Check className="size-4 shrink-0" />}
               </a>

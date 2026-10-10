@@ -23,11 +23,11 @@ export default function WorkflowsPage() {
           router.replace(`/workflows/${mostRecent.id}`);
         } else {
           // No workflows, redirect to homepage
-          router.replace("/");
+          router.replace("/build");
         }
       } catch (error) {
         console.error("Failed to load workflows:", error);
-        router.replace("/");
+        router.replace("/build");
       }
     };
 
