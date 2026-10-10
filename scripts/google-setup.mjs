@@ -47,7 +47,23 @@ for (const line of lines) {
 if (buffer !== null) {
   kept.push(...buffer);
 }
-lines = kept;
+// Also accept the client JSON pasted after any key, e.g. `oauth={"web":{…}}`.
+lines = kept.filter((line) => {
+  const match = /^\s*[A-Za-z_][A-Za-z0-9_]*\s*=\s*(\{.*\})\s*$/.exec(line);
+  if (!match) {
+    return true;
+  }
+  try {
+    const json = JSON.parse(match[1]);
+    if (json.web || json.installed) {
+      blocks.push(match[1]);
+      return false;
+    }
+  } catch {
+    // not JSON: keep the line as it is
+  }
+  return true;
+});
 
 const parsed = [];
 for (const raw of blocks) {
