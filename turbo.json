@@ -20,16 +20,32 @@
         "dist/**"
       ],
       "passThroughEnv": [
-        "DATABASE_URL",
-        "BETTER_AUTH_*",
-        "INTEGRATION_ENCRYPTION_KEY",
         "AI_*",
+        "ANCHOR_*",
+        "BETTER_AUTH_*",
+        "CHAIN_*",
+        "DATABASE_ADMIN_URL",
+        "DATABASE_URL",
+        "HIVE_*",
+        "INTEGRATION_ENCRYPTION_KEY",
+        "PUBLIC_APP_URL",
+        "REQUIRE_RLS",
+        "VAULT_MASTER_KEY_*",
         "VERCEL_ENV"
       ]
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "passThroughEnv": [
+        "AI_*",
+        "HIVE_*",
+        "PUBLIC_APP_URL",
+        "CHAIN_*",
+        "ANCHOR_*",
+        "REQUIRE_RLS",
+        "DEV_DB_PORT"
+      ]
     },
     "typecheck": {
       "dependsOn": [

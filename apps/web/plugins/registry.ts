@@ -258,6 +258,15 @@ export function getIntegration(
 }
 
 /**
+ * Whether actions of this integration need a saved connection. Plugins that
+ * run on platform keys (e.g. FlowLedger AI) declare no form fields.
+ */
+export function requiresConnection(type: IntegrationType): boolean {
+  const plugin = integrationRegistry.get(type);
+  return plugin ? plugin.formFields.length > 0 : true;
+}
+
+/**
  * Get all registered integrations
  */
 export function getAllIntegrations(): IntegrationPlugin[] {

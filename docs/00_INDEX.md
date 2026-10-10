@@ -20,6 +20,8 @@
 | 16 | [Open questions](16_OPEN_QUESTIONS.md) | What we still need from the user or organizers |
 | 17 | [Demo & pitch](17_DEMO_AND_PITCH.md) | 3-minute demo script, backup plan, deck outline, judge Q&A |
 | 18 | [Legal pages](18_LEGAL_PAGES.md) | Privacy, terms, cookies, DPDP notice, open-source notices |
+| 19 | [Owner setup](19_OWNER_SETUP.md) | Every account and key, click by click |
 | 20 | [Session log](20_SESSION_LOG.md) | History of the work so far |
+| — | [**PLAN.md**](../PLAN.md) | **The upcoming development plan: timeline, owners, checklists** |
 
 Design board: [../design/ui-preview.html](../design/ui-preview.html). Brand assets: [../brand/](../brand/).

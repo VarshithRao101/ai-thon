@@ -8,6 +8,7 @@ import { AiGatewayConsentOverlay } from "@/components/overlays/ai-gateway-consen
 import { useOverlay } from "@/components/overlays/overlay-provider";
 import { Button } from "@/components/ui/button";
 import { CodeEditor } from "@/components/ui/code-editor";
+import { Input } from "@/components/ui/input";
 import { IntegrationIcon } from "@/components/ui/integration-icon";
 import { IntegrationSelector } from "@/components/ui/integration-selector";
 import { Label } from "@/components/ui/label";
@@ -36,6 +37,7 @@ import {
   findActionById,
   getActionsByCategory,
   getAllIntegrations,
+  requiresConnection,
 } from "@/plugins";
 import { ActionConfigRenderer } from "./action-config-renderer";
 import { SchemaBuilder, type SchemaField } from "./schema-builder";
@@ -219,6 +221,47 @@ function ConditionFields({
   );
 }
 
+// Delay fields: a durable wait (the run checkpoints and resumes later; no worker sleeps)
+function DelayFields({
+  config,
+  onUpdateConfig,
+  disabled,
+}: {
+  config: Record<string, unknown>;
+  onUpdateConfig: (key: string, value: string) => void;
+  disabled: boolean;
+}) {
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      <div className="space-y-2">
+        <Label htmlFor="delayMinutes">Minutes</Label>
+        <Input
+          disabled={disabled}
+          id="delayMinutes"
+          min={0}
+          onChange={(e) => onUpdateConfig("delayMinutes", e.target.value)}
+          type="number"
+          value={(config?.delayMinutes as string) ?? ""}
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="delaySeconds">Seconds</Label>
+        <Input
+          disabled={disabled}
+          id="delaySeconds"
+          min={0}
+          onChange={(e) => onUpdateConfig("delaySeconds", e.target.value)}
+          type="number"
+          value={(config?.delaySeconds as string) ?? ""}
+        />
+      </div>
+      <p className="col-span-2 text-muted-foreground text-xs">
+        The run pauses durably and resumes on schedule, even across restarts.
+      </p>
+    </div>
+  );
+}
+
 // System action fields wrapper - extracts conditional rendering to reduce complexity
 function SystemActionFields({
   actionType,
@@ -256,16 +299,25 @@ function SystemActionFields({
           onUpdateConfig={onUpdateConfig}
         />
       );
+    case "Delay":
+      return (
+        <DelayFields
+          config={config}
+          disabled={disabled}
+          onUpdateConfig={onUpdateConfig}
+        />
+      );
     default:
       return null;
   }
 }
 
-// System actions that don't have plugins
+// System actions that don't have plugins. The template's "Database Query" is not
+// offered: it connects to any user-supplied URL (SSRF) and Hive refuses it.
 const SYSTEM_ACTIONS: Array<{ id: string; label: string }> = [
-  { id: "HTTP Request", label: "HTTP Request" },
-  { id: "Database Query", label: "Database Query" },
   { id: "Condition", label: "Condition" },
+  { id: "Delay", label: "Delay" },
+  { id: "HTTP Request", label: "HTTP Request" },
 ];
 
 const SYSTEM_ACTION_IDS = SYSTEM_ACTIONS.map((a) => a.id);
@@ -388,9 +440,10 @@ export function ActionConfig({
       return SYSTEM_ACTION_INTEGRATIONS[actionType];
     }
 
-    // Check plugin actions
+    // Check plugin actions (keyless plugins such as FlowLedger AI need no connection)
     const action = findActionById(actionType);
-    return action?.integration as IntegrationType | undefined;
+    const type = action?.integration as IntegrationType | undefined;
+    return type && requiresConnection(type) ? type : undefined;
   }, [actionType]);
 
   // Check if AI Gateway managed keys should be offered (user can have multiple for different teams)

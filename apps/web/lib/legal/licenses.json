@@ -1,0 +1,482 @@
+[
+  {
+    "name": "@ai-sdk/google",
+    "version": "2.0.102",
+    "license": "Apache-2.0",
+    "homepage": "https://ai-sdk.dev/docs"
+  },
+  {
+    "name": "@ai-sdk/groq",
+    "version": "2.0.57",
+    "license": "Apache-2.0",
+    "homepage": "https://ai-sdk.dev/docs"
+  },
+  {
+    "name": "@ai-sdk/provider",
+    "version": "2.0.0",
+    "license": "Apache-2.0",
+    "homepage": "https://ai-sdk.dev/docs"
+  },
+  {
+    "name": "@biomejs/biome",
+    "version": "2.3.15",
+    "license": "MIT OR Apache-2.0",
+    "homepage": "https://biomejs.dev"
+  },
+  {
+    "name": "@electric-sql/pglite",
+    "version": "0.5.8",
+    "license": "Apache-2.0",
+    "homepage": "https://pglite.dev"
+  },
+  {
+    "name": "@inquirer/prompts",
+    "version": "8.0.1",
+    "license": "MIT",
+    "homepage": "https://github.com/SBoudrias/Inquirer.js/blob/main/packages/prompts/README.md"
+  },
+  {
+    "name": "@linear/sdk",
+    "version": "63.2.0",
+    "license": "MIT",
+    "homepage": null
+  },
+  {
+    "name": "@mendable/firecrawl-js",
+    "version": "4.6.2",
+    "license": "MIT",
+    "homepage": "https://github.com/firecrawl/firecrawl#readme"
+  },
+  {
+    "name": "@monaco-editor/react",
+    "version": "4.7.0",
+    "license": "MIT",
+    "homepage": "https://github.com/suren-atoyan/monaco-react#readme"
+  },
+  {
+    "name": "@nomicfoundation/hardhat-ignition",
+    "version": "3.1.8",
+    "license": "MIT",
+    "homepage": "https://github.com/NomicFoundation/hardhat/tree/main/packages/hardhat-ignition"
+  },
+  {
+    "name": "@nomicfoundation/hardhat-ignition-viem",
+    "version": "3.1.6",
+    "license": "MIT",
+    "homepage": "https://github.com/NomicFoundation/hardhat/tree/main/packages/hardhat-ignition-viem"
+  },
+  {
+    "name": "@nomicfoundation/hardhat-keystore",
+    "version": "3.1.1",
+    "license": "MIT",
+    "homepage": "https://github.com/NomicFoundation/hardhat/tree/main/packages/hardhat-keystore"
+  },
+  {
+    "name": "@nomicfoundation/hardhat-network-helpers",
+    "version": "3.0.11",
+    "license": "MIT",
+    "homepage": "https://github.com/NomicFoundation/hardhat/tree/main/packages/hardhat-network-helpers"
+  },
+  {
+    "name": "@nomicfoundation/hardhat-node-test-runner",
+    "version": "3.1.0",
+    "license": "MIT",
+    "homepage": "https://github.com/NomicFoundation/hardhat/tree/main/packages/hardhat-node-test-runner"
+  },
+  {
+    "name": "@nomicfoundation/hardhat-toolbox-viem",
+    "version": "5.0.7",
+    "license": "MIT",
+    "homepage": "https://github.com/NomicFoundation/hardhat/tree/main/packages/hardhat-toolbox-viem"
+  },
+  {
+    "name": "@nomicfoundation/hardhat-verify",
+    "version": "3.1.2",
+    "license": "MIT",
+    "homepage": "https://github.com/NomicFoundation/hardhat/tree/main/packages/hardhat-verify"
+  },
+  {
+    "name": "@nomicfoundation/hardhat-viem",
+    "version": "3.0.9",
+    "license": "MIT",
+    "homepage": "https://github.com/NomicFoundation/hardhat/tree/main/packages/hardhat-viem"
+  },
+  {
+    "name": "@nomicfoundation/hardhat-viem-assertions",
+    "version": "3.1.3",
+    "license": "MIT",
+    "homepage": "https://github.com/NomicFoundation/hardhat/tree/main/packages/hardhat-viem-assertions"
+  },
+  {
+    "name": "@nomicfoundation/ignition-core",
+    "version": "3.1.10",
+    "license": "MIT",
+    "homepage": "https://github.com/NomicFoundation/hardhat/tree/main/packages/ignition-core"
+  },
+  {
+    "name": "@openzeppelin/contracts",
+    "version": "5.6.1",
+    "license": "MIT",
+    "homepage": "https://openzeppelin.com/contracts/"
+  },
+  {
+    "name": "@openzeppelin/merkle-tree",
+    "version": "1.0.8",
+    "license": "MIT",
+    "homepage": null
+  },
+  {
+    "name": "@playwright/test",
+    "version": "1.57.0",
+    "license": "Apache-2.0",
+    "homepage": "https://playwright.dev"
+  },
+  {
+    "name": "@radix-ui/react-checkbox",
+    "version": "1.3.3",
+    "license": "MIT",
+    "homepage": "https://radix-ui.com/primitives"
+  },
+  {
+    "name": "@radix-ui/react-collapsible",
+    "version": "1.1.12",
+    "license": "MIT",
+    "homepage": "https://radix-ui.com/primitives"
+  },
+  {
+    "name": "@radix-ui/react-context-menu",
+    "version": "2.2.16",
+    "license": "MIT",
+    "homepage": "https://radix-ui.com/primitives"
+  },
+  {
+    "name": "@radix-ui/react-dialog",
+    "version": "1.1.15",
+    "license": "MIT",
+    "homepage": "https://radix-ui.com/primitives"
+  },
+  {
+    "name": "@radix-ui/react-tooltip",
+    "version": "1.2.8",
+    "license": "MIT",
+    "homepage": "https://radix-ui.com/primitives"
+  },
+  {
+    "name": "@slack/web-api",
+    "version": "7.12.0",
+    "license": "MIT",
+    "homepage": "https://docs.slack.dev/tools/node-slack-sdk/web-api/"
+  },
+  {
+    "name": "@tailwindcss/postcss",
+    "version": "4.1.16",
+    "license": "MIT",
+    "homepage": "https://tailwindcss.com"
+  },
+  {
+    "name": "@types/node",
+    "version": "24.10.0",
+    "license": "MIT",
+    "homepage": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/node"
+  },
+  {
+    "name": "@types/nodemailer",
+    "version": "8.0.2",
+    "license": "MIT",
+    "homepage": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/nodemailer"
+  },
+  {
+    "name": "@types/qrcode",
+    "version": "1.5.6",
+    "license": "MIT",
+    "homepage": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/qrcode"
+  },
+  {
+    "name": "@types/react",
+    "version": "19.2.2",
+    "license": "MIT",
+    "homepage": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/react"
+  },
+  {
+    "name": "@types/react-dom",
+    "version": "19.2.2",
+    "license": "MIT",
+    "homepage": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/react-dom"
+  },
+  {
+    "name": "@vercel/og",
+    "version": "0.8.5",
+    "license": "MPL-2.0",
+    "homepage": null
+  },
+  {
+    "name": "@vercel/sdk",
+    "version": "1.17.1",
+    "license": "see package",
+    "homepage": null
+  },
+  {
+    "name": "@xyflow/react",
+    "version": "12.9.2",
+    "license": "MIT",
+    "homepage": "https://reactflow.dev"
+  },
+  {
+    "name": "ai",
+    "version": "5.0.102",
+    "license": "Apache-2.0",
+    "homepage": "https://ai-sdk.dev/docs"
+  },
+  {
+    "name": "better-auth",
+    "version": "1.7.7",
+    "license": "MIT",
+    "homepage": "https://better-auth.com"
+  },
+  {
+    "name": "canonicalize",
+    "version": "5.1.0",
+    "license": "Apache-2.0",
+    "homepage": "https://github.com/erdtman/canonicalize#readme"
+  },
+  {
+    "name": "class-variance-authority",
+    "version": "0.7.1",
+    "license": "Apache-2.0",
+    "homepage": "https://github.com/joe-bell/cva#readme"
+  },
+  {
+    "name": "clsx",
+    "version": "2.1.1",
+    "license": "MIT",
+    "homepage": null
+  },
+  {
+    "name": "dotenv",
+    "version": "17.2.3",
+    "license": "BSD-2-Clause",
+    "homepage": "https://github.com/motdotla/dotenv#readme"
+  },
+  {
+    "name": "drizzle-kit",
+    "version": "0.31.11",
+    "license": "MIT",
+    "homepage": "https://orm.drizzle.team"
+  },
+  {
+    "name": "drizzle-orm",
+    "version": "0.45.4",
+    "license": "Apache-2.0",
+    "homepage": "https://orm.drizzle.team"
+  },
+  {
+    "name": "google-auth-library",
+    "version": "11.2.0",
+    "license": "Apache-2.0",
+    "homepage": "https://github.com/googleapis/google-cloud-node/tree/main/core/packages/google-auth-library-nodejs"
+  },
+  {
+    "name": "hardhat",
+    "version": "3.19.0",
+    "license": "MIT",
+    "homepage": "https://hardhat.org"
+  },
+  {
+    "name": "jose",
+    "version": "6.1.3",
+    "license": "MIT",
+    "homepage": "https://github.com/panva/jose"
+  },
+  {
+    "name": "jotai",
+    "version": "2.15.1",
+    "license": "MIT",
+    "homepage": "https://github.com/pmndrs/jotai"
+  },
+  {
+    "name": "jszip",
+    "version": "3.10.1",
+    "license": "(MIT OR GPL-3.0-or-later)",
+    "homepage": null
+  },
+  {
+    "name": "knip",
+    "version": "5.70.1",
+    "license": "ISC",
+    "homepage": "https://knip.dev"
+  },
+  {
+    "name": "lucide-react",
+    "version": "0.552.0",
+    "license": "ISC",
+    "homepage": "https://lucide.dev"
+  },
+  {
+    "name": "motion",
+    "version": "12.23.24",
+    "license": "MIT",
+    "homepage": null
+  },
+  {
+    "name": "nanoid",
+    "version": "5.1.16",
+    "license": "MIT",
+    "homepage": null
+  },
+  {
+    "name": "next",
+    "version": "16.4.0",
+    "license": "MIT",
+    "homepage": "https://nextjs.org"
+  },
+  {
+    "name": "next-themes",
+    "version": "0.4.6",
+    "license": "MIT",
+    "homepage": null
+  },
+  {
+    "name": "nodemailer",
+    "version": "10.0.16",
+    "license": "MIT-0",
+    "homepage": "https://nodemailer.com/"
+  },
+  {
+    "name": "openai",
+    "version": "6.8.1",
+    "license": "Apache-2.0",
+    "homepage": null
+  },
+  {
+    "name": "pg-boss",
+    "version": "12.37.1",
+    "license": "MIT",
+    "homepage": "https://pgboss.io"
+  },
+  {
+    "name": "postgres",
+    "version": "3.4.7",
+    "license": "Unlicense",
+    "homepage": "https://github.com/porsager/postgres"
+  },
+  {
+    "name": "prettier",
+    "version": "3.7.3",
+    "license": "MIT",
+    "homepage": "https://prettier.io"
+  },
+  {
+    "name": "qrcode",
+    "version": "1.5.4",
+    "license": "MIT",
+    "homepage": "http://github.com/soldair/node-qrcode"
+  },
+  {
+    "name": "radix-ui",
+    "version": "1.4.3",
+    "license": "MIT",
+    "homepage": "https://radix-ui.com/primitives"
+  },
+  {
+    "name": "react",
+    "version": "19.2.8",
+    "license": "MIT",
+    "homepage": "https://react.dev/"
+  },
+  {
+    "name": "react-dom",
+    "version": "19.2.8",
+    "license": "MIT",
+    "homepage": "https://react.dev/"
+  },
+  {
+    "name": "react-resizable-panels",
+    "version": "3.0.6",
+    "license": "MIT",
+    "homepage": null
+  },
+  {
+    "name": "resend",
+    "version": "6.4.1",
+    "license": "MIT",
+    "homepage": "https://github.com/resend/resend-node#readme"
+  },
+  {
+    "name": "server-only",
+    "version": "0.0.1",
+    "license": "MIT",
+    "homepage": "https://reactjs.org/"
+  },
+  {
+    "name": "sonner",
+    "version": "2.0.7",
+    "license": "MIT",
+    "homepage": "https://sonner.emilkowal.ski/"
+  },
+  {
+    "name": "tailwind-merge",
+    "version": "3.3.1",
+    "license": "MIT",
+    "homepage": "https://github.com/dcastil/tailwind-merge"
+  },
+  {
+    "name": "tailwindcss",
+    "version": "4.1.16",
+    "license": "MIT",
+    "homepage": "https://tailwindcss.com"
+  },
+  {
+    "name": "tsx",
+    "version": "4.20.6",
+    "license": "MIT",
+    "homepage": "https://tsx.is"
+  },
+  {
+    "name": "tw-animate-css",
+    "version": "1.4.0",
+    "license": "MIT",
+    "homepage": "https://github.com/Wombosvideo/tw-animate-css#readme"
+  },
+  {
+    "name": "typescript",
+    "version": "5.9.3",
+    "license": "Apache-2.0",
+    "homepage": "https://www.typescriptlang.org/"
+  },
+  {
+    "name": "ultracite",
+    "version": "6.3.0",
+    "license": "MIT",
+    "homepage": "https://www.ultracite.ai/"
+  },
+  {
+    "name": "v0-sdk",
+    "version": "0.15.1",
+    "license": "Apache-2.0",
+    "homepage": "https://v0.dev/docs/api"
+  },
+  {
+    "name": "vaul",
+    "version": "1.1.2",
+    "license": "MIT",
+    "homepage": "https://vaul.emilkowal.ski/"
+  },
+  {
+    "name": "viem",
+    "version": "2.57.4",
+    "license": "MIT",
+    "homepage": "https://viem.sh"
+  },
+  {
+    "name": "vitest",
+    "version": "5.0.3",
+    "license": "MIT",
+    "homepage": "https://vitest.dev"
+  },
+  {
+    "name": "zod",
+    "version": "4.1.12",
+    "license": "MIT",
+    "homepage": "https://zod.dev"
+  }
+]

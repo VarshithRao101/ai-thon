@@ -120,8 +120,9 @@ The UI shows four checkmarks that animate one after another, plus a Polygonscan 
 - Result: layer 3 fails at that step. The page shows ✗ **"Tampered: step 3 'Sheets: Append' output changed after anchoring"**. Layers 1 and 2 still pass, which shows the original record is intact on-chain.
 - A **"Restore"** button reverts the edit for the next demo.
 
-## Costs (estimate, to be measured in P2)
-- `anchor()` writes 2 new storage slots, updates the array length and emits an event. Estimate: **~70k–95k gas**. At 30 gwei that is about 0.002–0.003 test POL per batch, so one 0.1 POL faucet drip covers about 30+ batches. Not measured yet; the Hardhat gas reporter will measure it in P1F and Amoy receipts in P2.
+## Costs (measured on the local Hardhat network, 2026-10-09/10)
+- `anchor()`: **95,357 gas** for the first batch (array slot initialised) and **78,257 gas** for later batches. The cost does **not** depend on batch size: one batch of 13 receipts cost the same 95,357 gas. Contract deployment: **679,012 gas**.
+- Fee in POL depends on Amoy gas prices at the time (*estimate:* at 30 gwei, ~0.0024–0.0029 POL per batch). Amoy figures will be recorded in P2 from real transaction receipts.
 - Demo mode anchors only when receipts are pending, so idle time costs nothing.
 
 ## Privacy

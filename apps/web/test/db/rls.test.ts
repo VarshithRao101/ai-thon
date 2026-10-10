@@ -50,8 +50,11 @@ describe("row-level security (tenant isolation)", () => {
       "api_keys",
       "audit_events",
       "integrations",
+      "receipts",
+      "tamper_events",
       "workflow_execution_logs",
       "workflow_executions",
+      "workflow_versions",
       "workflows",
     ]);
   });
@@ -123,6 +126,24 @@ describe("row-level security (tenant isolation)", () => {
         `update workflows set workspace_id = '${WS_B}' where id = 'wf_a'`
       )
     ).rejects.toThrow("row-level security");
+  });
+
+  it("keeps published workflow versions immutable, even for their owner", async () => {
+    await inTenant(
+      pg,
+      WS_A,
+      `insert into workflow_versions (id, workspace_id, workflow_id, version, definition, definition_hash)
+       values ('v1', '${WS_A}', 'wf_a', 1, '{"nodes":[],"edges":[]}', 'h1')`
+    );
+    await expect(
+      inTenant(
+        pg,
+        WS_A,
+        "update workflow_versions set definition_hash = 'forged' where id = 'v1'"
+      )
+    ).rejects.toThrow("immutable");
+    const other = await inTenant(pg, WS_B, "select id from workflow_versions");
+    expect(other.rows).toHaveLength(0);
   });
 
   it("resolves API keys across tenants only through the definer function", async () => {

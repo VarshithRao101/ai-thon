@@ -44,6 +44,7 @@ describe("vault envelope encryption", () => {
     const bytes = Buffer.from(body as string, "base64url");
     for (let i = 0; i < bytes.length; i++) {
       const tampered = Buffer.from(bytes);
+      // biome-ignore lint/suspicious/noBitwiseOperators: flipping one bit is the point of this test
       tampered[i] = (tampered[i] as number) ^ 0x01;
       const forged = `${prefix}:${iv}.${tag}.${tampered.toString("base64url")}`;
       expect(() => decryptSecret(dek, forged, "ws_a")).toThrow();

@@ -68,6 +68,7 @@ import {
   findActionById,
   flattenConfigFields,
   getIntegrationLabels,
+  requiresConnection,
 } from "@/plugins";
 import { Panel } from "../ai-elements/panel";
 import { BrandLockup } from "../brand/brand-lockup";
@@ -79,6 +80,7 @@ import { useOverlay } from "../overlays/overlay-provider";
 import { WorkflowIssuesOverlay } from "../overlays/workflow-issues-overlay";
 import { WorkflowIcon } from "../ui/workflow-icon";
 import { UserMenu } from "../workflows/user-menu";
+import { PublishControls } from "./publish-controls";
 
 type WorkflowToolbarProps = {
   workflowId?: string;
@@ -312,6 +314,7 @@ function getMissingRequiredFields(
 // Get missing integrations for workflow nodes
 // Uses the plugin registry to determine which integrations are required
 // Also handles built-in actions that aren't in the plugin registry
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: template function plus the keyless-plugin check
 function getMissingIntegrations(
   nodes: WorkflowNode[],
   userIntegrations: Array<{ id: string; type: IntegrationType }>
@@ -338,7 +341,10 @@ function getMissingIntegrations(
     const requiredIntegrationType =
       action?.integration || BUILTIN_ACTION_INTEGRATIONS[actionType];
 
-    if (!requiredIntegrationType) {
+    if (
+      !requiredIntegrationType ||
+      (action && !requiresConnection(requiredIntegrationType))
+    ) {
       continue;
     }
 
@@ -387,6 +393,13 @@ type ExecuteTestWorkflowParams = {
   setIsExecuting: (value: boolean) => void;
   setSelectedExecutionId: (value: string | null) => void;
 };
+
+const FINAL_RUN_STATUSES = new Set([
+  "success",
+  "error",
+  "cancelled",
+  "skipped",
+]);
 
 async function executeTestWorkflow({
   workflowId,
@@ -446,8 +459,8 @@ async function executeTestWorkflow({
           });
         }
 
-        // Stop polling if execution is complete
-        if (statusData.status !== "running") {
+        // Stop polling once the run is final (queued/running/waiting keep polling)
+        if (FINAL_RUN_STATUSES.has(statusData.status)) {
           if (pollingIntervalRef.current) {
             clearInterval(pollingIntervalRef.current);
             pollingIntervalRef.current = null;
@@ -1182,6 +1195,12 @@ function ToolbarActions({
       <VisibilityButton actions={actions} state={state} />
 
       <RunButtonGroup actions={actions} state={state} />
+
+      <PublishControls
+        disabled={state.isGenerating}
+        save={actions.handleSave}
+        workflowId={workflowId}
+      />
     </>
   );
 }

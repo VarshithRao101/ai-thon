@@ -1,0 +1,20 @@
+{
+  "name": "@flowledger/engine",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Hive: pure-TypeScript workflow DAG engine (scheduling, branching, retries, checkpoint/resume). No I/O.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^24",
+    "typescript": "^5",
+    "vitest": "^5.0.3"
+  }
+}

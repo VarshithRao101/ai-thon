@@ -8,8 +8,10 @@ import { resolve } from "node:path";
 
 const target = resolve(import.meta.dirname, "..", "apps", "web", ".env.local");
 const port = process.env.DEV_DB_PORT ?? "5433";
-const appUrl = `postgres://flowledger_app:flowledger_app@localhost:${port}/flowledger`;
-const adminUrl = `postgres://flowledger:flowledger@localhost:${port}/flowledger`;
+// The dev database is UTF-8 (scripts/dev-db.mjs); the older WIN1252 "flowledger" one is replaced.
+const appUrl = `postgres://flowledger_app:flowledger_app@localhost:${port}/flowledger_utf8`;
+const adminUrl = `postgres://flowledger:flowledger@localhost:${port}/flowledger_utf8`;
+const legacyDb = /@localhost:\d+\/flowledger$/;
 
 const lines = existsSync(target) ? readFileSync(target, "utf8").split(/\r?\n/) : [];
 const values = new Map();
@@ -28,12 +30,40 @@ function ensure(key, makeValue, { replaceIf } = {}) {
 }
 
 // The app must not connect as the owner, or RLS is bypassed (docs/10).
-ensure("DATABASE_URL", () => appUrl, { replaceIf: (v) => v === adminUrl });
-ensure("DATABASE_ADMIN_URL", () => adminUrl);
+ensure("DATABASE_URL", () => appUrl, {
+  replaceIf: (v) => v === adminUrl || legacyDb.test(v),
+});
+ensure("DATABASE_ADMIN_URL", () => adminUrl, { replaceIf: (v) => legacyDb.test(v) });
 ensure("BETTER_AUTH_SECRET", () => randomBytes(32).toString("base64url"));
 ensure("BETTER_AUTH_URL", () => "http://localhost:3000");
 ensure("INTEGRATION_ENCRYPTION_KEY", () => randomBytes(32).toString("hex"));
 ensure("VAULT_MASTER_KEY_V1", () => values.get("INTEGRATION_ENCRYPTION_KEY"));
+
+// rpc-amoy.polygon.technology stopped resolving (2026-10-10): move to publicnode.
+ensure("CHAIN_RPC_URL", () => "https://polygon-amoy-bor-rpc.publicnode.com", {
+  replaceIf: (v) => v.includes("rpc-amoy.polygon.technology"),
+});
+
+// Empty placeholders the teammate fills in (docs/19). Existing values are kept.
+const placeholders = {
+  GOOGLE_GENERATIVE_AI_API_KEY: "",
+  AI_PRIMARY_PROVIDER: "google",
+  AI_MODEL_FAST: "",
+  AI_MODEL_SMART: "",
+  GROQ_API_KEY: "",
+  AI_FALLBACK_PROVIDER: "groq",
+  AI_FALLBACK_MODEL: "",
+  CHAIN_ID: "80002",
+  CHAIN_RPC_URL: "https://polygon-amoy-bor-rpc.publicnode.com",
+  EXPLORER_BASE_URL: "https://amoy.polygonscan.com",
+  ANCHOR_CONTRACT_ADDRESS: "",
+};
+for (const [key, value] of Object.entries(placeholders)) {
+  if (!values.has(key)) {
+    values.set(key, value);
+    changed.push(key);
+  }
+}
 
 const out = [
   "# Local development only. Managed by scripts/dev-env.mjs. Never commit.",

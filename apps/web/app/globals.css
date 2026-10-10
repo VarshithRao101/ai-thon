@@ -152,6 +152,15 @@
   color: transparent;
 }
 
+/* Soft honey glow in one corner of a card (TRNT BEE motif, docs/12). */
+@utility honeycomb-glow {
+  background-image: radial-gradient(
+    120% 80% at 100% 0%,
+    rgb(255 195 38 / 0.1) 0%,
+    transparent 55%
+  );
+}
+
 ::selection {
   background: rgb(255 195 38 / 0.35);
 }

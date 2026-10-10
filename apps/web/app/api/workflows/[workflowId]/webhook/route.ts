@@ -2,15 +2,16 @@ import { createHash } from "node:crypto";
 import { and, eq, sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { apiKeys, workflowExecutions, workflows } from "@/lib/db/schema";
+import { apiKeys, workflows } from "@/lib/db/schema";
 import { runWithTenant, tdb } from "@/lib/db/tenant";
-import { dispatchExecution } from "@/lib/runtime/dispatch";
-import type { WorkflowEdge, WorkflowNode } from "@/lib/workflow-store";
+import { startRun } from "@/lib/hive/ingress";
+import type { WorkflowNode } from "@/lib/workflow-store";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  "Access-Control-Allow-Headers":
+    "Content-Type, Authorization, Idempotency-Key",
 };
 
 // flk_ = FlowLedger keys; wfb_ = keys issued by the base template
@@ -112,21 +113,12 @@ export async function POST(
       }
 
       const body = await request.json().catch(() => ({}));
-      const [execution] = await tdb((tx) =>
-        tx
-          .insert(workflowExecutions)
-          .values({
-            workspaceId: tenant.workspaceId,
-            workflowId,
-            userId: tenant.userId,
-            status: "running",
-            input: body,
-          })
-          .returning({ id: workflowExecutions.id })
-      );
-      if (!execution) {
-        return json({ error: "Failed to create execution" }, 500);
-      }
+      const input =
+        body && typeof body === "object" && !Array.isArray(body)
+          ? (body as Record<string, unknown>)
+          : { body };
+      const idempotencyKey =
+        request.headers.get("Idempotency-Key")?.slice(0, 200) || undefined;
 
       // Fire and forget: usage timestamp for the key list
       tdb((tx) =>
@@ -138,18 +130,29 @@ export async function POST(
         // Non-critical
       });
 
-      dispatchExecution(
-        {
-          nodes: workflow.nodes as WorkflowNode[],
-          edges: workflow.edges as WorkflowEdge[],
-          triggerInput: body,
-          executionId: execution.id,
-          workflowId,
-        },
-        tenant
-      );
-
-      return json({ executionId: execution.id, status: "running" });
+      // Webhooks run the published version, and only while the workflow is enabled.
+      const result = await startRun({
+        workflow,
+        trigger: "webhook",
+        input,
+        userId: tenant.userId,
+        idempotencyKey,
+      });
+      if (!result.ok) {
+        return json(
+          {
+            error: result.reason,
+            executionId: result.executionId,
+            status: "skipped",
+          },
+          409
+        );
+      }
+      return json({
+        executionId: result.executionId,
+        status: "queued",
+        duplicate: result.duplicate,
+      });
     });
   } catch (error) {
     console.error("[Webhook] Failed to start workflow execution:", error);

@@ -8,6 +8,7 @@ import { use, useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { NodeConfigPanel } from "@/components/workflow/node-config-panel";
+import { useLiveRuns } from "@/components/workflow/use-live-runs";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { api } from "@/lib/api-client";
 import {
@@ -130,6 +131,8 @@ const WorkflowEditor = ({ params }: WorkflowPageProps) => {
     currentWorkflowVisibilityAtom
   );
   const [isOwner, setIsWorkflowOwner] = useAtom(isWorkflowOwnerAtom);
+  // Live canvas: every run of this workflow (form, webhook, schedule, test) animates here.
+  useLiveRuns(isOwner ? workflowId : null);
   const setGlobalIntegrations = useSetAtom(integrationsAtom);
   const setIntegrationsLoaded = useSetAtom(integrationsLoadedAtom);
   const integrationsVersion = useAtomValue(integrationsVersionAtom);
@@ -301,7 +304,19 @@ const WorkflowEditor = ({ params }: WorkflowPageProps) => {
       setCurrentWorkflowName("AI Generated Workflow");
 
       try {
-        const workflowData = await api.ai.generate(prompt);
+        // Stream the Copilot's operations so nodes drop onto the canvas one by one.
+        const workflowData = await api.ai.generateStream(prompt, (partial) => {
+          setNodes(
+            (partial.nodes || []).map((node: WorkflowNode) => ({
+              ...node,
+              selected: false,
+            }))
+          );
+          setEdges(partial.edges || []);
+          if (partial.name) {
+            setCurrentWorkflowName(partial.name);
+          }
+        });
 
         // Clear selection on all nodes
         const nodesWithoutSelection = (workflowData.nodes || []).map(

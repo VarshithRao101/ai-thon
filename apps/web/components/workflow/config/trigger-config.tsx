@@ -1,6 +1,6 @@
 "use client";
 
-import { Clock, Copy, Play, Webhook } from "lucide-react";
+import { ClipboardList, Clock, Copy, Play, Webhook } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { CodeEditor } from "@/components/ui/code-editor";
@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { TimezoneSelect } from "@/components/ui/timezone-select";
+import { FormTriggerConfig } from "./form-trigger-config";
 import { SchemaBuilder, type SchemaField } from "./schema-builder";
 
 type TriggerConfigProps = {
@@ -55,6 +56,12 @@ export function TriggerConfig({
             <SelectValue placeholder="Select trigger type" />
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value="Form">
+              <div className="flex items-center gap-2">
+                <ClipboardList className="h-4 w-4" />
+                Form submitted
+              </div>
+            </SelectItem>
             <SelectItem value="Manual">
               <div className="flex items-center gap-2">
                 <Play className="h-4 w-4" />
@@ -76,6 +83,15 @@ export function TriggerConfig({
           </SelectContent>
         </Select>
       </div>
+
+      {config?.triggerType === "Form" && (
+        <FormTriggerConfig
+          config={config}
+          disabled={disabled}
+          onUpdateConfig={onUpdateConfig}
+          workflowId={workflowId}
+        />
+      )}
 
       {/* Webhook fields */}
       {config?.triggerType === "Webhook" && (
@@ -169,7 +185,7 @@ export function TriggerConfig({
               onValueChange={(value) =>
                 onUpdateConfig("scheduleTimezone", value)
               }
-              value={(config?.scheduleTimezone as string) || "America/New_York"}
+              value={(config?.scheduleTimezone as string) || "Asia/Kolkata"}
             />
           </div>
         </>

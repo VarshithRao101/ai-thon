@@ -5,6 +5,7 @@ import { nanoid } from "nanoid";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef } from "react";
 import { toast } from "sonner";
+import { CopilotHome } from "@/components/home/copilot-home";
 import { api } from "@/lib/api-client";
 import { authClient, useSession } from "@/lib/auth-client";
 import {
@@ -72,25 +73,13 @@ const Home = () => {
     setNodes([newNode]);
   }, [setNodes]);
 
-  // Initialize with a temporary "add" node on mount
+  // Start empty: the Copilot home is the first screen (a blank canvas is one click away).
   useEffect(() => {
-    const addNodePlaceholder: WorkflowNode = {
-      id: "add-node-placeholder",
-      type: "add",
-      position: { x: 0, y: 0 },
-      data: {
-        label: "",
-        type: "add",
-        onClick: handleAddNode,
-      },
-      draggable: false,
-      selectable: false,
-    };
-    setNodes([addNodePlaceholder]);
+    setNodes([]);
     setEdges([]);
     setCurrentWorkflowName("New Workflow");
     hasCreatedWorkflowRef.current = false;
-  }, [setNodes, setEdges, setCurrentWorkflowName, handleAddNode]);
+  }, [setNodes, setEdges, setCurrentWorkflowName]);
 
   // Create workflow when first real node is added
   useEffect(() => {
@@ -131,8 +120,17 @@ const Home = () => {
     createWorkflowAndRedirect();
   }, [nodes, edges, router, ensureSession, setIsTransitioningFromHomepage]);
 
-  // Canvas and toolbar are rendered by PersistentCanvas in the layout
-  return null;
+  // The canvas is rendered by PersistentCanvas in the layout; the home adds the Copilot.
+  if (nodes.some((node) => node.type !== "add")) {
+    return null;
+  }
+  return (
+    <CopilotHome
+      ensureSession={ensureSession}
+      onLeaving={() => setIsTransitioningFromHomepage(true)}
+      onStartBlank={handleAddNode}
+    />
+  );
 };
 
 export default Home;

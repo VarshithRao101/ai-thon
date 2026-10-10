@@ -29,10 +29,12 @@ blob-report/
 # pristine upstream template copy (for diffs only)
 .upstream/
 
-# contracts
-contracts/artifacts/
-contracts/cache/
-contracts/typechain-types/
+# contracts (Hardhat build output, any depth)
+**/contracts/artifacts/
+**/contracts/cache/
+**/contracts/types/
+**/contracts/typechain-types/
+**/contracts/ignition/deployments/chain-31337/
 
 # misc
 .DS_Store

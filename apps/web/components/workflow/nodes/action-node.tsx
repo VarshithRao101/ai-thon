@@ -9,6 +9,7 @@ import {
   Database,
   EyeOff,
   GitBranch,
+  Hourglass,
   XCircle,
   Zap,
 } from "lucide-react";
@@ -31,7 +32,7 @@ import {
   selectedExecutionIdAtom,
   type WorkflowNodeData,
 } from "@/lib/workflow-store";
-import { findActionById, getIntegration } from "@/plugins";
+import { findActionById, getIntegration, requiresConnection } from "@/plugins";
 
 // Helper to get display name for AI model
 const getModelDisplayName = (modelId: string): string => {
@@ -114,9 +115,9 @@ const requiresIntegration = (actionType: string): boolean => {
     return true;
   }
 
-  // Plugin actions always require integration
+  // Plugin actions need a connection unless the plugin runs on platform keys (FlowLedger AI)
   const action = findActionById(actionType);
-  return action !== undefined;
+  return action !== undefined && requiresConnection(action.integration);
 };
 
 // Helper to get provider logo for action type
@@ -131,6 +132,8 @@ const getProviderLogo = (actionType: string) => {
       return <Code className="size-12 text-green-300" strokeWidth={1.5} />;
     case "Condition":
       return <GitBranch className="size-12 text-pink-300" strokeWidth={1.5} />;
+    case "Delay":
+      return <Hourglass className="size-12 text-primary" strokeWidth={1.5} />;
     default:
       // Not a system action, continue to check plugin registry
       break;

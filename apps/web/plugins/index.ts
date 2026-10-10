@@ -14,18 +14,22 @@
  * 2. Run: pnpm discover-plugins (or it runs automatically on build)
  */
 
+import "./ai";
 import "./ai-gateway";
 import "./blob";
 import "./clerk";
 import "./fal";
 import "./firecrawl";
 import "./github";
+import "./google-sheets";
 import "./linear";
 import "./perplexity";
 import "./resend";
 import "./slack";
+import "./smtp-email";
 import "./stripe";
 import "./superagent";
+import "./telegram";
 import "./v0";
 import "./webflow";
 
@@ -59,4 +63,5 @@ export {
   isFieldGroup,
   parseActionId,
   registerIntegration,
+  requiresConnection,
 } from "./registry";

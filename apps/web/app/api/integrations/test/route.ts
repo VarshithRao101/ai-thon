@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import postgres from "postgres";
 import { getRequestContext } from "@/lib/auth/context";
 import { can } from "@/lib/auth/rbac";
+import { connectionTestFor } from "@/lib/integrations/connection-tests";
 import type {
   IntegrationConfig,
   IntegrationType,
@@ -46,8 +46,12 @@ export async function POST(request: Request) {
     }
 
     if (body.type === "database") {
-      const result = await testDatabaseConnection(body.config.url);
-      return NextResponse.json(result);
+      // Connecting to a user-supplied database URL is an SSRF vector; the
+      // Database Query step is not offered in FlowLedger (docs/10).
+      return NextResponse.json(
+        { error: "Database connections are not supported" },
+        { status: 400 }
+      );
     }
 
     const plugin = getPluginFromRegistry(body.type);
@@ -59,16 +63,18 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!plugin.testConfig) {
+    const testFn = await connectionTestFor(plugin);
+
+    if (!testFn) {
       return NextResponse.json(
         { error: "Integration does not support testing" },
+
         { status: 400 }
       );
     }
 
     const credentials = getCredentialMapping(plugin, body.config);
 
-    const testFn = await plugin.testConfig.getTestFunction();
     const testResult = await testFn(credentials);
 
     const result: TestConnectionResult = {
@@ -89,42 +95,5 @@ export async function POST(request: Request) {
       },
       { status: 500 }
     );
-  }
-}
-
-async function testDatabaseConnection(
-  databaseUrl?: string
-): Promise<TestConnectionResult> {
-  let connection: postgres.Sql | null = null;
-
-  try {
-    if (!databaseUrl) {
-      return {
-        status: "error",
-        message: "Connection failed",
-      };
-    }
-
-    connection = postgres(databaseUrl, {
-      max: 1,
-      idle_timeout: 5,
-      connect_timeout: 5,
-    });
-
-    await connection`SELECT 1`;
-
-    return {
-      status: "success",
-      message: "Connection successful",
-    };
-  } catch {
-    return {
-      status: "error",
-      message: "Connection failed",
-    };
-  } finally {
-    if (connection) {
-      await connection.end();
-    }
   }
 }

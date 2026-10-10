@@ -10,11 +10,14 @@ import {
   ExternalLink,
   Loader2,
   Play,
+  RotateCcw,
+  ShieldCheck,
   X,
 } from "lucide-react";
 import Image from "next/image";
 import type { JSX } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { api } from "@/lib/api-client";
 import {
   OUTPUT_DISPLAY_CONFIGS,
@@ -30,13 +33,14 @@ import {
 import { findActionById } from "@/plugins";
 import { Button } from "../ui/button";
 import { Spinner } from "../ui/spinner";
+import { RunDoctor } from "./run-doctor";
 
 type ExecutionLog = {
   id: string;
   nodeId: string;
   nodeName: string;
   nodeType: string;
-  status: "pending" | "running" | "success" | "error";
+  status: "pending" | "running" | "waiting" | "success" | "error" | "skipped";
   startedAt: Date;
   completedAt: Date | null;
   duration: string | null;
@@ -48,7 +52,16 @@ type ExecutionLog = {
 type WorkflowExecution = {
   id: string;
   workflowId: string;
-  status: "pending" | "running" | "success" | "error" | "cancelled";
+  status:
+    | "pending"
+    | "queued"
+    | "running"
+    | "waiting"
+    | "success"
+    | "error"
+    | "cancelled"
+    | "skipped";
+  trigger?: string;
   startedAt: Date;
   completedAt: Date | null;
   duration: string | null;
@@ -99,7 +112,7 @@ function createExecutionLogsMap(logs: ExecutionLog[]): Record<
     nodeId: string;
     nodeName: string;
     nodeType: string;
-    status: "pending" | "running" | "success" | "error";
+    status: ExecutionLog["status"];
     output?: unknown;
   }
 > {
@@ -109,7 +122,7 @@ function createExecutionLogsMap(logs: ExecutionLog[]): Record<
       nodeId: string;
       nodeName: string;
       nodeType: string;
-      status: "pending" | "running" | "success" | "error";
+      status: ExecutionLog["status"];
       output?: unknown;
     }
   > = {};
@@ -639,7 +652,7 @@ export function WorkflowRuns({
 
     // Check if this is a new running execution that we haven't auto-expanded yet
     if (
-      latestExecution.status === "running" &&
+      ["queued", "running", "waiting"].includes(latestExecution.status) &&
       latestExecution.id !== autoExpandedExecutionRef.current
     ) {
       // Mark this execution as auto-expanded
@@ -759,6 +772,7 @@ export function WorkflowRuns({
       case "error":
         return <X className="h-3 w-3 text-white" />;
       case "running":
+      case "queued":
         return <Loader2 className="h-3 w-3 animate-spin text-white" />;
       default:
         return <Clock className="h-3 w-3 text-white" />;
@@ -772,7 +786,10 @@ export function WorkflowRuns({
       case "error":
         return "bg-red-600";
       case "running":
+      case "queued":
         return "bg-blue-600";
+      case "waiting":
+        return "bg-amber-500";
       default:
         return "bg-muted-foreground";
     }
@@ -846,6 +863,11 @@ export function WorkflowRuns({
                   <span className="font-semibold text-sm">
                     Run #{executions.length - index}
                   </span>
+                  {execution.trigger && execution.trigger !== "manual" && (
+                    <span className="rounded border px-1.5 py-0.5 text-[10px] text-muted-foreground uppercase tracking-wide">
+                      {execution.trigger}
+                    </span>
+                  )}
                 </div>
                 <div className="flex items-center gap-2 font-mono text-muted-foreground text-xs">
                   <span>{getRelativeTime(execution.startedAt)}</span>
@@ -883,6 +905,7 @@ export function WorkflowRuns({
                 )}
               </button>
             </div>
+            <RunActions execution={execution} />
 
             {isExpanded && (
               <div className="border-t bg-muted/20">
@@ -911,6 +934,60 @@ export function WorkflowRuns({
           </div>
         );
       })}
+    </div>
+  );
+}
+
+/** Proof link for finished runs; retry (from the failed step) for failed ones. */
+function RunActions({ execution }: { execution: WorkflowExecution }) {
+  const [retrying, setRetrying] = useState(false);
+  const finished = ["success", "error", "cancelled"].includes(execution.status);
+  if (!finished) {
+    return null;
+  }
+  const retry = async () => {
+    setRetrying(true);
+    try {
+      const response = await fetch(
+        `/api/workflows/executions/${execution.id}/retry`,
+        { method: "POST" }
+      );
+      if (response.ok) {
+        toast.success("Retrying from the failed step");
+      } else {
+        toast.error("Could not retry this run");
+      }
+    } finally {
+      setRetrying(false);
+    }
+  };
+  return (
+    <div className="-mt-2 flex flex-wrap items-center justify-end gap-1 px-4 pb-3">
+      {execution.status === "error" && (
+        <RunDoctor executionId={execution.id} onRetry={retry} />
+      )}
+      {execution.status === "error" && (
+        <button
+          className="flex items-center gap-1 rounded px-1.5 py-1 text-muted-foreground text-xs transition-colors hover:bg-muted hover:text-foreground"
+          disabled={retrying}
+          onClick={retry}
+          title="Retry from the failed step (completed steps are not repeated)"
+          type="button"
+        >
+          <RotateCcw className={cn("size-3.5", retrying && "animate-spin")} />
+          Retry
+        </button>
+      )}
+      <a
+        className="flex items-center gap-1 rounded px-1.5 py-1 text-primary text-xs transition-colors hover:bg-primary/10"
+        href={`/verify/${execution.id}`}
+        rel="noopener"
+        target="_blank"
+        title="Open this run's Proof-of-Execution receipt"
+      >
+        <ShieldCheck className="size-3.5" />
+        Verify
+      </a>
     </div>
   );
 }

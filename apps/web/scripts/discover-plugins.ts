@@ -148,6 +148,7 @@ export {
   isFieldGroup,
   parseActionId,
   registerIntegration,
+  requiresConnection,
 } from "./registry";
 `;
 

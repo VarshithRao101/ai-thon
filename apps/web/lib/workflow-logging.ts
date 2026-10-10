@@ -8,7 +8,7 @@ import { eq } from "drizzle-orm";
 import { workflowExecutionLogs, workflowExecutions } from "@/lib/db/schema";
 import { requireTenant, tdb } from "@/lib/db/tenant";
 
-// All writes run in the run's tenant context (set by lib/runtime/dispatch.ts),
+// All writes run in the run's tenant context (set by the Hive runner, lib/hive/runner.ts),
 // so Postgres RLS confines them to that workspace.
 
 export type LogStepStartParams = {

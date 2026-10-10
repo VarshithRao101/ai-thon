@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import postgres from "postgres";
 import { getRequestContext } from "@/lib/auth/context";
 import { can } from "@/lib/auth/rbac";
 import {
@@ -7,6 +6,7 @@ import {
   markIntegrationTested,
 } from "@/lib/db/integrations";
 import { runWithTenant } from "@/lib/db/tenant";
+import { connectionTestFor } from "@/lib/integrations/connection-tests";
 import {
   getCredentialMapping,
   getIntegration as getPluginFromRegistry,
@@ -50,13 +50,11 @@ export async function POST(
       }
 
       if (integration.type === "database") {
-        const result = await testDatabaseConnection(integration.config.url);
-        await markIntegrationTested(
-          integrationId,
-          result.status === "success",
-          result.message
+        // SSRF vector (user-supplied URL); not supported in FlowLedger (docs/10).
+        return NextResponse.json(
+          { error: "Database connections are not supported" },
+          { status: 400 }
         );
-        return NextResponse.json(result);
       }
 
       const plugin = getPluginFromRegistry(integration.type);
@@ -68,16 +66,18 @@ export async function POST(
         );
       }
 
-      if (!plugin.testConfig) {
+      const testFn = await connectionTestFor(plugin);
+
+      if (!testFn) {
         return NextResponse.json(
           { error: "Integration does not support testing" },
+
           { status: 400 }
         );
       }
 
       const credentials = getCredentialMapping(plugin, integration.config);
 
-      const testFn = await plugin.testConfig.getTestFunction();
       const testResult = await testFn(credentials);
 
       const result: TestConnectionResult = {
@@ -103,42 +103,5 @@ export async function POST(
       },
       { status: 500 }
     );
-  }
-}
-
-async function testDatabaseConnection(
-  databaseUrl?: string
-): Promise<TestConnectionResult> {
-  let connection: postgres.Sql | null = null;
-
-  try {
-    if (!databaseUrl) {
-      return {
-        status: "error",
-        message: "Connection failed",
-      };
-    }
-
-    connection = postgres(databaseUrl, {
-      max: 1,
-      idle_timeout: 5,
-      connect_timeout: 5,
-    });
-
-    await connection`SELECT 1`;
-
-    return {
-      status: "success",
-      message: "Connection successful",
-    };
-  } catch {
-    return {
-      status: "error",
-      message: "Connection failed",
-    };
-  } finally {
-    if (connection) {
-      await connection.end();
-    }
   }
 }

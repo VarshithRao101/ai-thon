@@ -116,11 +116,11 @@ check("Bob's credential list is empty", Array.isArray(intsB.json) && intsB.json.
 const intA = await alice.call("GET", `/api/integrations/${intId}`);
 check("Alice reads her credential back decrypted", intA.json?.config?.apiKey === "re_test_not_a_real_key");
 
-// --- run a workflow (in-process dispatch inside the tenant context)
+// --- run a workflow (Hive queue; the worker runs inside the tenant context)
 const run = await alice.call("POST", `/api/workflow/${wfId}/execute`, {});
 check("Alice runs her workflow", run.status === 200 && run.json?.executionId);
-let runStatus = "running";
-for (let i = 0; i < 20 && runStatus === "running"; i++) {
+let runStatus = "queued";
+for (let i = 0; i < 40 && ["queued", "running", "waiting"].includes(runStatus); i++) {
   await new Promise((r) => setTimeout(r, 250));
   runStatus = (await alice.call("GET", `/api/workflows/executions/${run.json?.executionId}/status`)).json?.status;
 }

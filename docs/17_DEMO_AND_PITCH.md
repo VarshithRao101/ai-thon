@@ -20,9 +20,9 @@
 - [ ] Phone hotspot ready as backup internet.
 
 ## Fallback ladder
-1. Testnet slow → switch `CHAIN_*` to local anvil (one env flip, already deployed).
+1. Testnet slow or unfunded → run the local Hardhat chain (`pnpm --filter @flowledger/contracts chain`), deploy with `anchor:deploy`, and start the app with `CHAIN_ID=31337 CHAIN_RPC_URL=http://127.0.0.1:8545 ANCHOR_CONTRACT_ADDRESS=…`. Verification still runs in the browser; say honestly that it is a local chain.
 2. LLM down → Copilot offline template fallback; AI nodes use the fallback provider.
-3. Gmail blocked → show the Mailpit inbox (local SMTP) and say so honestly.
+3. Gmail blocked → show the run's step log and Run Doctor's diagnosis; say so honestly.
 4. Internet down → whole stack on localhost + anvil + Mailpit, demoed on the laptop's own browser.
 5. Total failure → 90-second recorded backup video.
 

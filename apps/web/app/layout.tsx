@@ -1,14 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import { ReactFlowProvider } from "@xyflow/react";
-import { Provider } from "jotai";
 import type { ReactNode } from "react";
-import { AuthProvider } from "@/components/auth/provider";
-import { GlobalModals } from "@/components/global-modals";
-import { OverlayProvider } from "@/components/overlays/overlay-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
-import { PersistentCanvas } from "@/components/workflow/persistent-canvas";
 import { display, mono, sans } from "@/lib/fonts";
 import { cn } from "@/lib/utils";
 
@@ -25,8 +19,6 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
   viewportFit: "cover",
   themeColor: "#0a0a0a",
 };
@@ -35,6 +27,8 @@ type RootLayoutProps = {
   children: ReactNode;
 };
 
+// Builder pages add the canvas and app providers in (app)/layout.tsx; public
+// pages (hosted forms, receipt verification) render without them.
 const RootLayout = ({ children }: RootLayoutProps) => (
   <html lang="en" suppressHydrationWarning>
     <body
@@ -51,20 +45,8 @@ const RootLayout = ({ children }: RootLayoutProps) => (
         disableTransitionOnChange
         enableSystem={false}
       >
-        <Provider>
-          <AuthProvider>
-            <OverlayProvider>
-              <ReactFlowProvider>
-                <PersistentCanvas />
-                <div className="pointer-events-none relative z-10">
-                  {children}
-                </div>
-              </ReactFlowProvider>
-              <Toaster />
-              <GlobalModals />
-            </OverlayProvider>
-          </AuthProvider>
-        </Provider>
+        {children}
+        <Toaster />
       </ThemeProvider>
     </body>
   </html>

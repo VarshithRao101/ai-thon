@@ -258,7 +258,7 @@ export const aiApi = {
   ) =>
     apiCall<WorkflowData>("/api/ai/generate", {
       method: "POST",
-      body: JSON.stringify({ prompt, existingWorkflow }),
+      body: JSON.stringify({ prompt, existingWorkflow, mode: "json" }),
     }),
   generateStream: async (
     prompt: string,
@@ -575,7 +575,7 @@ export const workflowApi = {
       status: string;
       nodeStatuses: Array<{
         nodeId: string;
-        status: "pending" | "running" | "success" | "error";
+        status: "idle" | "running" | "success" | "error";
       }>;
     }>(`/api/workflows/executions/${executionId}/status`),
 

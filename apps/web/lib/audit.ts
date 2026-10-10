@@ -12,7 +12,11 @@ export type AuditAction =
   | "integration.delete"
   | "apikey.create"
   | "apikey.revoke"
-  | "vault.rotate";
+  | "vault.rotate"
+  | "workflow.publish"
+  | "workflow.enable"
+  | "workflow.disable"
+  | "run.retry";
 
 /**
  * Append to the workspace audit trail (docs/10). Best effort: a failed audit

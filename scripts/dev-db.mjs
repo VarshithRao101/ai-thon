@@ -12,7 +12,10 @@ import EmbeddedPostgres from "embedded-postgres";
 
 const dataDir = resolve(import.meta.dirname, "..", ".data", "pg");
 const port = Number(process.env.DEV_DB_PORT ?? 5433);
-const database = "flowledger";
+// UTF-8 always: Windows clusters default to WIN1252, which cannot store Telugu,
+// Hindi, emoji or even "→" in form answers and logs. (An older WIN1252
+// database named "flowledger" may still exist; it is no longer used.)
+const database = "flowledger_utf8";
 
 const pg = new EmbeddedPostgres({
   databaseDir: dataDir,
@@ -20,6 +23,7 @@ const pg = new EmbeddedPostgres({
   password: "flowledger", // local-only dev default, never used outside this machine
   port,
   persistent: true,
+  initdbFlags: ["--encoding=UTF8", "--locale=C"],
 });
 
 if (!existsSync(resolve(dataDir, "PG_VERSION"))) {
@@ -32,8 +36,10 @@ const admin = pg.getPgClient();
 await admin.connect();
 const exists = await admin.query("select 1 from pg_database where datname = $1", [database]);
 if (exists.rowCount === 0) {
-  await pg.createDatabase(database);
-  console.log(`[dev-db] created database "${database}"`);
+  await admin.query(
+    `CREATE DATABASE "${database}" WITH TEMPLATE template0 ENCODING 'UTF8' LC_COLLATE 'C' LC_CTYPE 'C'`
+  );
+  console.log(`[dev-db] created database "${database}" (UTF8)`);
 }
 // Roles are cluster-wide; idempotent so restarts are safe.
 await admin.query(`

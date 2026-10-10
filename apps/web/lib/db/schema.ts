@@ -1,10 +1,11 @@
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import {
   boolean,
   index,
   integer,
   jsonb,
   pgTable,
+  serial,
   text,
   timestamp,
   uniqueIndex,
@@ -149,6 +150,21 @@ export const invitations = pgTable(
 // Workflow visibility type
 export type WorkflowVisibility = "private" | "public";
 
+export type ExecutionStatus =
+  | "queued"
+  | "running"
+  | "waiting"
+  | "success"
+  | "error"
+  | "cancelled"
+  | "skipped";
+export type ExecutionTrigger =
+  | "manual"
+  | "webhook"
+  | "form"
+  | "schedule"
+  | "retry";
+
 export const workflows = pgTable(
   "workflows",
   {
@@ -171,11 +187,47 @@ export const workflows = pgTable(
       .notNull()
       .default("private")
       .$type<WorkflowVisibility>(),
+    // Triggers (webhook/form/schedule) only fire for enabled, published workflows
+    enabled: boolean("enabled").notNull().default(false),
+    publishedVersionId: text("published_version_id"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },
   (t) => [
     index("workflows_workspace_updated_idx").on(t.workspaceId, t.updatedAt),
+  ]
+);
+
+// Immutable published snapshots; runs reference the exact definition they executed
+export const workflowVersions = pgTable(
+  "workflow_versions",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => generateId()),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    workflowId: text("workflow_id")
+      .notNull()
+      .references(() => workflows.id, { onDelete: "cascade" }),
+    version: integer("version").notNull(),
+    definition: jsonb("definition")
+      .notNull()
+      // biome-ignore lint/suspicious/noExplicitAny: JSONB type - { nodes, edges } snapshot
+      .$type<{ nodes: any[]; edges: any[] }>(),
+    // sha256 of the canonical (RFC 8785) JSON of `definition`
+    definitionHash: text("definition_hash").notNull(),
+    publishedBy: text("published_by").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    publishedAt: timestamp("published_at").notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("workflow_versions_workflow_version_uq").on(
+      t.workflowId,
+      t.version
+    ),
   ]
 );
 
@@ -226,9 +278,23 @@ export const workflowExecutions = pgTable(
     userId: text("user_id")
       .notNull()
       .references(() => users.id),
-    status: text("status")
+    status: text("status").notNull().$type<ExecutionStatus>(),
+    trigger: text("trigger")
       .notNull()
-      .$type<"pending" | "running" | "success" | "error" | "cancelled">(),
+      .default("manual")
+      .$type<ExecutionTrigger>(),
+    // Published runs point at a version; draft test runs carry their own snapshot
+    versionId: text("version_id").references(() => workflowVersions.id, {
+      onDelete: "set null",
+    }),
+    // biome-ignore lint/suspicious/noExplicitAny: JSONB type - { nodes, edges } draft snapshot
+    definition: jsonb("definition").$type<{ nodes: any[]; edges: any[] }>(),
+    idempotencyKey: text("idempotency_key"),
+    jobId: text("job_id"),
+    // Times the queue delivered this run (crash recovery increments it)
+    attempt: integer("attempt").notNull().default(0),
+    queuedAt: timestamp("queued_at").notNull().defaultNow(),
+    heartbeatAt: timestamp("heartbeat_at"),
     // biome-ignore lint/suspicious/noExplicitAny: JSONB type - structure validated at application level
     input: jsonb("input").$type<Record<string, any>>(),
     // biome-ignore lint/suspicious/noExplicitAny: JSONB type - structure validated at application level
@@ -241,6 +307,12 @@ export const workflowExecutions = pgTable(
   (t) => [
     index("executions_workspace_started_idx").on(t.workspaceId, t.startedAt),
     index("executions_workflow_started_idx").on(t.workflowId, t.startedAt),
+    uniqueIndex("executions_idempotency_uq")
+      .on(t.workflowId, t.idempotencyKey)
+      .where(sql`${t.idempotencyKey} is not null`),
+    index("executions_active_idx")
+      .on(t.status)
+      .where(sql`${t.status} in ('queued', 'running', 'waiting')`),
   ]
 );
 
@@ -262,12 +334,20 @@ export const workflowExecutionLogs = pgTable(
     nodeType: text("node_type").notNull(),
     status: text("status")
       .notNull()
-      .$type<"pending" | "running" | "success" | "error">(),
+      .$type<
+        "pending" | "running" | "success" | "error" | "skipped" | "waiting"
+      >(),
+    attempt: integer("attempt").notNull().default(1),
     // biome-ignore lint/suspicious/noExplicitAny: JSONB type - structure validated at application level
     input: jsonb("input").$type<any>(),
+    // Redacted preview for display
     // biome-ignore lint/suspicious/noExplicitAny: JSONB type - structure validated at application level
     output: jsonb("output").$type<any>(),
+    // Full output sealed with the workspace key: rebuilds context on resume (D-018)
+    outputEnc: text("output_enc"),
+    branch: text("branch"),
     error: text("error"),
+    errorClass: text("error_class"),
     startedAt: timestamp("started_at").notNull().defaultNow(),
     completedAt: timestamp("completed_at"),
     duration: text("duration"), // Duration in milliseconds
@@ -329,6 +409,110 @@ export const auditEvents = pgTable(
   (t) => [index("audit_events_workspace_at_idx").on(t.workspaceId, t.at)]
 );
 
+// Proof-of-Execution (docs/08). A batch covers receipts from many workspaces,
+// so ledger_batches is global: it holds only roots and chain metadata.
+export type LedgerBatchStatus =
+  | "building"
+  | "submitted"
+  | "confirmed"
+  | "failed";
+
+export const ledgerBatches = pgTable(
+  "ledger_batches",
+  {
+    id: serial("id").primaryKey(),
+    chainBatchId: integer("chain_batch_id"),
+    merkleRoot: text("merkle_root").notNull(),
+    leafCount: integer("leaf_count").notNull(),
+    chainId: integer("chain_id").notNull(),
+    contractAddress: text("contract_address").notNull(),
+    txHash: text("tx_hash"),
+    blockNumber: text("block_number"),
+    gasUsed: text("gas_used"),
+    status: text("status").notNull().$type<LedgerBatchStatus>(),
+    error: text("error"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    confirmedAt: timestamp("confirmed_at", { withTimezone: true }),
+  },
+  (t) => [index("ledger_batches_status_idx").on(t.status)]
+);
+
+export type ReceiptStatus = "pending" | "anchored";
+
+// One receipt per settled run (a retried run gets a new version). Holds hashes
+// and ids only; the salt never leaves the database.
+export const receipts = pgTable(
+  "receipts",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => generateId()),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    executionId: text("execution_id")
+      .notNull()
+      .references(() => workflowExecutions.id, { onDelete: "cascade" }),
+    version: integer("version").notNull().default(1),
+    // biome-ignore lint/suspicious/noExplicitAny: JSONB type - ReceiptV1 from @flowledger/ledger
+    receipt: jsonb("receipt").notNull().$type<any>(),
+    receiptHash: text("receipt_hash").notNull(),
+    // 16 random bytes (hex). Deleting it makes the anchored hashes unlinkable.
+    salt: text("salt"),
+    prevReceiptHash: text("prev_receipt_hash"),
+    batchId: integer("batch_id").references(() => ledgerBatches.id, {
+      onDelete: "set null",
+    }),
+    leafIndex: integer("leaf_index"),
+    // biome-ignore lint/suspicious/noExplicitAny: JSONB type - bytes32[] Merkle proof
+    proof: jsonb("proof").$type<any>(),
+    status: text("status").notNull().default("pending").$type<ReceiptStatus>(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    anchoredAt: timestamp("anchored_at", { withTimezone: true }),
+  },
+  (t) => [
+    uniqueIndex("receipts_execution_version_uq").on(t.executionId, t.version),
+    uniqueIndex("receipts_hash_uq").on(t.receiptHash),
+    index("receipts_workspace_created_idx").on(t.workspaceId, t.createdAt),
+    index("receipts_pending_idx")
+      .on(t.status)
+      .where(sql`${t.status} = 'pending'`),
+  ]
+);
+
+// Demo tamper simulator (docs/08): every simulated edit is on the record.
+export const tamperEvents = pgTable(
+  "tamper_events",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => generateId()),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    executionId: text("execution_id")
+      .notNull()
+      .references(() => workflowExecutions.id, { onDelete: "cascade" }),
+    logId: text("log_id").notNull(),
+    nodeId: text("node_id").notNull(),
+    field: text("field").notNull(),
+    // The untouched ciphertext, so "Restore" puts the original back exactly.
+    originalOutputEnc: text("original_output_enc"),
+    // biome-ignore lint/suspicious/noExplicitAny: JSONB type - the redacted preview before the edit
+    originalOutput: jsonb("original_output").$type<any>(),
+    actorUserId: text("actor_user_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    at: timestamp("at", { withTimezone: true }).notNull().defaultNow(),
+    restoredAt: timestamp("restored_at", { withTimezone: true }),
+  },
+  (t) => [index("tamper_events_execution_idx").on(t.executionId)]
+);
+
 // Relations
 export const workflowExecutionsRelations = relations(
   workflowExecutions,
@@ -345,6 +529,7 @@ export type Session = typeof sessions.$inferSelect;
 export type Workspace = typeof workspaces.$inferSelect;
 export type Member = typeof members.$inferSelect;
 export type Workflow = typeof workflows.$inferSelect;
+export type WorkflowVersion = typeof workflowVersions.$inferSelect;
 export type NewWorkflow = typeof workflows.$inferInsert;
 export type Integration = typeof integrations.$inferSelect;
 export type NewIntegration = typeof integrations.$inferInsert;
@@ -355,3 +540,6 @@ export type NewWorkflowExecutionLog = typeof workflowExecutionLogs.$inferInsert;
 export type ApiKey = typeof apiKeys.$inferSelect;
 export type NewApiKey = typeof apiKeys.$inferInsert;
 export type AuditEvent = typeof auditEvents.$inferSelect;
+export type Receipt = typeof receipts.$inferSelect;
+export type LedgerBatch = typeof ledgerBatches.$inferSelect;
+export type TamperEvent = typeof tamperEvents.$inferSelect;

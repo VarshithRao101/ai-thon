@@ -3,6 +3,7 @@
  */
 import "server-only";
 
+import { BlockedUrlError, safeFetch } from "../net/ssrf";
 import { getErrorMessage } from "../utils";
 import { type StepInput, withStepLogging } from "./step-handler";
 
@@ -65,7 +66,8 @@ async function httpRequest(
   }
 
   try {
-    const response = await fetch(input.endpoint, {
+    // SSRF guard: public http(s) hosts only, every redirect re-checked.
+    const response = await safeFetch(input.endpoint, {
       method: input.httpMethod,
       headers: parseHeaders(input.httpHeaders),
       body: parseBody(input.httpMethod, input.httpBody),
@@ -83,6 +85,12 @@ async function httpRequest(
     const data = await parseResponse(response);
     return { success: true, data, status: response.status };
   } catch (error) {
+    if (error instanceof BlockedUrlError) {
+      return {
+        success: false,
+        error: `HTTP request blocked: ${error.message}`,
+      };
+    }
     return {
       success: false,
       error: `HTTP request failed: ${getErrorMessage(error)}`,

@@ -17,6 +17,10 @@ export type StepContext = {
   nodeId: string;
   nodeName: string;
   nodeType: string;
+  /** Set by the Hive engine, which logs every attempt itself (lib/hive/runner.ts). */
+  managed?: boolean;
+  /** Stable per (run, node); pass to providers that accept idempotency keys. */
+  idempotencyKey?: string;
 };
 
 /**
@@ -166,12 +170,16 @@ export type StepInputWithWorkflow = {
  *   });
  * }
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: template logic plus the Hive "managed" early return
 export async function withStepLogging<TInput extends StepInput, TOutput>(
   input: TInput,
   stepLogic: () => Promise<TOutput>
 ): Promise<TOutput> {
   // Extract context and log input without internal fields
   const context = input._context as StepContextWithWorkflow | undefined;
+  if (context?.managed) {
+    return stepLogic();
+  }
   const loggedInput = stripInternalFields(input);
   const logInfo = await logStepStart(context, loggedInput);
 

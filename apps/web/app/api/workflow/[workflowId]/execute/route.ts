@@ -1,12 +1,11 @@
 import { and, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { HttpError, tenantRoute } from "@/lib/api/route";
-import { workflowExecutions, workflows } from "@/lib/db/schema";
+import { workflows } from "@/lib/db/schema";
 import { tdb } from "@/lib/db/tenant";
-import { dispatchExecution } from "@/lib/runtime/dispatch";
-import type { WorkflowEdge, WorkflowNode } from "@/lib/workflow-store";
+import { startRun } from "@/lib/hive/ingress";
 
-// POST /api/workflow/{id}/execute: manual/test run of a workflow in the active workspace
+// POST /api/workflow/{id}/execute: manual test run of the current draft (Hive queue)
 export const POST = tenantRoute<{ workflowId: string }>(
   "workflows.execute",
   async (ctx, request, { workflowId }) => {
@@ -28,37 +27,25 @@ export const POST = tenantRoute<{ workflowId: string }>(
     }
 
     const body = await request.json().catch(() => ({}));
-    const input = body.input || {};
+    const input =
+      body && typeof body.input === "object" && body.input !== null
+        ? (body.input as Record<string, unknown>)
+        : {};
 
-    const [execution] = await tdb((tx) =>
-      tx
-        .insert(workflowExecutions)
-        .values({
-          workspaceId: ctx.workspaceId,
-          workflowId,
-          userId: ctx.userId,
-          status: "running",
-          input,
-        })
-        .returning({ id: workflowExecutions.id })
-    );
-    if (!execution) {
-      throw new HttpError(500, "Failed to create execution");
+    const result = await startRun({
+      workflow,
+      trigger: "manual",
+      input,
+      userId: ctx.userId,
+      useDraft: true,
+    });
+    if (!result.ok) {
+      throw new HttpError(409, result.reason);
     }
-
-    // Steps receive only integration ids and fetch credentials inside the run.
-    dispatchExecution(
-      {
-        nodes: workflow.nodes as WorkflowNode[],
-        edges: workflow.edges as WorkflowEdge[],
-        triggerInput: input,
-        executionId: execution.id,
-        workflowId,
-      },
-      { workspaceId: ctx.workspaceId, userId: ctx.userId }
-    );
-
-    return NextResponse.json({ executionId: execution.id, status: "running" });
+    return NextResponse.json({
+      executionId: result.executionId,
+      status: "queued",
+    });
   },
   { permission: "run:operate" }
 );
