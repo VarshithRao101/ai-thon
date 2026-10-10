@@ -971,7 +971,7 @@ function RunActions({ execution }: { execution: WorkflowExecution }) {
           className="flex items-center gap-1 rounded px-1.5 py-1 text-muted-foreground text-xs transition-colors hover:bg-muted hover:text-foreground"
           disabled={retrying}
           onClick={retry}
-          title="Retry from the failed step (completed steps are not repeated)"
+          title="Retry from the failed step"
           type="button"
         >
           <RotateCcw className={cn("size-3.5", retrying && "animate-spin")} />
@@ -983,7 +983,7 @@ function RunActions({ execution }: { execution: WorkflowExecution }) {
         href={`/verify/${execution.id}`}
         rel="noopener"
         target="_blank"
-        title="Open this run's Proof-of-Execution receipt"
+        title="Open the proof"
       >
         <ShieldCheck className="size-3.5" />
         Verify

@@ -109,3 +109,11 @@
 - **Bug found and fixed by the eval:** models referenced form fields they never asked for (`{{trigger.fullName}}` with a `name` field), which would have produced empty values at run time. The builder now adds every referenced field to the form (type inferred), and the prompt requires matching keys. 3 new unit tests.
 - **UX fix:** when the Copilot falls back to a template, the builder now says so (toast) instead of presenting it as the AI's answer. SDK retries capped at 1 so a quota error doesn't burn three requests.
 - Gates: 89 unit tests, lint, typecheck; live suites hive, forms, tenancy, ledger all green.
+
+## 2026-10-10 (night): Groq as the main AI, shorter copy, live end-to-end on Amoy
+- **AI providers:** the owner added a Groq key. Gemini's free tier (20 Copilot requests/day) is now the fallback; Groq is primary: `openai/gpt-oss-120b` for the Copilot, `openai/gpt-oss-20b` for AI steps, `gemini-3.5-flash` as fallback (all from env).
+- **Copilot golden set on Groq: 21/22 workflows fully correct, 220/221 checks** (the one miss, extract → sheet wiring, passed 3/3 on rerun). **AI steps: 18/19** (one borderline Hot/Warm lead), p50 0.7 s.
+- **Live end-to-end (`node scripts/e2e-live.mjs`, real services, no mocks): all checks pass.** Copilot built Form → classify → summary in 3.3 s; the form run finished 3.9 s after submit; the receipt was anchored on **Polygon Amoy 9.2 s after submit** (tx `0x4a530d85…62e8d`, status success, 109,637 gas ≈ 0.0055 POL); `/verify` shows all five checks green with the contract confirming the receipt.
+- **Shorter copy:** the landing page (hero, steps, features, plans, stats, CTA, footer) and the builder home/canvas panels were cut to short lines; template cards drop their summaries; example chips show short labels.
+- **`pnpm --filter @flowledger/web check:connections [--email you@gmail.com] [--send]`:** runs every saved Gmail/Sheets/Telegram connection's live test and, with `--send`, one real Telegram message, an email to the sender and a sheet row. No connections are saved yet.
+- Wallet after these runs: ~0.05 POL (about 9 more anchors). Top up before rehearsals.

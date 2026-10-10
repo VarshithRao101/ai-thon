@@ -344,7 +344,7 @@ export function AIPrompt({ workflowId, onWorkflowCreated }: AIPromptProps) {
                   inputRef.current?.blur();
                 }
               }}
-              placeholder={isFocused ? "Describe your workflow with natural language..." : "Ask AI..."}
+              placeholder={isFocused ? "Describe what to build or change" : "Ask AI..."}
               ref={inputRef}
               rows={1}
               value={prompt}

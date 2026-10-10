@@ -79,9 +79,7 @@ export function RunDoctor({
         });
         setNodes(updated);
         await api.workflow.update(workflowId, { nodes: updated, edges });
-        toast.success(
-          "Connected. Run a test, or publish again for live triggers."
-        );
+        toast.success("Connected. Run a test.");
       },
     });
   };
@@ -144,7 +142,7 @@ export function RunDoctor({
       <button
         className="flex items-center gap-1 rounded px-1.5 py-1 text-amber-500 text-xs transition-colors hover:bg-amber-500/10"
         onClick={ask}
-        title="Explain why this run failed and suggest a fix"
+        title="Explain and fix"
         type="button"
       >
         <Stethoscope className="size-3.5" />
@@ -219,7 +217,7 @@ export function RunDoctor({
               <p className="text-[11px] text-muted-foreground">
                 {diagnosis.source === "ai"
                   ? `Explained by AI (${diagnosis.model}). Fixes are checked before they are offered.`
-                  : "Diagnosed by N-Flow's built-in rules."}
+                  : "Diagnosed by built-in rules."}
               </p>
             </div>
           )}

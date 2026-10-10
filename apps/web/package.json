@@ -30,7 +30,9 @@
     "cloud:env": "tsx scripts/cloud.ts env",
     "eval:copilot": "tsx --conditions=react-server scripts/eval-copilot.ts",
     "eval:ai": "tsx --conditions=react-server scripts/eval-ai-steps.ts",
-    "check:google": "tsx --conditions=react-server scripts/check-google-oauth.ts"
+    "check:google": "tsx --conditions=react-server scripts/check-google-oauth.ts",
+    "check:connections": "tsx --conditions=react-server scripts/check-connections.ts",
+    "e2e:live": "node scripts/e2e-live.mjs"
   },
   "dependencies": {
     "@ai-sdk/google": "^2.0.102",

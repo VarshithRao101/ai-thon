@@ -81,11 +81,7 @@ export function PublishControls({ workflowId, save, disabled }: Props) {
         return;
       }
       setState({ ...state, enabled });
-      toast.success(
-        enabled
-          ? "Workflow on: triggers will run"
-          : "Workflow paused: triggers are rejected and logged"
-      );
+      toast.success(enabled ? "Workflow on" : "Workflow paused");
     } finally {
       setBusy(null);
     }
@@ -110,11 +106,7 @@ export function PublishControls({ workflowId, save, disabled }: Props) {
         )}
         disabled={!published || busy !== null || disabled}
         onClick={toggle}
-        title={
-          published
-            ? "Enable or disable triggers"
-            : "Publish first to turn it on"
-        }
+        title={published ? "Turn on or off" : "Publish first"}
         type="button"
       >
         <span
@@ -137,7 +129,7 @@ export function PublishControls({ workflowId, save, disabled }: Props) {
         disabled={busy !== null || disabled}
         onClick={publish}
         size="sm"
-        title="Validate and publish this version"
+        title="Publish"
       >
         {busy === "publish" ? (
           <Loader2 className="size-4 animate-spin" />

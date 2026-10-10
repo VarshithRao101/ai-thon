@@ -62,19 +62,19 @@ const STEPS = [
   {
     n: "01",
     title: "Describe it",
-    body: "Type what you want in plain English. The Copilot turns it into a checked workflow on a visual canvas, ready to edit.",
+    body: "Type it in plain English. AI builds the workflow.",
     icon: Sparkles,
   },
   {
     n: "02",
-    title: "Run it on Hive",
-    body: "Our queue engine runs every step with retries, durable delays and a dead-letter queue. Watch each run light up the canvas live.",
+    title: "Run it",
+    body: "Every step runs with retries. Watch it live.",
     icon: Workflow,
   },
   {
     n: "03",
     title: "Prove it",
-    body: "Every run gets a hashed receipt. Receipts are batched into a Merkle tree and the root is anchored on Polygon for anyone to check.",
+    body: "Each run gets a receipt anchored on Polygon.",
     icon: ShieldCheck,
   },
 ];
@@ -82,39 +82,39 @@ const STEPS = [
 const FEATURES = [
   {
     title: "AI Copilot",
-    body: "Plain English in, a validated workflow out. Falls back to templates if the model is down.",
+    body: "Sentence in, workflow out.",
     icon: Bot,
     wide: true,
   },
   {
     title: "Public verify page",
-    body: "Anyone with the link checks a run against the chain, in their own browser.",
+    body: "Anyone can check a run.",
     icon: Fingerprint,
   },
   {
     title: "Run Doctor",
-    body: "Failed run? Rules first, AI second: a plain explanation and a one-click fix.",
+    body: "Explains failures. Suggests the fix.",
     icon: LifeBuoy,
   },
   {
     title: "Live canvas",
-    body: "Server-sent events animate every step as it runs, whoever triggered it.",
+    body: "See every step as it runs.",
     icon: Radio,
   },
   {
-    title: "Hosted forms with QR",
-    body: "Publish a form, show the QR, collect answers in any language.",
+    title: "Forms + QR",
+    body: "Share a link or QR. Any language.",
     icon: QrCode,
     wide: true,
   },
   {
-    title: "Workspaces + row-level security",
-    body: "Postgres enforces tenant isolation; roles decide who can publish.",
+    title: "Private workspaces",
+    body: "Your data stays yours.",
     icon: Boxes,
   },
   {
     title: "Encrypted vault",
-    body: "Connector secrets are envelope-encrypted and never leave the server.",
+    body: "Your keys, encrypted.",
     icon: KeyRound,
   },
 ];
@@ -125,7 +125,7 @@ const PLANS = [
     name: "Free",
     price: "₹0",
     period: "forever",
-    blurb: "For students, clubs and trying it out",
+    blurb: "Try it out",
     features: [
       "3 active workflows",
       "300 runs a month",
@@ -140,7 +140,7 @@ const PLANS = [
     name: "Pro",
     price: "₹499",
     period: "per month",
-    blurb: "For small businesses that run on automations",
+    blurb: "Small businesses",
     features: [
       "20 workflows",
       "5,000 runs a month",
@@ -156,7 +156,7 @@ const PLANS = [
     name: "Business",
     price: "₹1,999",
     period: "per month",
-    blurb: "For teams that need audit trails",
+    blurb: "Teams",
     features: [
       "Unlimited workflows",
       "50,000 runs a month",
@@ -172,10 +172,10 @@ const PLANS = [
 
 // Measured on 10 Oct 2026 (docs/20 session log, docs/08). No estimates here.
 const STATS = [
-  { value: 115, label: "unit and contract tests passing" },
-  { value: 132, label: "live end-to-end checks passing" },
-  { value: 78_257, label: "gas per anchored batch (measured, local chain)" },
-  { value: 0, label: "known production dependency advisories (pnpm audit)" },
+  { value: 115, label: "tests passing" },
+  { value: 132, label: "live checks passing" },
+  { value: 78_257, label: "gas per batch (local chain)" },
+  { value: 0, label: "known vulnerabilities" },
 ];
 
 function Headline() {
@@ -508,7 +508,7 @@ export function LandingPage() {
             transition={{ duration: 0.7, delay: 0.1 }}
           >
             <span className="nf-live-dot size-1.5 rounded-full bg-[#ffc326]" />
-            AI automation with on-chain proof
+            AI automation, proven on-chain
           </motion.p>
           <Headline />
           <motion.p
@@ -517,10 +517,7 @@ export function LandingPage() {
             initial={{ opacity: 0, y: 16 }}
             transition={{ duration: 0.8, delay: 1.1 }}
           >
-            Describe an automation in plain English.{" "}
-            <span className="whitespace-nowrap">N-Flow</span> builds it across
-            forms, Sheets, Gmail and Telegram, runs it on its own engine, and
-            gives every run a receipt anyone can verify on Polygon.
+            Forms, Sheets, Gmail, Telegram. Built by AI. Proven on Polygon.
           </motion.p>
           <motion.div
             animate={{ opacity: 1, y: 0 }}
@@ -541,7 +538,7 @@ export function LandingPage() {
                 className="nf-ghost-btn inline-flex items-center gap-2 rounded-xl px-5 py-3 font-medium"
                 href="#proof"
               >
-                <ShieldCheck className="size-4" /> See how proof works
+                <ShieldCheck className="size-4" /> How proof works
               </a>
             </div>
           </motion.div>
@@ -581,11 +578,10 @@ export function LandingPage() {
       <Section
         eyebrow="How it works"
         id="how"
-        sub="Three steps, no code, and a receipt at the end of every run."
+        sub="Three steps. No code."
         title={
           <>
-            From a sentence to a system you can{" "}
-            <span className="nf-gold-text">prove</span>
+            Describe. Run. <span className="nf-gold-text">Prove.</span>
           </>
         }
       >
@@ -629,7 +625,7 @@ export function LandingPage() {
       <Section
         eyebrow="Live flow"
         id="demo"
-        sub="The hackathon-registration template: a form submission becomes an AI decision, a Sheet row, an email and a Telegram alert, then a receipt."
+        sub="Form in. AI decides. Sheet, email, Telegram. Receipt."
         title={
           <>
             One submission. Four systems.{" "}
@@ -648,7 +644,7 @@ export function LandingPage() {
       <Section
         eyebrow="Proof-of-Execution"
         id="proof"
-        sub="Each step is hashed into the run's receipt. Receipts form a Merkle tree, and only its root goes on-chain: no personal data, ever. Change one byte and the proof breaks at that exact step."
+        sub="Only hashes go on-chain. Change one byte and it breaks."
         title={
           <>
             Logs you don't have to <span className="nf-gold-text">trust</span>
@@ -668,8 +664,7 @@ export function LandingPage() {
         id="features"
         title={
           <>
-            Built like a product,{" "}
-            <span className="nf-gold-text">not a demo</span>
+            Everything <span className="nf-gold-text">built in</span>
           </>
         }
       >
@@ -707,10 +702,10 @@ export function LandingPage() {
       <Section
         eyebrow="Plans"
         id="plans"
-        sub="Bring your own Gmail, Sheets and Telegram credentials; we build, run and prove the workflows. Planned pricing in rupees."
+        sub="Bring your own apps. We run and prove."
         title={
           <>
-            Priced for <span className="nf-gold-text">Indian</span> teams
+            Simple <span className="nf-gold-text">pricing</span>
           </>
         }
       >
@@ -768,15 +763,14 @@ export function LandingPage() {
           ))}
         </div>
         <p className="mt-6 text-center text-white/35 text-xs">
-          Every plan is free during the hackathon preview. Paid plans are
-          planned, not on sale yet.
+          Free during the preview. Paid plans coming.
         </p>
       </Section>
 
       <Section
         eyebrow="Measured, not estimated"
-        sub="Numbers from our own test runs on 10 October 2026."
-        title="Engineering you can check"
+        sub="Our own test runs, 10 Oct 2026."
+        title="Measured"
       >
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {STATS.map((stat) => (
@@ -798,12 +792,10 @@ export function LandingPage() {
           <div className="relative">
             <BeeMark className="mx-auto size-12" />
             <h2 className="mx-auto mt-6 max-w-2xl font-display font-semibold text-3xl text-white leading-tight tracking-tight sm:text-5xl">
-              Build your first automation that{" "}
-              <span className="nf-gold-text">proves itself</span>
+              Start <span className="nf-gold-text">automating</span>
             </h2>
             <p className="mx-auto mt-4 max-w-lg text-white/60">
-              Start from a sentence or a template. Publish, share the QR, and
-              watch the receipts land.
+              One sentence is enough.
             </p>
             <div className="mt-9 flex flex-wrap justify-center gap-3">
               <Link
@@ -841,8 +833,7 @@ export function LandingPage() {
           </nav>
         </div>
         <p className="mx-auto mt-6 max-w-6xl text-center text-white/30 text-xs md:text-left">
-          Built on Vercel's Workflow Builder Template (Apache-2.0). See the
-          open-source page for full attribution.
+          Built on Vercel's Workflow Builder Template (Apache-2.0).
         </p>
       </footer>
     </div>

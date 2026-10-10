@@ -199,7 +199,7 @@ export function ProofGraphic() {
           style={{ opacity: 0 }}
         >
           <Zap className="size-3.5" />
-          Polygon Amoy · root anchored
+          Anchored on Polygon
         </div>
 
         {/* Root and parents */}
@@ -271,9 +271,7 @@ export function ProofGraphic() {
           ) : (
             <ShieldCheck className="size-4" />
           )}
-          {tampered
-            ? "Tampered at step 3: the hash no longer matches the anchored root"
-            : "Verified: every step matches the root on Polygon"}
+          {tampered ? "Tampered at step 3" : "Verified on Polygon"}
         </div>
         <button
           className="nf-ghost-btn inline-flex items-center gap-2 rounded-full px-4 py-2 font-medium text-sm disabled:opacity-40"
@@ -293,8 +291,7 @@ export function ProofGraphic() {
         </button>
       </div>
       <p className="mt-4 text-center text-white/40 text-xs">
-        Illustration with shortened hashes. Every real run has a public Verify
-        page that checks its receipt against the chain in your browser.
+        Illustration. Every real run has a public Verify page.
       </p>
     </div>
   );

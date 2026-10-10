@@ -17,11 +17,28 @@ type Template = {
   steps: number;
 };
 
+// Short chip labels; clicking fills the full prompt.
 const EXAMPLES = [
-  "When someone registers for our hackathon, pick their track with AI, save them to a Google Sheet, email them a personal confirmation and alert our team on Telegram",
-  "Score every new sales lead with AI and ping Telegram when it's hot",
-  "When a patient books at my clinic, add it to a sheet, confirm by email and send a reminder later",
-  "Every morning at 9, post a short AI-written update to our Telegram group",
+  {
+    label: "Hackathon sign-ups",
+    prompt:
+      "When someone registers for our hackathon, pick their track with AI, save them to a Google Sheet, email them a personal confirmation and alert our team on Telegram",
+  },
+  {
+    label: "Hot leads to Telegram",
+    prompt:
+      "Score every new sales lead with AI and ping Telegram when it's hot",
+  },
+  {
+    label: "Clinic bookings",
+    prompt:
+      "When a patient books at my clinic, add it to a sheet, confirm by email and send a reminder later",
+  },
+  {
+    label: "Daily 9 AM update",
+    prompt:
+      "Every morning at 9, post a short AI-written update to our Telegram group",
+  },
 ];
 
 type Props = {
@@ -124,16 +141,8 @@ export function CopilotHome({ ensureSession, onStartBlank, onLeaving }: Props) {
           N-Flow by TRNT BEE
         </div>
         <h1 className="mt-4 font-display font-semibold text-3xl leading-tight tracking-tight sm:text-4xl">
-          Describe an automation.{" "}
-          <span className="text-brand-gradient">
-            We build it, run it, and prove it.
-          </span>
+          What should we <span className="text-brand-gradient">automate</span>?
         </h1>
-        <p className="mt-3 text-muted-foreground text-sm sm:text-base">
-          Forms, Google Sheets, email, Telegram and AI steps, wired by AI on a
-          visual canvas. Every run gets a receipt anchored on Polygon that
-          anyone can verify.
-        </p>
 
         <form className="mt-6" onSubmit={build}>
           <div className="honeycomb-glow rounded-2xl border bg-card p-2 shadow-sm focus-within:border-primary/60">
@@ -147,7 +156,7 @@ export function CopilotHome({ ensureSession, onStartBlank, onLeaving }: Props) {
                   build().catch(() => undefined);
                 }
               }}
-              placeholder="When someone fills my registration form, save it to a sheet, email them and alert my team on Telegram…"
+              placeholder="e.g. When my form is filled, add it to a sheet and alert Telegram"
               value={prompt}
             />
             <div className="flex items-center justify-between gap-2 px-2 pb-1">
@@ -175,11 +184,12 @@ export function CopilotHome({ ensureSession, onStartBlank, onLeaving }: Props) {
             <button
               className="rounded-full border bg-secondary/60 px-3 py-1.5 text-left text-muted-foreground text-xs transition-colors hover:border-primary/50 hover:text-foreground"
               disabled={busy !== null}
-              key={example}
-              onClick={() => setPrompt(example)}
+              key={example.label}
+              onClick={() => setPrompt(example.prompt)}
+              title={example.prompt}
               type="button"
             >
-              {example.length > 64 ? `${example.slice(0, 62)}…` : example}
+              {example.label}
             </button>
           ))}
         </div>
@@ -187,7 +197,7 @@ export function CopilotHome({ ensureSession, onStartBlank, onLeaving }: Props) {
         {templates.length > 0 && (
           <section className="mt-10">
             <h2 className="font-medium text-muted-foreground text-sm">
-              Or start from a template
+              Templates
             </h2>
             <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
               {templates.map((t) => (
@@ -206,9 +216,6 @@ export function CopilotHome({ ensureSession, onStartBlank, onLeaving }: Props) {
                       <ArrowRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
                     )}
                   </div>
-                  <p className="mt-1 text-muted-foreground text-xs">
-                    {t.summary}
-                  </p>
                   <p className="mt-2 text-[10px] text-muted-foreground/80 uppercase tracking-wider">
                     {t.trigger} · {t.steps} steps
                   </p>
@@ -221,8 +228,7 @@ export function CopilotHome({ ensureSession, onStartBlank, onLeaving }: Props) {
         <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t pt-4 text-muted-foreground text-xs">
           <span className="inline-flex items-center gap-1.5">
             <ShieldCheck className="size-4 text-primary" />
-            Proof-of-Execution: every run is hashed, batched and anchored
-            on-chain
+            Every run is proven on-chain
           </span>
           <button
             className="underline-offset-4 hover:text-foreground hover:underline"
@@ -230,7 +236,7 @@ export function CopilotHome({ ensureSession, onStartBlank, onLeaving }: Props) {
             onClick={onStartBlank}
             type="button"
           >
-            Start from a blank canvas
+            Blank canvas
           </button>
         </div>
       </div>

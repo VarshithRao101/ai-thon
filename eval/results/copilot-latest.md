@@ -1,28 +1,28 @@
-# Copilot golden set — 2026-10-10T12:20:11.526Z
+# Copilot golden set — 2026-10-10T14:57:06.537Z
 
-Models: smart `gemini-3.5-flash`, fast `gemini-3.5-flash-lite`. **9/22** workflows fully correct, 197/221 checks, p50 27.1 s, p95 27.6 s.
+Models: smart `openai/gpt-oss-120b`, fast `qwen/qwen3.8-27b`. **21/22** workflows fully correct, 220/221 checks, p50 12.0 s, p95 22.2 s.
 
 | Case | Result | Time | Steps | Failed checks |
 |---|---|---|---|---|
-| hackathon-registration | FAIL | 15.2 s | trigger:Form > ai/classify > ai/draft-email > google-sheets/append-row > smtp-email/send-email > telegram/send-message | real AI (not a template fallback) (No object generated: response did not match schema.) |
-| lead-scoring-hot | FAIL | 27.2 s | trigger:Form > ai/classify > google-sheets/append-row > Condition > telegram/send-message | real AI (not a template fallback) (The operation was aborted due to timeout) |
-| clinic-booking | FAIL | 27.4 s | trigger:Form > google-sheets/append-row > smtp-email/send-email > Delay > smtp-email/send-email | real AI (not a template fallback) (The operation was aborted due to timeout) |
-| daily-telegram-update | pass | 13.6 s | trigger:Schedule > ai/generate > telegram/send-message |  |
-| webhook-order | pass | 13.1 s | trigger:Webhook > google-sheets/append-row > smtp-email/send-email |  |
-| feedback-negative-alert | FAIL | 27.4 s | trigger:Form > ai/classify > ai/draft-email > google-sheets/append-row > smtp-email/send-email > telegram/send-message | real AI (not a template fallback) (The operation was aborted due to timeout); has Condition (missing); ai/classify before Condition (not upstream); Condition before telegram/send-message (not upstream); condition tests one of the classifier's labels |
-| job-application | FAIL | 27.6 s | trigger:Form > ai/classify > ai/draft-email > google-sheets/append-row > smtp-email/send-email > telegram/send-message | real AI (not a template fallback) (The operation was aborted due to timeout) |
-| personal-reply | FAIL | 27.5 s | trigger:Form > ai/classify > ai/draft-email > google-sheets/append-row > smtp-email/send-email > telegram/send-message | real AI (not a template fallback) (The operation was aborted due to timeout) |
-| rsvp-reminder | FAIL | 29.9 s | trigger:Form > ai/classify > ai/draft-email > google-sheets/append-row > smtp-email/send-email > telegram/send-message | real AI (not a template fallback) (The operation was aborted due to timeout); has Delay (missing); 2+ smtp-email/send-email (got 1); Delay before smtp-email/send-email (not upstream) |
-| weekly-report | pass | 9.4 s | trigger:Schedule > ai/generate > telegram/send-message |  |
-| support-ticket-priority | pass | 10.8 s | trigger:Webhook > ai/classify > google-sheets/append-row > Condition > telegram/send-message |  |
-| telugu-welcome | FAIL | 27.3 s | trigger:Form > ai/classify > ai/draft-email > google-sheets/append-row > smtp-email/send-email > telegram/send-message | real AI (not a template fallback) (The operation was aborted due to timeout) |
-| hindi-alert | FAIL | 9.2 s | trigger:Form > ai/classify > ai/draft-email > google-sheets/append-row > smtp-email/send-email > telegram/send-message | real AI (not a template fallback) (No object generated: response did not match schema.) |
-| manual-hello | pass | 9.0 s | trigger:Manual > telegram/send-message |  |
-| extract-enquiry | FAIL | 27.1 s | trigger:Form > ai/classify > ai/draft-email > google-sheets/append-row > smtp-email/send-email > telegram/send-message | real AI (not a template fallback) (The operation was aborted due to timeout); has ai/extract (missing); ai/extract before google-sheets/append-row (not upstream); sheet row uses ai/extract |
-| webinar-parallel | FAIL | 27.5 s | trigger:Form > ai/classify > ai/draft-email > google-sheets/append-row > smtp-email/send-email > telegram/send-message | real AI (not a template fallback) (The operation was aborted due to timeout) |
-| payment-webhook | pass | 9.1 s | trigger:Webhook > google-sheets/append-row > smtp-email/send-email |  |
-| attendance-reminder | pass | 8.9 s | trigger:Schedule > telegram/send-message |  |
-| course-interest-email | FAIL | 27.3 s | trigger:Form > ai/classify > ai/draft-email > google-sheets/append-row > smtp-email/send-email > telegram/send-message | real AI (not a template fallback) (The operation was aborted due to timeout) |
-| crm-http | pass | 9.6 s | trigger:Form > HTTP Request > telegram/send-message |  |
-| edit-add-condition | pass | 10.4 s | trigger:Form > ai/classify > ai/draft-email > google-sheets/append-row > smtp-email/send-email > Condition > telegram/send-message |  |
-| edit-remove-sheet | FAIL | 27.4 s | trigger:Form > ai/classify > ai/draft-email > google-sheets/append-row > smtp-email/send-email > telegram/send-message | real AI (not a template fallback) (The operation was aborted due to timeout); no google-sheets/append-row (present) |
+| hackathon-registration | pass | 4.5 s | trigger:Form > ai/classify > ai/draft-email > smtp-email/send-email > google-sheets/append-row > telegram/send-message |  |
+| lead-scoring-hot | pass | 3.3 s | trigger:Form > ai/classify > Condition > telegram/send-message |  |
+| clinic-booking | pass | 4.4 s | trigger:Form > google-sheets/append-row > ai/draft-email > smtp-email/send-email |  |
+| daily-telegram-update | pass | 1.7 s | trigger:Schedule > ai/generate > telegram/send-message |  |
+| webhook-order | pass | 33.9 s | trigger:Webhook > google-sheets/append-row > ai/draft-email > smtp-email/send-email |  |
+| feedback-negative-alert | pass | 2.3 s | trigger:Form > ai/classify > Condition > telegram/send-message |  |
+| job-application | pass | 3.2 s | trigger:Form > ai/generate > google-sheets/append-row > smtp-email/send-email |  |
+| personal-reply | pass | 6.7 s | trigger:Form > ai/draft-email > smtp-email/send-email |  |
+| rsvp-reminder | pass | 15.4 s | trigger:Form > google-sheets/append-row > smtp-email/send-email > Delay > smtp-email/send-email |  |
+| weekly-report | pass | 17.0 s | trigger:Schedule > ai/generate > telegram/send-message |  |
+| support-ticket-priority | pass | 15.2 s | trigger:Webhook > ai/classify > google-sheets/append-row > Condition > telegram/send-message |  |
+| telugu-welcome | pass | 17.4 s | trigger:Form > ai/draft-email > smtp-email/send-email > google-sheets/append-row |  |
+| hindi-alert | pass | 2.3 s | trigger:Form > telegram/send-message > google-sheets/append-row |  |
+| manual-hello | pass | 11.6 s | trigger:Manual > telegram/send-message |  |
+| extract-enquiry | FAIL | 12.0 s | trigger:Form > ai/extract > google-sheets/append-row | sheet row uses ai/extract |
+| webinar-parallel | pass | 3.0 s | trigger:Form > ai/draft-email > smtp-email/send-email > telegram/send-message |  |
+| payment-webhook | pass | 16.1 s | trigger:Webhook > google-sheets/append-row > ai/draft-email > smtp-email/send-email |  |
+| attendance-reminder | pass | 14.7 s | trigger:Schedule > telegram/send-message |  |
+| course-interest-email | pass | 15.0 s | trigger:Form > ai/classify > Condition > ai/draft-email > smtp-email/send-email > Condition > ai/draft-email > smtp-email/send-email > Condition > ai/draft-email > smtp-email/send-email |  |
+| crm-http | pass | 19.2 s | trigger:Form > HTTP Request > telegram/send-message |  |
+| edit-add-condition | pass | 4.4 s | trigger:Form > ai/classify > ai/draft-email > google-sheets/append-row > smtp-email/send-email > Condition > telegram/send-message |  |
+| edit-remove-sheet | pass | 22.2 s | trigger:Form > smtp-email/send-email > Delay > smtp-email/send-email |  |
