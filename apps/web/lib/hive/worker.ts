@@ -25,6 +25,58 @@ export function onRunSettled(hook: SettledHook): void {
   settledHooks.push(hook);
 }
 
+/** One run job: execute, park durable waits, fire settled hooks (receipts). */
+export async function handleRunJob(data: RunJobData): Promise<void> {
+  const outcome = await runExecution(data);
+  if (!outcome) {
+    return;
+  }
+  if (outcome.status === "waiting") {
+    // Durable timer: no worker sleeps; a delayed job resumes the run.
+    await enqueueRun({ ...data, resume: true }, outcome.resumeAt);
+    return;
+  }
+  for (const hook of settledHooks) {
+    await hook(data, outcome.status).catch((error: unknown) =>
+      console.error("[hive] settled hook failed:", error)
+    );
+  }
+}
+
+/** Dead letters: the run failed every infrastructure retry. */
+export async function handleDeadJob(data: RunJobData): Promise<void> {
+  const { executionId, workspaceId } = data;
+  await tdb(
+    (tx) =>
+      tx
+        .update(workflowExecutions)
+        .set({
+          status: "error",
+          error:
+            "The run failed repeatedly due to infrastructure errors (dead-lettered)",
+          completedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(workflowExecutions.id, executionId),
+            notInArray(workflowExecutions.status, [
+              "success",
+              "error",
+              "cancelled",
+              "skipped",
+            ])
+          )
+        ),
+    { workspaceId }
+  );
+  await publishEvent({
+    workspaceId,
+    executionId,
+    kind: "run",
+    status: "error",
+  });
+}
+
 const globalForWorker = globalThis as unknown as { hiveWorker?: Promise<void> };
 
 /**
@@ -40,64 +92,19 @@ export function startHiveWorker(): Promise<void> {
       QUEUES.runs,
       { localConcurrency: concurrency, pollingIntervalSeconds: 0.5 },
       async ([job]) => {
-        if (!job) {
-          return;
-        }
-        const outcome = await runExecution(job.data);
-        if (!outcome) {
-          return;
-        }
-        if (outcome.status === "waiting") {
-          // Durable timer: no worker sleeps; a delayed job resumes the run.
-          await enqueueRun({ ...job.data, resume: true }, outcome.resumeAt);
-          return;
-        }
-        for (const hook of settledHooks) {
-          await hook(job.data, outcome.status).catch((error: unknown) =>
-            console.error("[hive] settled hook failed:", error)
-          );
+        if (job) {
+          await handleRunJob(job.data);
         }
       }
     );
 
-    // Dead letters: the run failed every infrastructure retry.
     await boss.work<RunJobData>(
       QUEUES.runsDead,
       { pollingIntervalSeconds: 2 },
       async ([job]) => {
-        if (!job) {
-          return;
+        if (job) {
+          await handleDeadJob(job.data);
         }
-        const { executionId, workspaceId } = job.data;
-        await tdb(
-          (tx) =>
-            tx
-              .update(workflowExecutions)
-              .set({
-                status: "error",
-                error:
-                  "The run failed repeatedly due to infrastructure errors (dead-lettered)",
-                completedAt: new Date(),
-              })
-              .where(
-                and(
-                  eq(workflowExecutions.id, executionId),
-                  notInArray(workflowExecutions.status, [
-                    "success",
-                    "error",
-                    "cancelled",
-                    "skipped",
-                  ])
-                )
-              ),
-          { workspaceId }
-        );
-        await publishEvent({
-          workspaceId,
-          executionId,
-          kind: "run",
-          status: "error",
-        });
       }
     );
 

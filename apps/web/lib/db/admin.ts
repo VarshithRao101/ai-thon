@@ -2,6 +2,7 @@ import "server-only";
 
 import { drizzle, type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
+import { poolOptions } from "../hive/mode";
 
 /**
  * Owner connection for system jobs that span workspaces (the anchorer batches
@@ -20,7 +21,7 @@ export function adminDb(): PostgresJsDatabase {
     );
   }
   globalForAdmin.adminDb ??= drizzle(
-    postgres(url, { max: 2, onnotice: () => undefined })
+    postgres(url, { ...poolOptions(2), onnotice: () => undefined })
   );
   return globalForAdmin.adminDb;
 }

@@ -6,6 +6,8 @@ import { workflowExecutions } from "@/lib/db/schema";
 import { tdb } from "@/lib/db/tenant";
 import { enqueueRun } from "@/lib/hive/ingress";
 
+// On Vercel the run executes in this function after the response (D-047).
+export const maxDuration = 300;
 // POST /api/workflows/executions/{id}/retry: resume a failed run from the failed step.
 // Completed steps are checkpointed in the step logs and are not repeated.
 export const POST = tenantRoute<{ executionId: string }>(

@@ -28,7 +28,7 @@ Official MVP scope: workflow builder, triggers, actions, execution logs, a sampl
   - **1C–1G complete (2026-10-09/10):** Hive engine on pg-boss, form/webhook/schedule triggers, Sheets/Gmail/Telegram/AI plugins, Proof-of-Execution (contract, receipts, anchorer, `/verify`), Copilot + templates, Run Doctor. **1H** partial, **1I** deferred (D-034). Details in the session log.
 - **36-hour build (D-034):** the user said build all systems without stopping per part; stop only when blocked on keys. **The upcoming plan lives in [PLAN.md](PLAN.md)** (keep it current). The owner does every account and key (D-046, [docs/19](docs/19_OWNER_SETUP.md)).
 - **P2 Keys + live wiring:** the user supplies keys.
-- **P3 Deploy, polish, rehearse.**
+- **P3 Deploy (Vercel + Neon, D-047), polish.** App only; no deck or video work.
 
 Split each phase into parts, test each part, run an end-of-phase check, then **stop and wait for "next"**.
 
@@ -53,6 +53,7 @@ Split each phase into parts, test each part, run an end-of-phase check, then **s
 - Local chain: `pnpm --filter @flowledger/contracts chain`, then `CHAIN_ID=31337 CHAIN_RPC_URL=http://127.0.0.1:8545 npx tsx scripts/deploy-anchor.ts` (from apps/web) and start the app with those `CHAIN_*` plus `ANCHOR_CONTRACT_ADDRESS`.
 - Live suites (dev server running): `node scripts/e2e-hive.mjs`, `node scripts/e2e-forms.mjs` (needs `AI_MOCK=true` without keys), `node scripts/e2e-tenancy.mjs`, and from apps/web `npx tsx scripts/e2e-ledger.ts` (needs a chain).
 - Demo on a production build (`pnpm build` then `next start`): the dev server's HMR reload-loops `/verify`.
+- **Hosted (D-047): Vercel + Neon.** On Vercel the Hive is serverless (`HIVE_MODE=serverless`, auto when `VERCEL=1`): triggers drain the queue after the response (`lib/hive/drain.ts`), and `/api/hive/tick` (cron-job.org, `CRON_SECRET`) covers retries, delays, schedules, maintenance and anchoring. Test locally with `HIVE_MODE=serverless CRON_SECRET=… pnpm dev`. Cloud setup: `pnpm cloud:db` (Neon roles, migrations, queues; secrets in `apps/web/.env.cloud.local`), `pnpm cloud:env --url https://….vercel.app [--project name]` (pushes env to Vercel; needs `npx vercel login`).
 - Gates: `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build` (Turborepo).
 - Logo assets: `python scripts/brand/make_logo.py`. Template diff: `git diff --no-index --stat .upstream/workflow-builder-template apps/web`.
 - Preview: `preview_start {name: "flowledger-web"}` (`.claude/launch.json`).

@@ -1,6 +1,7 @@
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
+import { poolOptions } from "../hive/mode";
 import {
   accounts,
   apiKeys,
@@ -48,7 +49,7 @@ const globalForDb = globalThis as unknown as {
 
 // For queries - reuse connection in development
 const queryClient =
-  globalForDb.queryClient ?? postgres(connectionString, { max: 10 });
+  globalForDb.queryClient ?? postgres(connectionString, poolOptions(10));
 export const db = globalForDb.db ?? drizzle(queryClient, { schema });
 
 if (process.env.NODE_ENV !== "production") {

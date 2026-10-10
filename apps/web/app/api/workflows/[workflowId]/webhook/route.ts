@@ -7,6 +7,8 @@ import { runWithTenant, tdb } from "@/lib/db/tenant";
 import { startRun } from "@/lib/hive/ingress";
 import type { WorkflowNode } from "@/lib/workflow-store";
 
+// On Vercel the run executes in this function after the response (D-047).
+export const maxDuration = 300;
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",

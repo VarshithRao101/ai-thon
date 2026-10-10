@@ -18,7 +18,9 @@
     "db:migrate": "pnpm --filter @flowledger/web db:migrate",
     "demo": "pnpm --filter @flowledger/web build && pnpm --filter @flowledger/web start",
     "chain": "pnpm --filter @flowledger/contracts chain",
-    "keys:check": "node scripts/check-keys.mjs"
+    "keys:check": "node scripts/check-keys.mjs",
+    "cloud:db": "pnpm --filter @flowledger/web cloud:db",
+    "cloud:env": "pnpm --filter @flowledger/web cloud:env"
   },
   "devDependencies": {
     "embedded-postgres": "17.10.0-beta.17",

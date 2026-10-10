@@ -5,6 +5,8 @@ import { tdb } from "@/lib/db/tenant";
 import { type HiveEvent, subscribe } from "@/lib/hive/events";
 
 export const dynamic = "force-dynamic";
+// Vercel Hobby maximum; the browser's EventSource reconnects after it.
+export const maxDuration = 300;
 
 const HEARTBEAT_MS = 15_000;
 

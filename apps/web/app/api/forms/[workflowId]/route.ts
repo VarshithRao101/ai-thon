@@ -4,6 +4,8 @@ import { submittedAtIst, validateSubmission } from "@/lib/forms/schema";
 import { allowSubmission, clientKey, loadPublicForm } from "@/lib/forms/server";
 import { startRun } from "@/lib/hive/ingress";
 
+// On Vercel the run executes in this function after the response (D-047).
+export const maxDuration = 300;
 const SUBMISSION_ID = /^[a-zA-Z0-9_-]{8,64}$/;
 
 // POST /api/forms/{workflowId}: public submission of a hosted form (no sign-in).

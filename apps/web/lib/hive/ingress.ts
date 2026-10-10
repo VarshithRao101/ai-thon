@@ -9,6 +9,7 @@ import {
 import { tdb } from "@/lib/db/tenant";
 import { getBoss } from "./boss";
 import { normalizeDefinition } from "./definition";
+import { kickHive } from "./drain";
 import { publishEvent } from "./events";
 import { QUEUES, type RunJobData } from "./queues";
 
@@ -161,6 +162,9 @@ export async function enqueueRun(
       kind: "run",
       status: data.resume ? "waiting" : "queued",
     });
+    if (!(startAfter || data.resume)) {
+      kickHive();
+    }
   } catch (error) {
     await tdb(
       (tx) =>

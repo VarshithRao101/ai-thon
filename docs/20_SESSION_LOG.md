@@ -79,3 +79,11 @@
 - `node scripts/check-keys.mjs` shows which keys are filled (names only). At 10:00 the AI keys were still empty.
 - **Gates:** lint clean (220 files), typecheck clean, **109 unit tests** + 6 contract tests, all four live suites green (hive 26, tenancy 60, forms 21, ledger 25).
 - **Plan consolidated (10:40):** the owner does every account and key personally (D-046, supersedes the duo split). All upcoming work, with a clock timeline and owners, now lives in [PLAN.md](../PLAN.md). `docs/19` became the owner setup guide. Fixed `.gitignore` so Hardhat build output under `packages/contracts/` is never committed. First push to the public GitHub repo.
+
+## 2026-10-10 (afternoon): hosting on Vercel + Neon (D-047)
+- The user asked to host the app (Vercel or Cloudflare), get a complete list of manual work, and focus on **the app only** (no deck or video).
+- **Decision:** Vercel (Hobby, sin1) + Neon Postgres 17 (Singapore). Cloudflare Workers rejected (postgres.js TCP, pg-boss workers and SMTP would need an engine rewrite). cloudflared kept only as a fallback.
+- **Serverless Hive:** `lib/hive/drain.ts` runs pg-boss workers inside the function that accepted the trigger (`after()`) until the queues go quiet, then anchors. `/api/hive/tick` (Bearer `CRON_SECRET`, cron-job.org every minute) does maintenance, retries, delays, schedule ticks and anchoring. Job handlers moved into `handleRunJob`/`handleDeadJob` (shared with the in-process worker). Smaller DB pools on serverless; `maxDuration` 300 on trigger routes and the SSE route; `vercel.json` region sin1.
+- **Cloud scripts:** `pnpm cloud:db` (creates `flowledger_app` with a random password, runs migrations + queues, refuses if the app role bypasses RLS) was dry-run on a fresh local database (passed). `pnpm cloud:env` pushes production env to Vercel by name only.
+- **Verified in serverless mode locally:** all four live suites green (hive, forms, tenancy, ledger); anchoring ran from the drain (7 batches); the tick answers 401 without the secret and 202 with it; production build passes.
+- PLAN.md rewritten: the owner's 10-step manual list (wallet, Neon, Vercel, Gemini, Telegram, Gmail, Sheets, Alchemy, Connections, cron-job.org) and Claude's steps C1–C8. docs/19 gained Neon, Vercel, Connections and cron sections.

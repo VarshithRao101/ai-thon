@@ -3,14 +3,17 @@
  * 1. Reports whether Postgres row-level security actually applies to the app's
  *    database role (lib/db/rls-status.ts). REQUIRE_RLS=true refuses to start without it.
  * 2. Starts the Hive worker in this process unless HIVE_INPROCESS_WORKER=false
- *    (then run `pnpm --filter @flowledger/web worker` separately).
+ *    (then run `pnpm --filter @flowledger/web worker` separately) or the Hive
+ *    is serverless (Vercel: lib/hive/drain.ts).
  */
 export async function register() {
   if (process.env.NEXT_RUNTIME !== "nodejs") {
     return;
   }
   await checkRls();
-  if (process.env.HIVE_INPROCESS_WORKER !== "false") {
+  const { isServerlessHive } = await import("./lib/hive/mode");
+  // On Vercel the queue is drained per request instead (D-047).
+  if (process.env.HIVE_INPROCESS_WORKER !== "false" && !isServerlessHive()) {
     const { startHiveWorker } = await import("./lib/hive/worker");
     startHiveWorker().catch((error: unknown) => {
       console.error("[hive] worker failed to start:", error);

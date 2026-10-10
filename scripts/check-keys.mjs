@@ -19,10 +19,10 @@ const filled = (key) => (values.get(key) ?? "") !== "";
 
 const groups = [
   ["Core (dev-env.mjs)", ["DATABASE_URL", "DATABASE_ADMIN_URL", "BETTER_AUTH_SECRET", "INTEGRATION_ENCRYPTION_KEY"]],
-  ["AI (owner step A2)", ["GOOGLE_GENERATIVE_AI_API_KEY", "AI_MODEL_FAST", "AI_MODEL_SMART"]],
+  ["AI (your step 4)", ["GOOGLE_GENERATIVE_AI_API_KEY", "AI_MODEL_FAST", "AI_MODEL_SMART"]],
   ["AI fallback (optional)", ["GROQ_API_KEY", "AI_FALLBACK_MODEL"]],
-  ["Chain (owner steps A1, A6)", ["CHAIN_ID", "CHAIN_RPC_URL", "ANCHORER_PRIVATE_KEY", "ANCHOR_CONTRACT_ADDRESS"]],
-  ["Public URL for QR codes (stage)", ["PUBLIC_APP_URL"]],
+  ["Chain (your steps 1, 8; Claude deploys the contract)", ["CHAIN_ID", "CHAIN_RPC_URL", "ANCHORER_PRIVATE_KEY", "ANCHOR_CONTRACT_ADDRESS"]],
+  ["Hosting (your step 2: Neon)", ["CLOUD_DATABASE_ADMIN_URL"]],
 ];
 let missingRequired = 0;
 for (const [title, keys] of groups) {

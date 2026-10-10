@@ -25,7 +25,9 @@
     "hive:setup": "tsx scripts/hive-setup.ts",
     "wallet:new": "tsx scripts/wallet-new.ts",
     "worker": "tsx --conditions=react-server scripts/worker.ts",
-    "anchor:deploy": "tsx scripts/deploy-anchor.ts"
+    "anchor:deploy": "tsx scripts/deploy-anchor.ts",
+    "cloud:db": "tsx scripts/cloud.ts db",
+    "cloud:env": "tsx scripts/cloud.ts env"
   },
   "dependencies": {
     "@ai-sdk/google": "^2.0.102",

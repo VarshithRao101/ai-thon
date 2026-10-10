@@ -1,6 +1,7 @@
 import "server-only";
 
 import { PgBoss } from "pg-boss";
+import { isServerlessHive } from "./mode";
 import { PGBOSS_SCHEMA } from "./queues";
 
 /**
@@ -21,6 +22,11 @@ export function getBoss(): Promise<PgBoss> {
         application_name: "flowledger-hive",
         migrate: false,
         max: 4,
+        // Serverless (D-047): maintenance runs on /api/hive/tick, and cron checks
+        // run often enough to land inside a short tick.
+        ...(isServerlessHive()
+          ? { supervise: false, cronMonitorIntervalSeconds: 5 }
+          : {}),
       });
       boss.on("error", (error) =>
         console.error("[hive] pg-boss error:", error)

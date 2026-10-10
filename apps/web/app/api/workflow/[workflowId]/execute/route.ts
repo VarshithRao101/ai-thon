@@ -5,6 +5,8 @@ import { workflows } from "@/lib/db/schema";
 import { tdb } from "@/lib/db/tenant";
 import { startRun } from "@/lib/hive/ingress";
 
+// On Vercel the run executes in this function after the response (D-047).
+export const maxDuration = 300;
 // POST /api/workflow/{id}/execute: manual test run of the current draft (Hive queue)
 export const POST = tenantRoute<{ workflowId: string }>(
   "workflows.execute",

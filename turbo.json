@@ -31,7 +31,14 @@
         "PUBLIC_APP_URL",
         "REQUIRE_RLS",
         "VAULT_MASTER_KEY_*",
-        "VERCEL_ENV"
+        "VERCEL_ENV",
+        "CRON_SECRET",
+        "DB_POOL_MAX",
+        "DEMO_TAMPER_ENABLED",
+        "HTTP_STEP_ALLOW_PRIVATE",
+        "NEXT_PUBLIC_*",
+        "VERCEL",
+        "VERCEL_URL"
       ]
     },
     "dev": {
@@ -44,7 +51,14 @@
         "CHAIN_*",
         "ANCHOR_*",
         "REQUIRE_RLS",
-        "DEV_DB_PORT"
+        "DEV_DB_PORT",
+        "CRON_SECRET",
+        "DB_POOL_MAX",
+        "DEMO_TAMPER_ENABLED",
+        "HTTP_STEP_ALLOW_PRIVATE",
+        "NEXT_PUBLIC_*",
+        "VERCEL",
+        "VERCEL_URL"
       ]
     },
     "typecheck": {

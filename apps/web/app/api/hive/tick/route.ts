@@ -1,0 +1,37 @@
+import { timingSafeEqual } from "node:crypto";
+import { after, NextResponse } from "next/server";
+import { drainHive } from "@/lib/hive/drain";
+
+export const dynamic = "force-dynamic";
+export const maxDuration = 120;
+
+// GET /api/hive/tick: the serverless Hive heartbeat (D-047). cron-job.org calls
+// it every minute with `Authorization: Bearer $CRON_SECRET`. It answers at once,
+// then picks up retries, durable delays and schedule ticks, runs pg-boss
+// maintenance and anchors pending receipts.
+export function GET(request: Request) {
+  const secret = process.env.CRON_SECRET;
+  if (!secret) {
+    return NextResponse.json(
+      { error: "Tick is not configured" },
+      { status: 503 }
+    );
+  }
+  const given = Buffer.from(request.headers.get("authorization") ?? "");
+  const expected = Buffer.from(`Bearer ${secret}`);
+  if (given.length !== expected.length || !timingSafeEqual(given, expected)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  after(() =>
+    drainHive({
+      supervise: true,
+      minMs: 8000,
+      idleMs: 3000,
+      budgetMs: 90_000,
+    }).catch((error: unknown) => console.error("[hive] tick failed:", error))
+  );
+  return NextResponse.json(
+    { ok: true, at: new Date().toISOString() },
+    { status: 202 }
+  );
+}
