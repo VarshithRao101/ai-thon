@@ -22,7 +22,7 @@ function forward(from: Response, to: NextResponse) {
   }
 }
 
-export async function GET() {
+export function GET() {
   return NextResponse.json({ enabled: demoLoginEnabled() });
 }
 

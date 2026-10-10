@@ -40,6 +40,26 @@ const PERKS = [
   "Every run gets a public proof page",
 ];
 
+function GoogleHint({ google, demo }: { google: boolean; demo: boolean }) {
+  if (google) {
+    return null;
+  }
+  if (demo) {
+    return (
+      <p className="text-center text-[#ffe08a]/70 text-xs">
+        Test mode: Google isn't connected yet, so this signs you into your own
+        demo account on this browser.
+      </p>
+    );
+  }
+  return (
+    <p className="text-center text-white/40 text-xs">
+      Google sign-in turns on once its OAuth keys are added. Use email
+      meanwhile.
+    </p>
+  );
+}
+
 export function LoginScreen() {
   const router = useRouter();
   const params = useSearchParams();
@@ -220,18 +240,7 @@ export function LoginScreen() {
               )}
               Continue with Google
             </button>
-            {!providers.google && demoLogin && (
-              <p className="text-center text-[#ffe08a]/70 text-xs">
-                Test mode: Google isn't connected yet, so this signs you into
-                your own demo account on this browser.
-              </p>
-            )}
-            {!(providers.google || demoLogin) && (
-              <p className="text-center text-white/40 text-xs">
-                Google sign-in turns on once its OAuth keys are added. Use email
-                meanwhile.
-              </p>
-            )}
+            <GoogleHint demo={demoLogin} google={providers.google} />
 
             <div className="flex items-center gap-3 py-2 text-white/30 text-xs">
               <span className="h-px flex-1 bg-white/10" /> or{" "}
