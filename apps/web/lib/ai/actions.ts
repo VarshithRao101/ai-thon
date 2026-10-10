@@ -2,6 +2,7 @@ import "server-only";
 
 import { generateObject, generateText } from "ai";
 import { z } from "zod";
+import { createShield, type PrivacyReport } from "./privacy";
 import { isAiMock, withAi } from "./provider";
 
 /**
@@ -26,6 +27,8 @@ export type ClassifyResult = {
   confidence: number;
   reason: string;
   model: string;
+  /** Privacy Shield: what was hidden from the model (lib/ai/privacy.ts). */
+  privacy: PrivacyReport;
 };
 
 export async function classify(input: {
@@ -37,8 +40,13 @@ export async function classify(input: {
   if (labels.length < 2) {
     throw new Error("Give at least two labels, separated by commas");
   }
+  const shield = createShield();
+  const text = shield.mask(input.text);
+  const instructions = input.instructions
+    ? shield.mask(input.instructions)
+    : "";
   if (isAiMock()) {
-    const lower = input.text.toLowerCase();
+    const lower = text.toLowerCase();
     const hit =
       labels.find((l) => lower.includes(l.toLowerCase())) ?? labels[0];
     return {
@@ -46,6 +54,7 @@ export async function classify(input: {
       confidence: 0.5,
       reason: "Mock mode: keyword match",
       model: "mock",
+      privacy: shield.report(),
     };
   }
   return await withAi("fast", async ({ model, label: modelLabel }) => {
@@ -60,18 +69,28 @@ export async function classify(input: {
       }),
       prompt: [
         `Classify the input into exactly one of these labels: ${labels.join(", ")}.`,
-        input.instructions ? `Guidance: ${input.instructions}` : "",
+        instructions ? `Guidance: ${instructions}` : "",
         "Give a confidence between 0 and 1 and a one-sentence reason.",
-        `Input:\n"""${input.text}"""`,
+        `Input:\n"""${text}"""`,
       ]
         .filter(Boolean)
         .join("\n"),
     });
-    return { ...object, model: modelLabel };
+    return {
+      ...object,
+      reason: shield.unmask(object.reason),
+      model: modelLabel,
+      privacy: shield.report(),
+    };
   });
 }
 
-export type DraftEmailResult = { subject: string; body: string; model: string };
+export type DraftEmailResult = {
+  subject: string;
+  body: string;
+  model: string;
+  privacy: PrivacyReport;
+};
 
 export async function draftEmail(input: {
   recipientName?: string;
@@ -81,12 +100,16 @@ export async function draftEmail(input: {
   senderName?: string;
 }): Promise<DraftEmailResult> {
   const tone = input.tone || "warm and professional";
+  const shield = createShield();
+  const context = shield.mask(input.context);
+  const goal = shield.mask(input.goal);
   if (isAiMock()) {
     const name = input.recipientName || "there";
     return {
       subject: input.goal.slice(0, 80) || "Hello from N-Flow",
       body: `Hi ${name},\n\n${input.goal}\n\n${input.context}\n\nBest,\n${input.senderName || "The team"}`,
       model: "mock",
+      privacy: shield.report(),
     };
   }
   return await withAi("fast", async ({ model, label }) => {
@@ -100,31 +123,45 @@ export async function draftEmail(input: {
       }),
       prompt: [
         `Write a short, personal email (under 140 words) with a ${tone} tone.`,
-        `Goal: ${input.goal}`,
+        `Goal: ${goal}`,
         input.recipientName ? `Recipient: ${input.recipientName}` : "",
         input.senderName ? `Sign off as: ${input.senderName}` : "",
-        `Context about the recipient:\n"""${input.context}"""`,
-        "Plain text only. No placeholders like [Name].",
+        `Context about the recipient:\n"""${context}"""`,
+        "Plain text only. No placeholders like [Name]. Keep any [EMAIL_1]-style tokens exactly as written.",
       ]
         .filter(Boolean)
         .join("\n"),
     });
-    return { ...object, model: label };
+    return {
+      subject: shield.unmask(object.subject),
+      body: shield.unmask(object.body),
+      model: label,
+      privacy: shield.report(),
+    };
   });
 }
+
+/** Extracted fields by name, plus the model and the privacy report. */
+export type ExtractResult = Record<string, string | null | PrivacyReport> & {
+  model: string;
+  privacy: PrivacyReport;
+};
 
 export async function extractFields(input: {
   text: string;
   fields: string;
-}): Promise<Record<string, string | null> & { model: string }> {
+}): Promise<ExtractResult> {
   const fields = splitList(input.fields);
   if (fields.length === 0) {
     throw new Error("List the fields to extract, separated by commas");
   }
+  const shield = createShield();
+  const text = shield.mask(input.text);
   if (isAiMock()) {
     return {
       ...Object.fromEntries(fields.map((f) => [f, null])),
       model: "mock",
+      privacy: shield.report(),
     };
   }
   return await withAi("fast", async ({ model, label }) => {
@@ -135,20 +172,27 @@ export async function extractFields(input: {
       schema: z.object(
         Object.fromEntries(fields.map((f) => [f, z.string().nullable()]))
       ),
-      prompt: `Extract these fields from the input: ${fields.join(", ")}. Use null when a field is not present.\nInput:\n"""${input.text}"""`,
+      prompt: `Extract these fields from the input: ${fields.join(", ")}. Use null when a field is not present. Copy [EMAIL_1]-style tokens exactly.\nInput:\n"""${text}"""`,
     });
-    return { ...(object as Record<string, string | null>), model: label };
+    return {
+      ...shield.unmaskDeep(object as Record<string, string | null>),
+      model: label,
+      privacy: shield.report(),
+    };
   });
 }
 
 export async function generate(input: {
   prompt: string;
   tone?: string;
-}): Promise<{ text: string; model: string }> {
+}): Promise<{ text: string; model: string; privacy: PrivacyReport }> {
+  const shield = createShield();
+  const prompt = shield.mask(input.prompt);
   if (isAiMock()) {
     return {
       text: `Mock response to: ${input.prompt.slice(0, 200)}`,
       model: "mock",
+      privacy: shield.report(),
     };
   }
   return await withAi("fast", async ({ model, label }) => {
@@ -156,8 +200,12 @@ export async function generate(input: {
       model,
       maxRetries: 1,
       system: input.tone ? `${SYSTEM} Write in a ${input.tone} tone.` : SYSTEM,
-      prompt: input.prompt,
+      prompt,
     });
-    return { text, model: label };
+    return {
+      text: shield.unmask(text),
+      model: label,
+      privacy: shield.report(),
+    };
   });
 }

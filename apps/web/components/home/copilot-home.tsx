@@ -228,7 +228,7 @@ export function CopilotHome({ ensureSession, onStartBlank, onLeaving }: Props) {
         <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t pt-4 text-muted-foreground text-xs">
           <span className="inline-flex items-center gap-1.5">
             <ShieldCheck className="size-4 text-primary" />
-            Every step is logged
+            Personal data is hidden from the AI
           </span>
           <button
             className="underline-offset-4 hover:text-foreground hover:underline"

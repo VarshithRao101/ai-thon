@@ -37,7 +37,7 @@ function GoogleIcon() {
 const PERKS = [
   "Your workflows and runs, saved to your account",
   "Connect your own Gmail, Sheets and Telegram: your keys, encrypted",
-  "Built by AI from one sentence",
+  "Personal data never reaches the AI",
 ];
 
 function GoogleHint({ google, demo }: { google: boolean; demo: boolean }) {

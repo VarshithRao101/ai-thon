@@ -1,6 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 import { after, NextResponse } from "next/server";
 import { drainHive } from "@/lib/hive/drain";
+import { markTicked } from "@/lib/hive/opportunistic";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
@@ -17,12 +18,15 @@ function presentedSecret(request: Request): string {
   const raw =
     request.headers.get("authorization") ??
     request.headers.get("x-cron-secret") ??
+    // ?key=… for cron services where headers are awkward to set.
+    new URL(request.url).searchParams.get("key") ??
     "";
   return raw.trim().replace(QUOTES, "").trim().replace(BEARER, "").trim();
 }
 
 // GET /api/hive/tick: the serverless Hive heartbeat (D-047). cron-job.org calls
-// it every minute with `Authorization: Bearer $CRON_SECRET`. It answers at once,
+// it every minute with `Authorization: Bearer $CRON_SECRET` (or `?key=`); the
+// app also ticks itself while people use it (lib/hive/opportunistic.ts). It answers at once,
 // then picks up retries, durable delays and schedule ticks, runs pg-boss
 // maintenance.
 export function GET(request: Request) {
@@ -38,6 +42,7 @@ export function GET(request: Request) {
   if (given.length !== expected.length || !timingSafeEqual(given, expected)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  markTicked();
   after(() =>
     drainHive({
       supervise: true,

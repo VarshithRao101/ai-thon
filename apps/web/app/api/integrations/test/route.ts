@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { getRequestContext } from "@/lib/auth/context";
 import { can } from "@/lib/auth/rbac";
+import { getIntegration } from "@/lib/db/integrations";
+import { runWithTenant } from "@/lib/db/tenant";
 import { connectionTestFor } from "@/lib/integrations/connection-tests";
+import { mergeSecrets } from "@/lib/integrations/secrets";
 import type {
   IntegrationConfig,
   IntegrationType,
@@ -25,6 +28,7 @@ export type TestConnectionResult = {
  * POST /api/integrations/test
  * Test connection credentials without saving
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: validation guards plus the merge-with-stored path, kept linear
 export async function POST(request: Request) {
   try {
     const ctx = await getRequestContext(request.headers);
@@ -73,7 +77,16 @@ export async function POST(request: Request) {
       );
     }
 
-    const credentials = getCredentialMapping(plugin, body.config);
+    // Testing an edit: fill in the fields the person didn't change.
+    const integrationId = (body as { integrationId?: string }).integrationId;
+    const stored = integrationId
+      ? await runWithTenant(ctx, () => getIntegration(integrationId))
+      : null;
+    const config =
+      stored && stored.type === body.type
+        ? mergeSecrets(body.type, body.config, stored.config)
+        : body.config;
+    const credentials = getCredentialMapping(plugin, config);
 
     const testResult = await testFn(credentials);
 

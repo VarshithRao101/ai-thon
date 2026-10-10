@@ -8,7 +8,7 @@ Our entry for the **TRI-CITY AI HACKATHON** (Centle; Warangal / Hanamkonda / Kaz
 Problem statement #5 (submitted 2026-10-09): *"Build a Zapier-like tool where users create automations between forms, sheets, emails and notifications."*
 Official MVP scope: workflow builder, triggers, actions, execution logs, a sample workflow, and enable/disable controls.
 
-**N-Flow** is an AI-powered no-code automation platform (the blockchain layer was removed on 2026-10-10, D-053; the innovation slot is open):
+**N-Flow** is an AI-powered no-code automation platform. Innovation: **Privacy Shield** (D-054): personal data is masked before every AI call and restored on our server (`lib/ai/privacy.ts`). The blockchain layer was removed (D-053).
 - A user describes an automation in plain English. The AI builds it on a visual canvas.
 - Each run executes on our own queue-based engine ("Hive"), and every step is logged.
 

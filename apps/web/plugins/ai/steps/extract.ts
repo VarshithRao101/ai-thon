@@ -1,6 +1,6 @@
 import "server-only";
 
-import { extractFields } from "@/lib/ai/actions";
+import { type ExtractResult, extractFields } from "@/lib/ai/actions";
 import { type StepInput, withStepLogging } from "@/lib/steps/step-handler";
 import { type AiStepResult, runAi } from "./shared";
 
@@ -11,7 +11,7 @@ export type ExtractInput = StepInput & {
 
 export function extractStep(
   input: ExtractInput
-): Promise<AiStepResult<Record<string, string | null>>> {
+): Promise<AiStepResult<ExtractResult>> {
   return withStepLogging(input, () =>
     runAi(() => extractFields({ text: input.aiInput, fields: input.aiFields }))
   );

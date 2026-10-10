@@ -418,6 +418,8 @@ export const integrationApi = {
   testCredentials: (data: {
     type: IntegrationType;
     config: IntegrationConfig;
+    /** When testing an edit, the saved connection to fill unchanged fields from. */
+    integrationId?: string;
   }) =>
     apiCall<{ status: "success" | "error"; message: string }>(
       "/api/integrations/test",

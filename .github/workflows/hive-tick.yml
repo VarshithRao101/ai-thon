@@ -1,0 +1,23 @@
+# Backup heartbeat for the hosted Hive (D-054): calls /api/hive/tick every
+# 5 minutes. Add a repository secret CRON_SECRET (Settings → Secrets and
+# variables → Actions) with the value from apps/web/.env.cloud.local.
+# Without the secret this workflow does nothing. The app also ticks itself
+# while people use it, and cron-job.org can tick every minute.
+name: Hive tick
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch: {}
+permissions: {}
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Tick
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          TICK_URL: ${{ vars.TICK_URL || 'https://ai-thon-zeta.vercel.app/api/hive/tick' }}
+        run: |
+          if [ -z "$CRON_SECRET" ]; then echo "CRON_SECRET not set; skipping"; exit 0; fi
+          curl -fsS -o /dev/null -w "tick %{http_code}\n" -H "Authorization: Bearer $CRON_SECRET" "$TICK_URL"

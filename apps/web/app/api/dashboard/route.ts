@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { tenantRoute } from "@/lib/api/route";
 import { integrations, workflowExecutions, workflows } from "@/lib/db/schema";
 import { tdb } from "@/lib/db/tenant";
+import { opportunisticTick } from "@/lib/hive/opportunistic";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +22,7 @@ function triggerOf(nodes: unknown): string {
 // GET /api/dashboard: everything the signed-in home needs in one round trip.
 // Every query filters the active workspace explicitly (RLS also applies).
 export const GET = tenantRoute("dashboard.read", async (ctx) => {
+  opportunisticTick();
   const ws = ctx.workspaceId;
   const since = new Date(Date.now() - 7 * DAY_MS);
 

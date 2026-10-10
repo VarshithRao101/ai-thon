@@ -2,6 +2,7 @@ import "server-only";
 
 import { generateObject } from "ai";
 import { type CopilotPlan, catalogPrompt, planSchema } from "./plan";
+import { createShield } from "./privacy";
 import { isAiMock, withAi } from "./provider";
 import { closestTemplate } from "./templates";
 
@@ -38,7 +39,8 @@ Rules:
 - Never invent API keys, email addresses or URLs; use references or leave them empty.
 - For a Form trigger, formFields MUST include every field you reference as {{trigger.<key>}}, with the SAME key (e.g. if you write {{trigger.fullName}}, add a field with key "fullName"). Include an "email" field (type email) whenever an email goes to the person who filled the form, and send it to {{trigger.email}}.
 - A Condition must compare a classifier's {{<id>.label}} with one of the exact labels you gave that classifier.
-- Keep labels short (2-4 words).`;
+- Keep labels short (2-4 words).
+- Copy placeholders like [EMAIL_1] or [PHONE_1] exactly where those values are needed.`;
 }
 
 /** Ask the model for a plan; fall back to the closest template if it can't answer. */
@@ -53,9 +55,12 @@ export async function planWorkflow(
       reason: "AI mock mode",
     };
   }
+  // Privacy Shield: addresses and numbers in the request stay on our server.
+  const shield = createShield();
+  const request = shield.mask(prompt);
   const userPrompt = existing?.summary
-    ? `Current workflow "${existing.name ?? "Untitled"}":\n${existing.summary}\n\nChange it as follows, and return the COMPLETE updated plan:\n${prompt}`
-    : prompt;
+    ? `Current workflow "${existing.name ?? "Untitled"}":\n${shield.mask(existing.summary)}\n\nChange it as follows, and return the COMPLETE updated plan:\n${request}`
+    : request;
   try {
     return await withAi("smart", async ({ model, label }) => {
       const { object } = await generateObject({
@@ -67,7 +72,11 @@ export async function planWorkflow(
         // A quota error won't clear in seconds; move to the next model instead.
         maxRetries: 1,
       });
-      return { plan: object, source: "ai" as const, model: label };
+      return {
+        plan: shield.unmaskDeep(object),
+        source: "ai" as const,
+        model: label,
+      };
     });
   } catch (error) {
     const reason =

@@ -11,6 +11,7 @@ import {
   Loader2,
   Play,
   RotateCcw,
+  ShieldCheck,
   X,
 } from "lucide-react";
 import Image from "next/image";
@@ -489,6 +490,7 @@ function ExecutionLogEntry({
 
         {isExpanded && (
           <div className="mt-2 mb-2 space-y-3 px-3">
+            <PrivacyBadge output={log.output} />
             {log.input !== null && log.input !== undefined && (
               <CollapsibleSection copyData={log.input} title="Input">
                 <pre className="overflow-auto rounded-lg border bg-muted/50 p-3 font-mono text-xs leading-relaxed">
@@ -933,6 +935,42 @@ export function WorkflowRuns({
           </div>
         );
       })}
+    </div>
+  );
+}
+
+const KIND_LABELS: Record<string, string> = {
+  email: "email",
+  phone: "phone",
+  aadhaar: "Aadhaar",
+  pan: "PAN",
+  upi: "UPI ID",
+  card: "card",
+};
+
+/** Privacy Shield report from an AI step's output (lib/ai/privacy.ts). */
+function PrivacyBadge({ output }: { output: unknown }) {
+  const data = (output as { data?: unknown } | null)?.data ?? output;
+  const privacy = (
+    data as {
+      privacy?: { masked: number; kinds: Record<string, number> };
+    } | null
+  )?.privacy;
+  if (!privacy) {
+    return null;
+  }
+  const parts = Object.entries(privacy.kinds ?? {})
+    .filter(([, n]) => n > 0)
+    .map(([k, n]) => `${n} ${KIND_LABELS[k] ?? k}`);
+  return (
+    <div className="flex items-start gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/5 px-3 py-2 text-emerald-700 text-xs dark:text-emerald-300">
+      <ShieldCheck className="mt-0.5 size-3.5 shrink-0" />
+      <span>
+        <span className="font-semibold">Privacy Shield:</span>{" "}
+        {privacy.masked > 0
+          ? `${parts.join(", ")} hidden from the AI, restored only on our server.`
+          : "no personal data was found to hide."}
+      </span>
     </div>
   );
 }

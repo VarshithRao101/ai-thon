@@ -696,8 +696,9 @@ export function Dashboard() {
                 <KeyRound className="size-4 text-[#ffc326]/80" />
               </div>
               <p className="mt-1 text-white/45 text-xs leading-relaxed">
-                Workflows run with your own credentials. They're encrypted in
-                our vault and only used for your runs.
+                Workflows run with your own credentials, encrypted per workspace
+                and never shown again after saving. Privacy Shield hides
+                personal data from the AI.
               </p>
               <ul className="mt-4 space-y-2">
                 {APPS.map((app) => {

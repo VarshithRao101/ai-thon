@@ -11,6 +11,7 @@ import {
   QrCode,
   Radio,
   RotateCcw,
+  ShieldCheck,
   Sparkles,
   Workflow,
 } from "lucide-react";
@@ -29,6 +30,7 @@ import { BeeMark } from "@/components/brand/brand-lockup";
 import { isGuest } from "@/lib/auth/guest";
 import { useSession } from "@/lib/auth-client";
 import { FlowDemo } from "./flow-demo";
+import { PrivacyGraphic } from "./privacy-graphic";
 
 const HeroScene = dynamic(
   () => import("./hero-scene").then((m) => m.HeroScene),
@@ -77,6 +79,12 @@ const STEPS = [
 ];
 
 const FEATURES = [
+  {
+    title: "Privacy Shield",
+    body: "Emails, phones, Aadhaar, PAN and UPI are hidden from the AI.",
+    icon: ShieldCheck,
+    wide: true,
+  },
   {
     title: "AI Copilot",
     body: "Sentence in, workflow out.",
@@ -454,6 +462,9 @@ export function LandingPage() {
             <a className="transition-colors hover:text-white" href="#demo">
               Live flow
             </a>
+            <a className="transition-colors hover:text-white" href="#privacy">
+              Privacy
+            </a>
             <a className="transition-colors hover:text-white" href="#features">
               Features
             </a>
@@ -502,7 +513,7 @@ export function LandingPage() {
             transition={{ duration: 0.7, delay: 0.1 }}
           >
             <span className="nf-live-dot size-1.5 rounded-full bg-[#ffc326]" />
-            AI-built automations
+            AI automations, private by design
           </motion.p>
           <Headline />
           <motion.p
@@ -633,6 +644,20 @@ export function LandingPage() {
             <FlowDemo />
           </div>
         </div>
+      </Section>
+
+      <Section
+        eyebrow="Privacy Shield"
+        id="privacy"
+        sub="Personal details are swapped for placeholders before every AI call, then restored on our server. Built for India's DPDP Act."
+        title={
+          <>
+            Your customers' data{" "}
+            <span className="nf-gold-text">never reaches the AI</span>
+          </>
+        }
+      >
+        <PrivacyGraphic />
       </Section>
 
       <Section

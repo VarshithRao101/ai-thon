@@ -6,6 +6,7 @@ import {
   getIntegration,
   updateIntegration,
 } from "@/lib/db/integrations";
+import { maskSecrets, mergeSecrets } from "@/lib/integrations/secrets";
 import type { IntegrationConfig } from "@/lib/types/integration";
 
 export type GetIntegrationResponse = {
@@ -38,7 +39,8 @@ function toResponse(integration: {
     id: integration.id,
     name: integration.name,
     type: integration.type,
-    config: integration.config,
+    // Secrets are write-only: the browser only ever sees a mask (D-054).
+    config: maskSecrets(integration.type, integration.config),
     createdAt: integration.createdAt.toISOString(),
     updatedAt: integration.updatedAt.toISOString(),
   };
@@ -46,7 +48,7 @@ function toResponse(integration: {
 
 /**
  * GET /api/integrations/[integrationId]
- * Decrypted config for editing: credential managers only
+ * Config for editing (credential managers only); secret fields are masked
  */
 export const GET = tenantRoute<Params>(
   "integrations.get",
@@ -67,6 +69,14 @@ export const PUT = tenantRoute<Params>(
   "integrations.update",
   async (_ctx, request, { integrationId }) => {
     const body: UpdateIntegrationRequest = await request.json();
+    if (body.config) {
+      // A masked or empty secret field means "keep what is stored".
+      const stored = await getIntegration(integrationId);
+      if (!stored) {
+        throw notFound();
+      }
+      body.config = mergeSecrets(stored.type, body.config, stored.config);
+    }
     const integration = await updateIntegration(integrationId, body);
     if (!integration) {
       throw notFound();

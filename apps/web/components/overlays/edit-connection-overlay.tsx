@@ -184,6 +184,7 @@ export function EditConnectionOverlay({
       const result = await api.integration.testCredentials({
         type: integration.type,
         config,
+        integrationId: integration.id,
       });
 
       if (result.status === "error") {
@@ -229,6 +230,7 @@ export function EditConnectionOverlay({
         result = await api.integration.testCredentials({
           type: integration.type,
           config,
+          integrationId: integration.id,
         });
       } else {
         // Test existing credentials

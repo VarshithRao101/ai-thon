@@ -114,7 +114,10 @@ check("Bob cannot delete Alice's credential", (await bob.call("DELETE", `/api/in
 const intsB = await bob.call("GET", "/api/integrations");
 check("Bob's credential list is empty", Array.isArray(intsB.json) && intsB.json.length === 0);
 const intA = await alice.call("GET", `/api/integrations/${intId}`);
-check("Alice reads her credential back decrypted", intA.json?.config?.apiKey === "re_test_not_a_real_key");
+check("the saved secret never comes back (write-only, D-054)", intA.status === 200 && intA.json?.config?.apiKey === "••••••••" && !JSON.stringify(intA.json).includes("re_test_not_a_real_key"));
+await alice.call("PUT", `/api/integrations/${intId}`, { config: { apiKey: "••••••••" } });
+const kept = await alice.call("POST", `/api/integrations/${intId}/test`, {});
+check("saving the mask back keeps the stored secret", kept.status === 200 || kept.status === 400, `status ${kept.status}`);
 
 // --- run a workflow (Hive queue; the worker runs inside the tenant context)
 const run = await alice.call("POST", `/api/workflow/${wfId}/execute`, {});

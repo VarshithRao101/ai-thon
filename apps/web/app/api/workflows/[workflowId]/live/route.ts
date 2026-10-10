@@ -3,6 +3,7 @@ import { HttpError, tenantRoute } from "@/lib/api/route";
 import { workflows } from "@/lib/db/schema";
 import { tdb } from "@/lib/db/tenant";
 import { type HiveEvent, subscribe } from "@/lib/hive/events";
+import { opportunisticTick } from "@/lib/hive/opportunistic";
 
 export const dynamic = "force-dynamic";
 // Vercel Hobby maximum; the browser's EventSource reconnects after it.
@@ -15,6 +16,7 @@ const HEARTBEAT_MS = 15_000;
 export const GET = tenantRoute<{ workflowId: string }>(
   "workflows.live",
   async (ctx, request, { workflowId }) => {
+    opportunisticTick();
     const [workflow] = await tdb((tx) =>
       tx
         .select({ id: workflows.id })
