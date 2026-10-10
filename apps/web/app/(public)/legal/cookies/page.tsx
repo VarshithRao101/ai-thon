@@ -9,9 +9,9 @@ export default function CookiesPage() {
       <h1>Cookies</h1>
       <p>Last updated {LAST_UPDATED}.</p>
       <p>
-        FlowLedger uses only strictly necessary cookies. There are no analytics
-        or advertising cookies, so there is no cookie banner. Hosted forms set
-        no cookies at all.
+        N-Flow uses only strictly necessary cookies. There are no analytics or
+        advertising cookies, so there is no cookie banner. Hosted forms set no
+        cookies at all.
       </p>
       <table className="w-full text-sm">
         <thead>

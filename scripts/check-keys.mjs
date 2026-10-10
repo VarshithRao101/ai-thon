@@ -32,7 +32,7 @@ for (const [title, keys] of groups) {
     if (!ok && !title.includes("optional") && !title.includes("stage")) {
       missingRequired += 1;
     }
-    console.log(`  ${ok ? "✓" : "·"} ${key}`);
+    console.log(`  ${ok ? "[set]  " : "[empty]"} ${key}`);
   }
 }
 console.log(

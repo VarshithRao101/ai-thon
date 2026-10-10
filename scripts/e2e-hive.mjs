@@ -1,4 +1,4 @@
-// End-to-end check of the Hive engine against a running FlowLedger (local dev only).
+// End-to-end check of the Hive engine against a running N-Flow (local dev only).
 // Creates a throwaway *.example.test account (random password, never printed).
 // Usage: node scripts/e2e-hive.mjs [baseUrl]   (default http://localhost:3000)
 import { randomBytes } from "node:crypto";
@@ -74,7 +74,7 @@ const edge = (source, target) => ({ id: `${source}-${target}`, source, target, t
 const trace = (logs) => logs.map((l) => `${l.nodeId}:${l.status}`).join(",");
 
 const suffix = randomBytes(4).toString("hex");
-console.log(`FlowLedger Hive e2e against ${BASE}`);
+console.log(`N-Flow Hive e2e against ${BASE}`);
 const signup = await call("POST", "/api/auth/sign-up/email", {
   email: `hive.${suffix}@example.test`,
   password: randomBytes(18).toString("base64url"),

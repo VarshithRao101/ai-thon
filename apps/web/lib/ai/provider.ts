@@ -6,7 +6,7 @@ import type { StepError } from "@flowledger/engine";
 import { APICallError, type LanguageModel } from "ai";
 
 /**
- * FlowLedger AI provider layer (docs/09, D-009). Model ids come from env only
+ * N-Flow AI provider layer (docs/09, D-009). Model ids come from env only
  * (CLAUDE.md hard rule): AI_PRIMARY_PROVIDER + AI_MODEL_FAST / AI_MODEL_SMART,
  * with an optional AI_FALLBACK_PROVIDER + AI_FALLBACK_MODEL tried on failure.
  * AI_MOCK=true swaps in deterministic local outputs for development and tests.

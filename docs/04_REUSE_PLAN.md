@@ -52,10 +52,10 @@ Goal: pull about 70% from proven open source, and write the parts that win point
 ## Considered and rejected
 | Repo | Why not |
 |---|---|
-| n8n-io/n8n (207k ★) | Sustainable Use License, not OSI open source. It restricts offering n8n as a paid SaaS, which kills our business model. Judges also know it. |
-| activepieces/activepieces (25k ★) | The Community Edition is MIT, but it's a huge Nx monorepo with mixed MIT and commercial "EE" code. Rebranding it would be hard to defend as our own work and slow to change. We may *read* its piece designs for reference (MIT). |
-| automatisch/automatisch (14k ★) | AGPL-3.0 plus EE code: copyleft obligations for the SaaS. |
-| simstudioai/sim (29.8k ★), triggerdotdev/trigger.dev (16.5k ★) | Apache-2.0 and good, but they are AI-agent builders or code-first job platforms. Too large to adapt, and they don't match the forms → sheets → email scope. |
+| n8n-io/n8n (207k stars) | Sustainable Use License, not OSI open source. It restricts offering n8n as a paid SaaS, which kills our business model. Judges also know it. |
+| activepieces/activepieces (25k stars) | The Community Edition is MIT, but it's a huge Nx monorepo with mixed MIT and commercial "EE" code. Rebranding it would be hard to defend as our own work and slow to change. We may *read* its piece designs for reference (MIT). |
+| automatisch/automatisch (14k stars) | AGPL-3.0 plus EE code: copyleft obligations for the SaaS. |
+| simstudioai/sim (29.8k stars), triggerdotdev/trigger.dev (16.5k stars) | Apache-2.0 and good, but they are AI-agent builders or code-first job platforms. Too large to adapt, and they don't match the forms → sheets → email scope. |
 | vercel/workflow (Workflow DevKit, Apache-2.0) | The base template's current runtime. Replaced by Hive for control, self-hosting and the queue/KEDA story (D-004). |
 | Ready-made tamper-evident log projects (etchlog AGPL, bbva/qed stale since 2020) | License or staleness. Our ledger is small and better written ourselves on OpenZeppelin primitives. |
 

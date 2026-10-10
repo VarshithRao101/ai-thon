@@ -1,6 +1,6 @@
 # 08 — Proof-of-Execution Ledger (blockchain)
 
-**Claim we make:** "Every FlowLedger run gets a receipt. Anyone can check, without trusting us, that the receipt existed at time T and hasn't changed since. An owner can also check that the stored run data still matches it."
+**Claim we make:** "Every N-Flow run gets a receipt. Anyone can check, without trusting us, that the receipt existed at time T and hasn't changed since. An owner can also check that the stored run data still matches it."
 
 **Claims we don't make:**
 - That we "store data on blockchain". We store only Merkle roots.
@@ -101,7 +101,7 @@ contract FlowLedgerAnchor is AccessControl, Pausable {
 2. Build a `StandardMerkleTree` and store the `proof` and `leaf_index` for each receipt in one DB transaction (batch status `building`).
 3. Send `anchor(root, leafCount)` from the anchorer wallet (testnet only; key from env), with nonce management via viem. Status → `submitted` with `tx_hash`.
 4. Wait for 2 confirmations (a few seconds on Amoy). Parse `BatchAnchored` for `chain_batch_id`. Status → `confirmed`, receipts → `anchored`.
-5. Emit a `receipt.anchored` SSE event, so the run page badge flips from "Pending anchor" to "✓ On-chain".
+5. Emit a `receipt.anchored` SSE event, so the run page badge flips from "Pending anchor" to "On-chain".
 6. On failure: retry with backoff. If the RPC is down for more than 2 minutes, raise an alert notification. Runs are never blocked.
 
 ## Verification layers (on `/verify/{executionId}`)
@@ -117,7 +117,7 @@ The UI shows four checkmarks that animate one after another, plus a Polygonscan 
 ## Tamper simulator (demo, honest by design)
 - Available **only in the demo workspace** and only to admins. Every use writes a `tamper_events` row and shows a banner on the page.
 - Action: changes one field in a stored step's output (for example the Sheet row number or the email address). The data is decrypted, edited and re-encrypted, so it looks like a real silent edit.
-- Result: layer 3 fails at that step. The page shows ✗ **"Tampered: step 3 'Sheets: Append' output changed after anchoring"**. Layers 1 and 2 still pass, which shows the original record is intact on-chain.
+- Result: layer 3 fails at that step. The page shows **"Tampered: step 3 'Sheets: Append' output changed after anchoring"**. Layers 1 and 2 still pass, which shows the original record is intact on-chain.
 - A **"Restore"** button reverts the edit for the next demo.
 
 ## Costs (measured on the local Hardhat network, 2026-10-09/10)

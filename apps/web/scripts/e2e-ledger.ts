@@ -1,5 +1,5 @@
 /**
- * End-to-end Proof-of-Execution check (docs/08) against a running FlowLedger
+ * End-to-end Proof-of-Execution check (docs/08) against a running N-Flow
  * wired to a chain (local Hardhat node or Amoy). Local dev only; creates a
  * throwaway *.example.test account (random password, never printed).
  *
@@ -139,7 +139,7 @@ const edge = (s: string, t: string) => ({
 });
 
 async function main() {
-  console.log(`FlowLedger Proof-of-Execution e2e against ${BASE}`);
+  console.log(`N-Flow Proof-of-Execution e2e against ${BASE}`);
   const signup = await call("POST", "/api/auth/sign-up/email", {
     email: `ledger.${randomBytes(4).toString("hex")}@example.test`,
     password: randomBytes(18).toString("base64url"),

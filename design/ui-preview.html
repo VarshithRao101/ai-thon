@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FlowLedger Design Board</title>
+<title>N-Flow Design Board</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Sora:wght@600;700&display=swap" rel="stylesheet">
@@ -178,7 +178,7 @@
 <body>
 <header class="nav">
   <div class="wrap">
-    <div class="lockup"><img src="../brand/trntbee-logo.jpeg" alt="TRNT BEE logo"><div><b>Flow<span>Ledger</span></b><br><small>by TRNT BEE · design board v0 (P0)</small></div></div>
+    <div class="lockup"><img src="../brand/trntbee-logo.jpeg" alt="TRNT BEE logo"><div><b>N-<span>Flow</span></b><br><small>by TRNT BEE · design board v0 (P0)</small></div></div>
     <nav>
       <a href="#brand">Brand</a><a href="#components">Components</a><a href="#landing">Landing</a><a href="#dashboard">Dashboard</a><a href="#builder">Builder</a><a href="#run">Run + Receipt</a><a href="#verify">Verify</a><a href="#form">Hosted form</a>
     </nav>
@@ -221,7 +221,7 @@
 <section id="components"><div class="wrap">
   <div class="eyebrow">02 · Components</div>
   <h2 class="sec-title">Building blocks</h2>
-  <p class="sec-sub">These are shadcn/ui components re-themed for FlowLedger. Status is always shown with an icon and text, never by color alone.</p>
+  <p class="sec-sub">These are shadcn/ui components re-themed for N-Flow. Status is always shown with an icon and text, never by color alone.</p>
   <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))">
     <div class="card"><h3 style="font-size:15px;margin-bottom:12px">Buttons</h3>
       <div style="display:flex;flex-wrap:wrap;gap:10px">
@@ -231,11 +231,11 @@
     <div class="card"><h3 style="font-size:15px;margin-bottom:12px">Run status</h3>
       <div style="display:flex;flex-wrap:wrap;gap:8px">
         <span class="badge b-queued"><i class="dot"></i>Queued</span><span class="badge b-running"><i class="dot"></i>Running</span>
-        <span class="badge b-success"><i class="dot"></i>✓ Success</span><span class="badge b-error"><i class="dot"></i>✗ Error</span><span class="badge b-skipped"><i class="dot"></i>Skipped</span>
+        <span class="badge b-success"><i class="dot"></i>Success</span><span class="badge b-error"><i class="dot"></i>Error</span><span class="badge b-skipped"><i class="dot"></i>Skipped</span>
       </div></div>
     <div class="card"><h3 style="font-size:15px;margin-bottom:12px">Receipt badge + toggle</h3>
       <div style="display:flex;align-items:center;justify-content:space-between">
-        <div class="hexbadge"><div class="hex">✓</div><div><b style="font-size:13px">On-chain</b><small>batch 17 · Amoy</small></div></div>
+        <div class="hexbadge"><div class="hex">OK</div><div><b style="font-size:13px">On-chain</b><small>batch 17 · Amoy</small></div></div>
         <div style="display:flex;align-items:center;gap:8px;font-size:13px">Enabled <button class="toggle" role="switch" aria-checked="true" aria-label="Enable workflow" onclick="this.setAttribute('aria-checked',this.getAttribute('aria-checked')!=='true')"></button></div>
       </div></div>
     <div class="card"><h3 style="font-size:15px;margin-bottom:12px">Input</h3>
@@ -250,23 +250,23 @@
     <div>
       <span class="badge" style="color:var(--honey);margin-bottom:16px">⬡ Proof-of-Execution on Polygon</span>
       <h1 style="margin:14px 0">Automate anything.<br><em>Prove</em> everything.</h1>
-      <p>Describe it in plain English. FlowLedger builds the workflow, runs it on an autoscaling engine, and anchors a receipt of every run on-chain, so anyone can verify it.</p>
+      <p>Describe it in plain English. N-Flow builds the workflow, runs it on an autoscaling engine, and anchors a receipt of every run on-chain, so anyone can verify it.</p>
       <div style="display:flex;gap:10px;margin-top:22px;flex-wrap:wrap"><button class="btn btn-grad">Start free, ₹0</button><button class="btn btn-ghost">▶ Watch it run</button></div>
       <p style="font-size:13px;margin-top:18px"><span class="mono" style="color:var(--metal)" id="counter">12,480</span> receipts anchored (live counter in the product, from the API)</p>
     </div>
     <div class="beam card">
-      <svg viewBox="0 0 460 300" role="img" aria-label="Data flowing from a form through FlowLedger to Sheets, Gmail, Telegram and Polygon">
+      <svg viewBox="0 0 460 300" role="img" aria-label="Data flowing from a form through N-Flow to Sheets, Gmail, Telegram and Polygon">
         <defs><linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="#FFE73C"/><stop offset="1" stop-color="#E49000"/></linearGradient></defs>
         <path class="flow" d="M95 150 C150 150,160 150,195 150" stroke="url(#g)" stroke-width="2.5" fill="none"/>
         <path class="flow" d="M265 150 C320 150,320 50,360 50" stroke="url(#g)" stroke-width="2.5" fill="none"/>
         <path class="flow" d="M265 150 C320 150,320 117,360 117" stroke="url(#g)" stroke-width="2.5" fill="none"/>
         <path class="flow" d="M265 150 C320 150,320 184,360 184" stroke="url(#g)" stroke-width="2.5" fill="none"/>
         <path class="flow" d="M265 150 C320 150,320 251,360 251" stroke="url(#g)" stroke-width="2.5" fill="none"/>
-        <rect class="chip" x="20" y="128" width="75" height="44" rx="10"/><text x="57" y="155" text-anchor="middle">📝 Form</text>
+        <rect class="chip" x="20" y="128" width="75" height="44" rx="10"/><text x="57" y="155" text-anchor="middle">Form</text>
         <polygon points="230,105 268,127 268,173 230,195 192,173 192,127" fill="url(#g)"/><text x="230" y="155" text-anchor="middle" style="fill:#0A0A0A;font:700 13px Sora">Hive</text>
-        <rect class="chip" x="360" y="30" width="86" height="40" rx="10"/><text x="403" y="55" text-anchor="middle">📊 Sheets</text>
-        <rect class="chip" x="360" y="97" width="86" height="40" rx="10"/><text x="403" y="122" text-anchor="middle">✉️ Gmail</text>
-        <rect class="chip" x="360" y="164" width="86" height="40" rx="10"/><text x="403" y="189" text-anchor="middle">✈️ Telegram</text>
+        <rect class="chip" x="360" y="30" width="86" height="40" rx="10"/><text x="403" y="55" text-anchor="middle">Sheets</text>
+        <rect class="chip" x="360" y="97" width="86" height="40" rx="10"/><text x="403" y="122" text-anchor="middle">Gmail</text>
+        <rect class="chip" x="360" y="164" width="86" height="40" rx="10"/><text x="403" y="189" text-anchor="middle">Telegram</text>
         <rect class="chip" x="360" y="231" width="86" height="40" rx="10" style="stroke:#D4AF37"/><text x="403" y="256" text-anchor="middle">⬡ Polygon</text>
       </svg>
     </div>
@@ -302,10 +302,10 @@
       </svg></div>
     <div class="card"><b>Recent runs</b>
       <table><tbody>
-        <tr><td>Hackathon registration</td><td><span class="badge b-success"><i class="dot"></i>✓</span></td><td class="mono" style="color:var(--metal)">⬡</td></tr>
+        <tr><td>Hackathon registration</td><td><span class="badge b-success"><i class="dot"></i>OK</span></td><td class="mono" style="color:var(--metal)">⬡</td></tr>
         <tr><td>Lead scoring</td><td><span class="badge b-running"><i class="dot"></i>Running</span></td><td class="mono" style="color:var(--text-muted)">…</td></tr>
-        <tr><td>Clinic reminder</td><td><span class="badge b-error"><i class="dot"></i>✗</span></td><td><a href="#run" style="font-size:12px">Doctor →</a></td></tr>
-        <tr><td>Daily digest</td><td><span class="badge b-success"><i class="dot"></i>✓</span></td><td class="mono" style="color:var(--metal)">⬡</td></tr>
+        <tr><td>Clinic reminder</td><td><span class="badge b-error"><i class="dot"></i>Failed</span></td><td><a href="#run" style="font-size:12px">Doctor →</a></td></tr>
+        <tr><td>Daily digest</td><td><span class="badge b-success"><i class="dot"></i>OK</span></td><td class="mono" style="color:var(--metal)">⬡</td></tr>
       </tbody></table></div>
   </div>
 </div></section>
@@ -319,13 +319,13 @@
     <aside class="palette" aria-label="Node palette">
       <input class="input" placeholder="Search nodes…" aria-label="Search nodes">
       <h4>Triggers</h4>
-      <div class="pal-item"><span class="ico">📝</span>Form submitted</div><div class="pal-item"><span class="ico">🔗</span>Webhook</div><div class="pal-item"><span class="ico">⏰</span>Schedule</div>
+      <div class="pal-item"><span class="ico">F</span>Form submitted</div><div class="pal-item"><span class="ico">W</span>Webhook</div><div class="pal-item"><span class="ico">C</span>Schedule</div>
       <h4>Actions</h4>
-      <div class="pal-item"><span class="ico">📊</span>Sheets: Append</div><div class="pal-item"><span class="ico">✉️</span>Email (SMTP)</div><div class="pal-item"><span class="ico">✈️</span>Telegram</div><div class="pal-item"><span class="ico">💬</span>Discord</div>
+      <div class="pal-item"><span class="ico">S</span>Sheets: Append</div><div class="pal-item"><span class="ico">E</span>Email (SMTP)</div><div class="pal-item"><span class="ico">T</span>Telegram</div><div class="pal-item"><span class="ico">D</span>Discord</div>
       <h4>AI</h4>
-      <div class="pal-item"><span class="ico">🏷️</span>Classify</div><div class="pal-item"><span class="ico">✍️</span>Draft email</div><div class="pal-item"><span class="ico">🧩</span>Extract JSON</div>
+      <div class="pal-item"><span class="ico">AI</span>Classify</div><div class="pal-item"><span class="ico">AI</span>Draft email</div><div class="pal-item"><span class="ico">AI</span>Extract JSON</div>
       <h4>Logic</h4>
-      <div class="pal-item"><span class="ico">◇</span>Condition</div><div class="pal-item"><span class="ico">⏳</span>Delay</div>
+      <div class="pal-item"><span class="ico">◇</span>Condition</div><div class="pal-item"><span class="ico">D</span>Delay</div>
     </aside>
     <div class="canvas-wrap">
       <div class="canvas-top">
@@ -342,12 +342,12 @@
           <path class="edge" id="e-n4-n5" d="M750 202 C790 202,790 102,830 102"/>
           <path class="edge" id="e-n4-n6" d="M750 202 C790 202,790 302,830 302"/>
         </svg>
-        <div class="node" id="n1" style="left:30px;top:170px"><span class="ico">📝</span><div><div class="t">Form submitted</div><div class="s">Registration · QR</div></div><span class="st"></span></div>
-        <div class="node" id="n2" style="left:290px;top:70px"><span class="ico">🏷️</span><div><div class="t">AI: Classify track</div><div class="s">AI / Web / Chain</div></div><span class="st"></span></div>
-        <div class="node selected" id="n3" style="left:290px;top:270px"><span class="ico">✍️</span><div><div class="t">AI: Draft email</div><div class="s">personal, friendly</div></div><span class="st"></span></div>
-        <div class="node" id="n4" style="left:560px;top:170px"><span class="ico">📊</span><div><div class="t">Sheets: Append row</div><div class="s">Registrations 2026</div></div><span class="st"></span></div>
-        <div class="node" id="n5" style="left:830px;top:70px"><span class="ico">✉️</span><div><div class="t">Email: Send</div><div class="s">to {{email}}</div></div><span class="st"></span></div>
-        <div class="node" id="n6" style="left:830px;top:270px"><span class="ico">✈️</span><div><div class="t">Telegram: Alert</div><div class="s">Team Hydra group</div></div><span class="st"></span></div>
+        <div class="node" id="n1" style="left:30px;top:170px"><span class="ico">F</span><div><div class="t">Form submitted</div><div class="s">Registration · QR</div></div><span class="st"></span></div>
+        <div class="node" id="n2" style="left:290px;top:70px"><span class="ico">AI</span><div><div class="t">AI: Classify track</div><div class="s">AI / Web / Chain</div></div><span class="st"></span></div>
+        <div class="node selected" id="n3" style="left:290px;top:270px"><span class="ico">AI</span><div><div class="t">AI: Draft email</div><div class="s">personal, friendly</div></div><span class="st"></span></div>
+        <div class="node" id="n4" style="left:560px;top:170px"><span class="ico">S</span><div><div class="t">Sheets: Append row</div><div class="s">Registrations 2026</div></div><span class="st"></span></div>
+        <div class="node" id="n5" style="left:830px;top:70px"><span class="ico">E</span><div><div class="t">Email: Send</div><div class="s">to {{email}}</div></div><span class="st"></span></div>
+        <div class="node" id="n6" style="left:830px;top:270px"><span class="ico">T</span><div><div class="t">Telegram: Alert</div><div class="s">Team Hydra group</div></div><span class="st"></span></div>
       </div>
       <div class="copilot" aria-label="AI Copilot">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span class="hex" style="width:22px;height:25px;font-size:11px">AI</span><b style="font-size:13px">Copilot</b></div>
@@ -376,11 +376,11 @@
   <h2 class="sec-title">Timeline, Run Doctor and receipt</h2>
   <div class="grid two">
     <div class="card">
-      <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap"><span class="badge b-error"><i class="dot"></i>✗ Error at step 4</span><span class="mono" style="font-size:12px;color:var(--text-muted)">ex_9fK2 · form · 2.1 s · v3</span><button class="btn btn-ghost" style="margin-left:auto;padding:6px 12px">↻ Retry from failed step</button></div>
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap"><span class="badge b-error"><i class="dot"></i>Error at step 4</span><span class="mono" style="font-size:12px;color:var(--text-muted)">ex_9fK2 · form · 2.1 s · v3</span><button class="btn btn-ghost" style="margin-left:auto;padding:6px 12px">↻ Retry from failed step</button></div>
       <div class="tl">
         <div class="tl-item"><div class="row"><b>Form submitted</b><span class="meta">12 ms</span></div><div class="meta">name: R••• K•••, email: r•••@gmail.com, college: NIT W•••</div></div>
         <div class="tl-item"><div class="row"><b>AI: Classify track</b><span class="meta">640 ms</span></div><div class="meta">→ label “AI”, confidence 0.86 (model-reported)</div></div>
-        <div class="tl-item"><div class="row"><b>AI: Draft email</b><span class="meta">910 ms</span></div><div class="meta">→ subject “You're in, Ravi! 🐝”</div></div>
+        <div class="tl-item"><div class="row"><b>AI: Draft email</b><span class="meta">910 ms</span></div><div class="meta">→ subject “You're in, Ravi!”</div></div>
         <div class="tl-item err"><div class="row"><b>Sheets: Append row</b><span class="meta">3 attempts</span></div><div class="meta" style="color:var(--danger)">validation: column “Track” not found in header row</div></div>
       </div>
       <div class="card metal" style="margin-top:12px;background:var(--surface-2)">
@@ -412,7 +412,7 @@
     <div class="layer"><span class="lc" id="l2">2</span><div><b>Anchoring</b><p>Root read from FlowLedgerAnchor.batch(17) on Polygon Amoy at block 1,284,551</p></div></div>
     <div class="layer"><span class="lc" id="l3">3</span><div><b>Data integrity <span class="badge" style="font-size:10px">owner</span></b><p id="l3t">Re-hashing the stored step data with the run's salt matches every step hash</p></div></div>
     <div class="layer"><span class="lc" id="l4">4</span><div><b>Chain continuity</b><p>The previous-receipt links are unbroken for the last 20 runs in this workspace</p></div></div>
-    <div class="stamp" id="stamp"><div class="hex" id="stampHex">✓</div><div><b id="stampT" style="font:700 20px Sora">VERIFIED</b><br><small style="color:var(--text-muted)" id="stampS">Recorded at 10:00:03 IST and unchanged since</small></div></div>
+    <div class="stamp" id="stamp"><div class="hex" id="stampHex">OK</div><div><b id="stampT" style="font:700 20px Sora">VERIFIED</b><br><small style="color:var(--text-muted)" id="stampS">Recorded at 10:00:03 IST and unchanged since</small></div></div>
   </div>
 </div></section>
 
@@ -433,7 +433,7 @@
   </div></div>
 </div></section>
 
-<footer><div class="wrap">FlowLedger design board · Phase 0 · TRNT BEE · Every number on this page is placeholder data unless labeled otherwise. See docs/12_UI_UX_DESIGN.md.</div></footer>
+<footer><div class="wrap">N-Flow design board · Phase 0 · TRNT BEE · Every number on this page is placeholder data unless labeled otherwise. See docs/12_UI_UX_DESIGN.md.</div></footer>
 
 <script>
 (function(){
@@ -449,9 +449,9 @@
     if(busy)return;busy=true;reset();var t0=performance.now();log("<b>run.queued</b> ex_9fK2 (seeded demo)");
     for(var i=0;i<order.length;i++){
       var layer=order[i];
-      layer.forEach(function(id){var n=document.getElementById(id);n.classList.add("running");n.querySelector(".st").textContent="⏳";log("<b>step.started</b> "+labels[id]);});
+      layer.forEach(function(id){var n=document.getElementById(id);n.classList.add("running");n.querySelector(".st").textContent="...";log("<b>step.started</b> "+labels[id]);});
       await wait(i===1?900:650);
-      layer.forEach(function(id){var n=document.getElementById(id);n.classList.remove("running");n.classList.add("success");n.querySelector(".st").textContent="✓";log("<b>step.succeeded</b> "+labels[id]);
+      layer.forEach(function(id){var n=document.getElementById(id);n.classList.remove("running");n.classList.add("success");n.querySelector(".st").textContent="OK";log("<b>step.succeeded</b> "+labels[id]);
         (edges[id]||[]).forEach(function(to){var e=document.getElementById("e-"+id+"-"+to);if(e)e.classList.add("live");});});
       await wait(350);
       layer.forEach(function(id){(edges[id]||[]).forEach(function(to){var e=document.getElementById("e-"+id+"-"+to);if(e){e.classList.remove("live");e.classList.add("done");}});});
@@ -465,9 +465,9 @@
     ["l1","l2","l3","l4"].forEach(function(id){var e=document.getElementById(id);e.className="lc";e.textContent=id.slice(1);});
     var st=document.getElementById("stamp");st.className="stamp";
     for(var i=1;i<=4;i++){await wait(320);var e=document.getElementById("l"+i);
-      if(i===3&&tampered){e.className="lc bad";e.textContent="✗";}else{e.className="lc ok";e.textContent="✓";}}
+      if(i===3&&tampered){e.className="lc bad";e.textContent="X";}else{e.className="lc ok";e.textContent="OK";}}
     document.getElementById("l3t").textContent=tampered?"Mismatch at step 4 “Sheets: Append row”: the output changed after anchoring":"Re-hashing the stored step data with the run's salt matches every step hash";
-    document.getElementById("stampHex").textContent=tampered?"✗":"✓";
+    document.getElementById("stampHex").textContent=tampered?"X":"OK";
     document.getElementById("stampT").textContent=tampered?"TAMPERED":"VERIFIED";
     document.getElementById("stampS").textContent=tampered?"Original receipt is intact on-chain (layers 1–2 pass); the stored data was edited":"Recorded at 10:00:03 IST and unchanged since";
     await wait(150);st.className="stamp show"+(tampered?" tampered":"");

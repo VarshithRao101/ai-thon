@@ -8,12 +8,12 @@ import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: {
-    default: "FlowLedger | Automate anything. Prove everything.",
-    template: "%s | FlowLedger",
+    default: "N-Flow | Automate anything. Prove everything.",
+    template: "%s | N-Flow",
   },
   description:
     "AI-powered no-code automation with blockchain-verified execution. Describe a workflow in plain English, run it reliably, and prove every run. By TRNT BEE.",
-  applicationName: "FlowLedger",
+  applicationName: "N-Flow",
 };
 
 export const viewport: Viewport = {

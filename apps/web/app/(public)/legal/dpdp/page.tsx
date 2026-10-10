@@ -6,13 +6,13 @@ export const metadata: Metadata = { title: "DPDP notice for form submitters" };
 export default function DpdpPage() {
   return (
     <>
-      <h1>Notice for people filling in a FlowLedger form</h1>
+      <h1>Notice for people filling in a N-Flow form</h1>
       <p>Last updated {LAST_UPDATED}.</p>
       <ul>
         <li>
           The organisation that published the form (the form owner) decides what
           it asks and why. It is the data fiduciary under India's DPDP Act,
-          2023. FlowLedger processes your answers for them.
+          2023. N-Flow processes your answers for them.
         </li>
         <li>
           Your answers are used only for the purpose the form describes, for

@@ -113,7 +113,7 @@ export function CopilotHome({ ensureSession, onStartBlank, onLeaving }: Props) {
       <div className="pointer-events-auto w-full max-w-2xl rounded-3xl bg-background/80 p-2 backdrop-blur-sm sm:p-4">
         <div className="flex items-center gap-2 text-muted-foreground text-xs uppercase tracking-[0.16em]">
           <BeeMark className="size-6" />
-          FlowLedger by TRNT BEE
+          N-Flow by TRNT BEE
         </div>
         <h1 className="mt-4 font-display font-semibold text-3xl leading-tight tracking-tight sm:text-4xl">
           Describe an automation.{" "}

@@ -38,7 +38,7 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  /* FlowLedger brand palette (sampled from the TRNT BEE logo, docs/12) */
+  /* N-Flow brand palette (sampled from the TRNT BEE logo, docs/12) */
   --color-yellow: #ffe73c;
   --color-honey: #ffc326;
   --color-amber: #ffbc12;

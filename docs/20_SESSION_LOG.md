@@ -2,7 +2,7 @@
 
 ## 2026-10-09 — Selection + Phase 0
 - The user shared the 20 problem statements from the TRI-CITY AI HACKATHON. Ranked by architecture depth plus blockchain fit: #5 automation (picked), #11+#12 document intelligence, #9 multi-tenant chatbot. IoT was dropped because the hackathon is software-only.
-- The user submitted #5 to the organizers as **FlowLedger** (abstract: AI workflow generation, Sheets/email/Telegram, blockchain-verified execution logs, INR freemium pricing).
+- The user submitted #5 to the organizers as **N-Flow** (abstract: AI workflow generation, Sheets/email/Telegram, blockchain-verified execution logs, INR freemium pricing).
 - Confirmed that every component has a free tier. Two gotchas noted: Resend can't email arbitrary recipients without a verified domain, so we use Gmail SMTP; and Amoy faucets have daily limits.
 - The project moved to `D:\TRNT BEE\TRNT BEE\ai-thon workflow`. The user shared the judging rubric (MVP 30 / AI-SaaS 20 / UI 15 / Market 15 / Innovation 10 / Pitch 10) and asked for P0: plan everything (architecture, UI, DB, blockchain, containers, orchestration, endpoints, logo, theme).
 - **GitHub research (API-checked):** base = `vercel-labs/workflow-builder-template` (Apache-2.0, Next.js 16, React Flow, Better Auth, Drizzle, plugin system, AI generation). Libraries listed in [04](04_REUSE_PLAN.md). Rejected n8n (license), Automatisch (AGPL) and a full Activepieces fork.
@@ -10,7 +10,7 @@
 - Wrote docs 00–20, the design board and decisions D-001…D-020. **P0 complete. Waiting for "next" to start P1A**, plus answers to Q1–Q6, especially Q3 (rules on pre-event code).
 - Environment: no Docker or WSL on the laptop. pnpm gets installed in P1A.
 
-## 2026-10-09 — P1A Scaffold + brand ✅
+## 2026-10-09 — P1A Scaffold + brand (done)
 - The user said "next" without answering Q1–Q6, so we proceeded. **Q3 (rules on pre-event code) is still open and matters.**
 - Forked the template at `24fb0fd4…` into `apps/web`. A pristine copy is in gitignored `.upstream/` for diffs, and `NOTICE` carries the Apache-2.0 attribution. pnpm 10.34.6 workspaces + Turborepo 2.11.7. The lockfile was carried over so the template's tested versions are kept.
 - **Security:** the template's pins had a critical unauthenticated RCE in Next 16.0.10, plus Better Auth 2FA-bypass and token-replay bugs. We upgraded and pinned patched transitive versions: audit 231 findings (8 critical) → **2 low** (D-021).
@@ -18,8 +18,8 @@
 - **Brand:**
   - The bee mark is cut from the logo JPEG into black/honey PNGs, a smoothed SVG trace and the favicon/app icons (`scripts/brand/make_logo.py`).
   - Theme tokens are black/graphite/honey/gold in `globals.css` (dark default), with fonts Sora/Inter/JetBrains Mono.
-  - FlowLedger lockup replaces the template's GitHub/Deploy buttons.
-  - Titles are fixed: a double " | FlowLedger" suffix was found in the browser and fixed.
+  - N-Flow lockup replaces the template's GitHub/Deploy buttons.
+  - Titles are fixed: a double " | N-Flow" suffix was found in the browser and fixed.
 - `packages/config`: zod env schema per role (web/worker/scheduler/anchorer). Errors name variables, never values. **6/6 tests.**
 - Local DB: embedded Postgres 17.10 on :5433, no Docker (D-023). `scripts/dev-env.mjs` generates local secrets without printing them.
 - Lint: pinned Biome 2.3.15 to match Ultracite 6.3.0. Normalized 293 CRLF files to LF. Fixed 43 pre-existing template lint findings; 2 intentional hook dependencies are annotated rather than changed (D-024).
@@ -30,7 +30,7 @@
 - Git repo initialized on `main` with **no commits**; we're waiting for the user's decision on commits and the remote (Q6). Turbo's auto-written `AGENTS.md` was disabled (`agentGuidance: false`).
 - **Next: 1B** (data + auth + tenancy). Waiting for "next".
 
-## 2026-10-09 — P1B Data + auth + tenancy ✅
+## 2026-10-09 — P1B Data + auth + tenancy (done)
 - The user confirmed pre-event code is allowed (Q3 closed).
 - **Schema** (migration 0005): `workspaces`, `members` and `invitations` (Better Auth org plugin mapping), `sessions.active_organization_id`, plus `workspace_id` on all tenant tables. Also vault columns, integration status, API key scopes/expiry/revoke, and `audit_events`. Cascading FKs: the template's workflow delete would have failed once a workflow had runs. The generated SQL was hand-edited to add columns as nullable, backfill personal workspaces, then set NOT NULL.
 - **RLS** (migration 0006): the `flowledger_app_role` group, grants, `app_workspace_id()`, tenant policies on 6 tables plus public read for workflows, and `resolve_api_key()` SECURITY DEFINER. Dev DB has two roles (owner `flowledger`, app `flowledger_app`); the app is wired with `DATABASE_URL` + `DATABASE_ADMIN_URL`. The boot check confirmed `tenant isolation enforced (db role: flowledger_app)`.
@@ -61,7 +61,7 @@
 - The repo is public: references to the owner's other private work were removed from the docs (the old text is still in the last local commit until the owner amends it).
 - **Testnet wallet** generated locally (`pnpm --filter @flowledger/web wallet:new`): `0xc7aC6059DD12b92E2fff7fea69a008f3a8664dC3`. The key lives only in `.env.local`.
 - **1C Hive engine:** pg-boss on Postgres instead of Redis (D-033). Runner with checkpoint/resume from step logs, retries with jitter, circuit breaker, durable Delay waits, DLQ, idempotency keys, publish → immutable versions, enable/disable, retry from the failed step, Postgres LISTEN/NOTIFY events. **26/26 live checks** (`scripts/e2e-hive.mjs`).
-- **1D/1E:** Form trigger (builder, hosted `/f/{id}`, QR, consent, honeypot, rate limit, idempotent submit), webhook, schedule (pg-boss cron), manual with sample data. Plugins: Google Sheets (service account), Email via Gmail SMTP, Telegram, FlowLedger AI (classify, draft email, extract, generate; Gemini primary, Groq fallback, models from env). **21/21 live checks** (`scripts/e2e-forms.mjs`), including a Telugu + emoji answer.
+- **1D/1E:** Form trigger (builder, hosted `/f/{id}`, QR, consent, honeypot, rate limit, idempotent submit), webhook, schedule (pg-boss cron), manual with sample data. Plugins: Google Sheets (service account), Email via Gmail SMTP, Telegram, N-Flow AI (classify, draft email, extract, generate; Gemini primary, Groq fallback, models from env). **21/21 live checks** (`scripts/e2e-forms.mjs`), including a Telugu + emoji answer.
 - **Bugs found and fixed:**
   1. The dev database was WIN1252, so "→" or Telugu text crashed runs; moved to a UTF-8 database (D-036).
   2. Plugin connection tests pulled Node-only code (nodemailer, Google auth) into the browser bundle and broke the builder pages; those tests now live in a server-only registry.
@@ -73,7 +73,7 @@
 - **Copilot** rebuilt as a schema-validated plan with a deterministic builder and a template fallback (D-037). Five templates (hackathon registration, lead scoring, clinic, daily digest, payment webhook). **9/9 unit tests.**
 - **Copilot-first home** (`/`): describe an automation or open a template; the canvas then fills node by node.
 - **Run Doctor** (D-040) on failed runs: plain-language cause, one-click "Apply fix & test", retry, or reconnect. **3/3 rule tests.**
-- Runs panel: trigger badge, **Verify** (opens the receipt) and **Retry** (from the failed step). Form trigger and Delay icons; FlowLedger AI nodes no longer ask for a connection.
+- Runs panel: trigger badge, **Verify** (opens the receipt) and **Retry** (from the failed step). Form trigger and Delay icons; N-Flow AI nodes no longer ask for a connection.
 - **Security:** SSRF guard for HTTP Request (**21/21 tests**); the template's database connection test is disabled (D-041).
 - Default Amoy RPC moved to publicnode (D-044). The wallet still had **0 POL** at 10:00, so anchoring on Amoy waits for faucet funding.
 - `node scripts/check-keys.mjs` shows which keys are filled (names only). At 10:00 the AI keys were still empty.
@@ -87,3 +87,5 @@
 - **Cloud scripts:** `pnpm cloud:db` (creates `flowledger_app` with a random password, runs migrations + queues, refuses if the app role bypasses RLS) was dry-run on a fresh local database (passed). `pnpm cloud:env` pushes production env to Vercel by name only.
 - **Verified in serverless mode locally:** all four live suites green (hive, forms, tenancy, ledger); anchoring ran from the drain (7 batches); the tick answers 401 without the secret and 202 with it; production build passes.
 - PLAN.md rewritten: the owner's 10-step manual list (wallet, Neon, Vercel, Gemini, Telegram, Gmail, Sheets, Alchemy, Connections, cron-job.org) and Claude's steps C1–C8. docs/19 gained Neon, Vercel, Connections and cron sections.
+- **No emojis (user request, 10 Oct afternoon):** removed every emoji and check-mark symbol from the app's message templates, the docs, the design preview and the key checker; replaced with words ("Done", "Verified", "Tampered", "[set]/[empty]"). The forms e2e now proves Telugu + Hindi storage instead of an emoji. Unit tests (63) and the forms suite (21) still pass.
+- **Renamed to N-Flow (D-048):** every user-visible "FlowLedger" became "N-Flow" (60 files: UI, titles, emails, legal pages, docs). Internal identifiers (`@flowledger/*`, DB roles, env vars, migrations, the `FlowLedgerAnchor` contract) keep the old name.

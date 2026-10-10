@@ -1,4 +1,4 @@
-# FlowLedger — Project Context (read first, every session)
+# N-Flow — Project Context (read first, every session)
 
 Next, read [docs/00_INDEX.md](docs/00_INDEX.md). For the conversation history so far, read [docs/20_SESSION_LOG.md](docs/20_SESSION_LOG.md).
 
@@ -8,7 +8,7 @@ Our entry for the **TRI-CITY AI HACKATHON** (Centle; Warangal / Hanamkonda / Kaz
 Problem statement #5 (submitted 2026-10-09): *"Build a Zapier-like tool where users create automations between forms, sheets, emails and notifications."*
 Official MVP scope: workflow builder, triggers, actions, execution logs, a sample workflow, and enable/disable controls.
 
-**FlowLedger** is an AI-powered no-code automation platform with **blockchain-verified execution ("Proof-of-Execution")**:
+**N-Flow** is an AI-powered no-code automation platform with **blockchain-verified execution ("Proof-of-Execution")**:
 - A user describes an automation in plain English. The AI builds it on a visual canvas.
 - Each run executes on our own queue-based engine ("Hive"), and every step is logged.
 - Every run produces a hashed receipt. Receipts are batched into a Merkle tree and the root is anchored on Polygon Amoy. Anyone can check on the public verify page that a log was not altered.

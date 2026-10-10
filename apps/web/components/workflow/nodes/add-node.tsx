@@ -15,7 +15,7 @@ export function AddNode({ data }: NodeProps & { data?: AddNodeData }) {
       <div className="text-center">
         <BeeMark className="mx-auto mb-4 size-14" />
         <h1 className="mb-2 font-bold font-display text-3xl tracking-tight">
-          Flow<span className="text-brand-gradient">Ledger</span>
+          N-<span className="text-brand-gradient">Flow</span>
         </h1>
         <p className="text-muted-foreground text-sm">
           Automate anything. Prove everything.

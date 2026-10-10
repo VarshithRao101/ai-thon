@@ -43,7 +43,7 @@ export function BrandLockup({
       <BeeMark />
       <div className="leading-tight">
         <div className="font-display font-semibold text-sm tracking-tight">
-          Flow<span className="text-primary">Ledger</span>
+          N-<span className="text-primary">Flow</span>
         </div>
         {showByline && (
           <div className="text-[10px] text-muted-foreground uppercase tracking-[0.14em]">

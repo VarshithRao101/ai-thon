@@ -47,7 +47,7 @@ export async function POST(request: Request) {
 
     if (body.type === "database") {
       // Connecting to a user-supplied database URL is an SSRF vector; the
-      // Database Query step is not offered in FlowLedger (docs/10).
+      // Database Query step is not offered in N-Flow (docs/10).
       return NextResponse.json(
         { error: "Database connections are not supported" },
         { status: 400 }

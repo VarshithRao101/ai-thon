@@ -219,7 +219,7 @@ export function RunDoctor({
               <p className="text-[11px] text-muted-foreground">
                 {diagnosis.source === "ai"
                   ? `Explained by AI (${diagnosis.model}). Fixes are checked before they are offered.`
-                  : "Diagnosed by FlowLedger's built-in rules."}
+                  : "Diagnosed by N-Flow's built-in rules."}
               </p>
             </div>
           )}

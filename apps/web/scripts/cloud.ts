@@ -19,7 +19,10 @@ import postgres from "postgres";
 const root = resolve(process.cwd());
 const localPath = resolve(root, ".env.local");
 // CLOUD_ENV_FILE / CLOUD_DATABASE_ADMIN_URL overrides exist for dry runs.
-const cloudPath = resolve(root, process.env.CLOUD_ENV_FILE ?? ".env.cloud.local");
+const cloudPath = resolve(
+  root,
+  process.env.CLOUD_ENV_FILE ?? ".env.cloud.local"
+);
 
 function readEnv(path: string): Record<string, string> {
   return existsSync(path) ? parse(readFileSync(path, "utf8")) : {};

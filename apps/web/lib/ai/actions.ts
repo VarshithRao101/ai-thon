@@ -10,7 +10,7 @@ import { isAiMock, withAi } from "./provider";
  */
 
 const SYSTEM =
-  "You are FlowLedger's automation assistant. Be accurate and concise. Never invent facts that are not in the input.";
+  "You are N-Flow's automation assistant. Be accurate and concise. Never invent facts that are not in the input.";
 
 const LIST_SEPARATOR = /[,\n]/;
 
@@ -83,7 +83,7 @@ export async function draftEmail(input: {
   if (isAiMock()) {
     const name = input.recipientName || "there";
     return {
-      subject: input.goal.slice(0, 80) || "Hello from FlowLedger",
+      subject: input.goal.slice(0, 80) || "Hello from N-Flow",
       body: `Hi ${name},\n\n${input.goal}\n\n${input.context}\n\nBest,\n${input.senderName || "The team"}`,
       model: "mock",
     };

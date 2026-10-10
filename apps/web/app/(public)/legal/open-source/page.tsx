@@ -17,7 +17,7 @@ export default function OpenSourcePage() {
       <h1>Open source</h1>
       <h2>Base template</h2>
       <p>
-        FlowLedger started from the{" "}
+        N-Flow started from the{" "}
         <a
           className="text-primary underline underline-offset-4"
           href="https://github.com/vercel-labs/workflow-builder-template"

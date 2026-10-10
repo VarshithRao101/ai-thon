@@ -15,7 +15,7 @@ import {
   workspaces,
 } from "./db/schema";
 
-// Better Auth models -> FlowLedger tables (organization = workspace)
+// Better Auth models -> N-Flow tables (organization = workspace)
 const schema = {
   user: users,
   session: sessions,

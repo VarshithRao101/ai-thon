@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "license": "Apache-2.0",
-  "description": "FlowLedger web app (UI, API, trigger ingress). Forked from vercel-labs/workflow-builder-template (Apache-2.0).",
+  "description": "N-Flow web app (UI, API, trigger ingress). Forked from vercel-labs/workflow-builder-template (Apache-2.0).",
   "scripts": {
     "dev": "pnpm discover-plugins && next dev",
     "build": "pnpm discover-plugins && next build",

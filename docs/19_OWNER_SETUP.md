@@ -29,24 +29,24 @@
 - Report: "Gemini done" plus the two model IDs (IDs are not secret).
 
 ## 3. Gmail sender (10 min)
-1. Create a new Gmail account for the demo (e.g. `flowledger.demo…@gmail.com`).
+1. Create a new Gmail account for the demo (e.g. `nflow.demo…@gmail.com`).
 2. Turn on **2-Step Verification** (Google Account → Security).
-3. Go to https://myaccount.google.com/apppasswords, create an app password named "FlowLedger" and keep the **16-character password**.
+3. Go to https://myaccount.google.com/apppasswords, create an app password named "N-Flow" and keep the **16-character password**.
 - Report: the Gmail address.
 
 ## 4. Google Sheets (20 min)
-1. https://console.cloud.google.com → create a project named `flowledger`. Use a personal Google account: college Workspace accounts often block service-account keys.
+1. https://console.cloud.google.com → create a project named `n-flow`. Use a personal Google account: college Workspace accounts often block service-account keys.
 2. **APIs & Services → Library →** enable **Google Sheets API**.
 3. **IAM & Admin → Service Accounts → Create** `flowledger-sheets` (no roles needed) → open it → **Keys → Add key → JSON**. Keep the downloaded file private.
-4. Create a Google Sheet named **FlowLedger Demo — Registrations** with this header row in row 1:
+4. Create a Google Sheet named **N-Flow Demo — Registrations** with this header row in row 1:
    `Submitted At | Name | Email | College | Idea | Track | Run ID`
 5. **Share** the Sheet with the service account's email (`client_email` in the JSON, ending in `iam.gserviceaccount.com`) as **Editor**.
 6. Copy the **spreadsheet ID** from the URL: the part between `/d/` and `/edit`.
 - Report: the spreadsheet ID and the service-account email.
 
 ## 5. Telegram (10 min)
-1. In Telegram, open **@BotFather** → `/newbot` → name it "FlowLedger Bot", with a username ending in `bot`. Keep the **token**.
-2. Create a group named **FlowLedger Live**, add the bot, then send `/start@<your_bot_username>` in the group.
+1. In Telegram, open **@BotFather** → `/newbot` → name it "N-Flow Bot", with a username ending in `bot`. Keep the **token**.
+2. Create a group named **N-Flow Live**, add the bot, then send `/start@<your_bot_username>` in the group.
 3. To get the **chat id**, open `https://api.telegram.org/bot<TOKEN>/getUpdates` in a browser **on the laptop only** (the URL contains the token, so never share it). Find `"chat":{"id":-100…`; that negative number is the chat id.
 - Report: the chat id (not secret) and the bot username.
 
@@ -61,7 +61,7 @@ A phone with mobile data (also a hotspot backup), the Telegram group open on a s
 
 ## 9. Neon Postgres (5 min)
 1. https://neon.tech → **Sign up with GitHub** (free plan).
-2. Create a project: name `flowledger`, Postgres **17**, region **AWS Asia Pacific 1 (Singapore)**.
+2. Create a project: name `n-flow`, Postgres **17**, region **AWS Asia Pacific 1 (Singapore)**.
 3. On the project dashboard press **Connect**. Turn **Connection pooling OFF** (the live canvas needs a direct connection). Copy the connection string (`postgresql://neondb_owner:…@ep-….ap-southeast-1.aws.neon.tech/neondb?sslmode=require`).
 4. In `apps/web/.env.local` add a line `CLOUD_DATABASE_ADMIN_URL=` followed by that string.
 - Report: "done 2". Claude then creates the app role (with its own random password), runs migrations and sets up the queues.

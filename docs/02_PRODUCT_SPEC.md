@@ -8,12 +8,12 @@ Small businesses, colleges, clinics and startups in India move data by hand. A t
 
 Tools like Zapier are priced in USD and get expensive as runs grow (sourced in [13](13_BUSINESS_MARKET.md)). Their run history also lives in the vendor's database, so it can be edited and nobody outside can prove what actually ran. That matters when the data is personal and the DPDP Act applies.
 
-## Solution: FlowLedger
+## Solution: N-Flow
 A no-code automation platform with four parts:
 1. **Describe it in plain English** → the AI Copilot builds the workflow on a visual canvas.
 2. **Connect triggers and actions:** forms, webhooks and schedules trigger Sheets, email, Telegram, Discord, Slack, AI steps and HTTP calls.
 3. **Run reliably** on the Hive engine: a queue, horizontally scalable workers, retries, a dead-letter queue (DLQ), and resume from the failed step.
-4. **Prove it:** each run gets a cryptographic receipt that is anchored on-chain. Anyone can verify it on a public page without trusting FlowLedger.
+4. **Prove it:** each run gets a cryptographic receipt that is anchored on-chain. Anyone can verify it on a public page without trusting N-Flow.
 
 ## Personas
 | Persona | Need | Example |
@@ -24,7 +24,7 @@ A no-code automation platform with four parts:
 | **Workspace admin** | Team access, API keys, audit trail, usage limits | Settings and Ledger screens |
 
 ## MVP scope (official) → our feature
-| Official MVP item | FlowLedger feature |
+| Official MVP item | N-Flow feature |
 |---|---|
 | Workflow builder | React Flow canvas: node palette, config panel, AI Copilot side panel, versioned publish |
 | Triggers | Form submitted (hosted form + QR), webhook (HMAC or API key), schedule (cron), manual test run |
@@ -103,6 +103,6 @@ Template syntax (from the base template): `{{@nodeId:Label.field}}`. The builder
 - As a visitor, I submit the form. Within 10 seconds I get the email, the Sheet has the row, and Telegram is pinged. **(P2 measures this target. Until it is measured, it is a target, not a claim.)**
 - As an editor, I watch the run live on the canvas and open the step timeline.
 - As an editor, I disable a workflow. New submissions are rejected and logged as "skipped (disabled)".
-- As anyone with a receipt link, I open `/verify/<id>` and see ✓ verified against the chain, plus the Polygonscan transaction.
-- As an admin, I use the tamper simulator in the demo workspace. The verify page shows ✗ and points at the changed step.
+- As anyone with a receipt link, I open `/verify/<id>` and see "Verified" against the chain, plus the Polygonscan transaction.
+- As an admin, I use the tamper simulator in the demo workspace. The verify page shows "Tampered" and points at the changed step.
 - As an editor, when a step fails I click "Ask Run Doctor". I get a plain-language cause and an "Apply fix" button.

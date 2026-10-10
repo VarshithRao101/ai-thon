@@ -32,14 +32,14 @@
 ## RBAC matrix
 | Action | Owner | Admin | Editor | Viewer |
 |---|---|---|---|---|
-| View workflows, runs, ledger | ✓ | ✓ | ✓ | ✓ |
-| Create / edit / publish / enable workflows | ✓ | ✓ | ✓ | — |
-| Retry / cancel runs, Run Doctor | ✓ | ✓ | ✓ | — |
-| View decrypted form submissions | ✓ | ✓ | ✓ | — |
-| Manage integrations (vault), API keys | ✓ | ✓ | — | — |
-| Invite members / change roles | ✓ | ✓ (not owners) | — | — |
-| Billing / plan, delete workspace, transfer ownership | ✓ | — | — | — |
-| Tamper simulator (demo workspace) | ✓ | ✓ | — | — |
+| View workflows, runs, ledger | Yes | Yes | Yes | Yes |
+| Create / edit / publish / enable workflows | Yes | Yes | Yes | — |
+| Retry / cancel runs, Run Doctor | Yes | Yes | Yes | — |
+| View decrypted form submissions | Yes | Yes | Yes | — |
+| Manage integrations (vault), API keys | Yes | Yes | — | — |
+| Invite members / change roles | Yes | Yes (not owners) | — | — |
+| Billing / plan, delete workspace, transfer ownership | Yes | — | — | — |
+| Tamper simulator (demo workspace) | Yes | Yes | — | — |
 
 ## Credential vault: envelope encryption
 - **KEK** (key-encryption key): 32 bytes from env `VAULT_MASTER_KEY_V{n}`. It never touches the DB.
@@ -75,7 +75,7 @@ The consent banner offers **Accept all / Reject non-essential / Customize**, wit
 | Breach readiness | Audit trail + tamper-evident logs + incident runbook (docs/runbook in P3) |
 | Retention | Plan-based retention with an automatic sweep |
 
-Roles: FlowLedger is the **processor** for workspace data. The workspace owner is the **data fiduciary** for their forms. This is stated in the Terms and the DPA summary. These pages are templates and **not legal advice** (see [18](18_LEGAL_PAGES.md)).
+Roles: N-Flow is the **processor** for workspace data. The workspace owner is the **data fiduciary** for their forms. This is stated in the Terms and the DPA summary. These pages are templates and **not legal advice** (see [18](18_LEGAL_PAGES.md)).
 
 ## Secrets handling (team rules)
 - `.env.local` for dev only. Deployed secrets go in platform env (Vercel/Render) or Kubernetes Secrets (External Secrets operator noted as the production path).

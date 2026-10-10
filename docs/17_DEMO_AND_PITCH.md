@@ -5,8 +5,8 @@
 |---|---|---|---|
 | 0:00–0:20 | Lead | Landing page, then the problem slide | "Every club, clinic and startup copy-pastes form data into sheets, emails and WhatsApp. Zapier costs dollars, and nobody can prove what their automations actually did." |
 | 0:20–0:50 | Frontend+AI | Builder → Copilot: *"When someone registers, figure out their track, save them to our sheet, email them a personal confirmation and alert our team on Telegram."* Nodes drop in, already wired | "One sentence. AI built a five-step workflow, picked the integrations and mapped the fields." |
-| 0:50–1:30 | Backend | Publish → **QR on screen** → a judge scans and submits on their phone → the canvas lights up live: AI ✓ → Sheet ✓ → Email ✓ → Telegram ✓. Sheet, Telegram and the judge's inbox are visible | "That ran on our Hive engine: a queue, autoscaling workers, retries. Sir/Ma'am, please check your inbox." |
-| 1:30–2:10 | Blockchain+DevOps | Run detail → receipt "✓ On-chain" → **public verify page**: four checks tick, Polygonscan transaction → **tamper simulator** edits the Sheet row number → verify shows **✗ Tampered at step 3** → Restore | "Every run gets a cryptographic receipt anchored on Polygon. Anyone can verify it in their own browser without trusting us. Edit one byte and it breaks." |
+| 0:50–1:30 | Backend | Publish → **QR on screen** → a judge scans and submits on their phone → the canvas lights up live: AI done → Sheet done → Email done → Telegram done. Sheet, Telegram and the judge's inbox are visible | "That ran on our Hive engine: a queue, autoscaling workers, retries. Sir/Ma'am, please check your inbox." |
+| 1:30–2:10 | Blockchain+DevOps | Run detail → receipt "On-chain" → **public verify page**: four checks tick, Polygonscan transaction → **tamper simulator** edits the Sheet row number → verify shows **Tampered at step 3** → Restore | "Every run gets a cryptographic receipt anchored on Polygon. Anyone can verify it in their own browser without trusting us. Edit one byte and it breaks." |
 | 2:10–2:30 | Frontend+AI | Break a step on purpose → failed run → **Ask Run Doctor** → Apply fix → green | "When something fails, AI explains why in plain English and fixes it." |
 | 2:30–2:50 | Lead | Architecture slide (Compose / K8s / KEDA / OTel), then the pricing slide (₹499) | "Containerized, autoscaling, observable. Priced in rupees for 8.8 crore registered MSMEs." |
 | 2:50–3:00 | Lead | Future scope slide | "Next: WhatsApp, Telugu voice-to-workflow, and verifiable AI decisions." |
@@ -27,7 +27,7 @@
 5. Total failure → 90-second recorded backup video.
 
 ## Pitch deck outline (10 slides, black and gold)
-1. **Title:** FlowLedger — *Automate anything. Prove everything.* (bee logo, Team Hydra, TRNT BEE)
+1. **Title:** N-Flow — *Automate anything. Prove everything.* (bee logo, Team Hydra, TRNT BEE)
 2. **Problem:** manual work + USD pricing + unverifiable logs (one stat each, sourced)
 3. **Solution:** three pillars: AI Copilot · Hive engine · Proof-of-Execution
 4. **Live demo** (switch to the app)

@@ -1,4 +1,4 @@
-// End-to-end check of hosted forms + AI steps against a running FlowLedger.
+// End-to-end check of hosted forms + AI steps against a running N-Flow.
 // Start the server with AI_MOCK=true to run without AI keys. Local dev only;
 // creates a throwaway *.example.test account (random password, never printed).
 // Usage: node scripts/e2e-forms.mjs [baseUrl]   (default http://localhost:3000)
@@ -75,7 +75,7 @@ const node = (id, type, label, config, x) => ({
 });
 const edge = (s, t) => ({ id: `${s}-${t}`, source: s, target: t, type: "animated" });
 
-console.log(`FlowLedger forms + AI e2e against ${BASE}`);
+console.log(`N-Flow forms + AI e2e against ${BASE}`);
 const signup = await call("POST", "/api/auth/sign-up/email", {
   email: `forms.${randomBytes(4).toString("hex")}@example.test`,
   password: randomBytes(18).toString("base64url"),
@@ -138,7 +138,7 @@ check("invalid email → 422", badEmail.status === 422 && badEmail.json?.errors?
 
 const submissionId = randomBytes(12).toString("hex");
 const answers = {
-  values: { name: "ఆశ రావు 🐝", email: "asha.rao@example.test", college: "NIT Warangal", idea: "An AI/ML tutor for rural schools" },
+  values: { name: "ఆశ రావు (आशा)", email: "asha.rao@example.test", college: "NIT Warangal", idea: "An AI/ML tutor for rural schools" },
   consent: true,
   submissionId,
 };
@@ -152,7 +152,7 @@ const runLogs = await logsOf(sent.json?.executionId);
 const classified = runLogs.find((l) => l.nodeId === "a1" && l.status === "success");
 check("AI classified the idea as AI/ML", JSON.stringify(classified?.output ?? "").includes("AI/ML"), JSON.stringify(classified?.output));
 const triggerLog = runLogs.find((l) => l.nodeId === "t1");
-check("trigger carries the answers (Telugu + emoji intact), a timestamp and consent", triggerLog?.input?.name === "ఆశ రావు 🐝" && triggerLog?.input?.submittedAt && triggerLog?.input?.consent === true, JSON.stringify(triggerLog?.input));
+check("trigger carries the answers (Telugu + Hindi intact), a timestamp and consent", triggerLog?.input?.name === "ఆశ రావు (आशा)" && triggerLog?.input?.submittedAt && triggerLog?.input?.consent === true, JSON.stringify(triggerLog?.input));
 
 const before = (await call("GET", `/api/workflows/${wfId}/executions`)).json?.length ?? 0;
 const bot = await visitor("POST", `/api/forms/${wfId}`, { ...answers, submissionId: randomBytes(12).toString("hex"), website: "http://spam.example" });

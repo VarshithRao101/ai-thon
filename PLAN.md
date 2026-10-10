@@ -1,4 +1,4 @@
-# FlowLedger — Development Plan (single source of truth)
+# N-Flow — Development Plan (single source of truth)
 
 All upcoming work lives here. Update this file whenever the plan changes (and log the reason in [docs/15_DECISIONS.md](docs/15_DECISIONS.md)).
 
@@ -38,10 +38,10 @@ Click-by-click: [docs/19_OWNER_SETUP.md](docs/19_OWNER_SETUP.md). Tell Claude "*
 | # | Step | Time | Where it goes |
 |---|---|---|---|
 | **1** | **Fund the testnet wallet** `0xc7aC6059DD12b92E2fff7fea69a008f3a8664dC3` with ≥ 0.2 Amoy POL from several faucets. Start first; faucets have daily limits | 15 min | On-chain |
-| **2** | **Neon**: sign up with GitHub → project `flowledger`, Postgres 17, region **AWS Asia Pacific (Singapore)** → Connect → **pooling OFF** → copy the connection string | 5 min | `.env.local`: `CLOUD_DATABASE_ADMIN_URL=` |
+| **2** | **Neon**: sign up with GitHub → project `n-flow`, Postgres 17, region **AWS Asia Pacific (Singapore)** → Connect → **pooling OFF** → copy the connection string | 5 min | `.env.local`: `CLOUD_DATABASE_ADMIN_URL=` |
 | **3** | **Vercel**: sign up with GitHub (Hobby) → Add New → Project → import `VarshithRao101/ai-thon` → **Root Directory = `apps/web`** → Deploy (the first build may fail without env vars; that's expected). Then in the VS Code/Claude terminal run `npx vercel login` | 10 min | Nothing to paste |
 | **4** | **Gemini API key** + two model IDs (a Flash and a Pro) from AI Studio | 5 min | `.env.local`: `GOOGLE_GENERATIVE_AI_API_KEY`, `AI_MODEL_FAST`, `AI_MODEL_SMART` |
-| **5** | **Telegram bot** (@BotFather) + group "FlowLedger Live" + chat id | 10 min | Keep private; enter in the hosted app → Connections (step 9) |
+| **5** | **Telegram bot** (@BotFather) + group "N-Flow Live" + chat id | 10 min | Keep private; enter in the hosted app → Connections (step 9) |
 | **6** | **Gmail app password** on a new demo Gmail (2-Step Verification on) | 10 min | Same as 5 |
 | **7** | **Google Cloud service account** (JSON key) + Sheets API + a demo Sheet shared with it as Editor | 15 min | Same as 5 |
 | 8 | Optional: **Alchemy** Amoy RPC URL | 5 min | `.env.local`: `CHAIN_RPC_URL` |
@@ -89,6 +89,13 @@ Click-by-click: [docs/19_OWNER_SETUP.md](docs/19_OWNER_SETUP.md). Tell Claude "*
 - The anchorer does not yet recover a batch stuck in `submitted` after a crash mid-transaction.
 - On Vercel, retries with backoff and delays resume on the next minute tick (cron-job.org), not to the second.
 - Legal pages are templates, not legal advice.
+
+## Check progress locally
+
+- **App:** http://localhost:3000 (run `pnpm db:local`, then `pnpm dev`; without keys add `AI_MOCK=true`). Sign in, build from the Copilot home, publish, open the form link, watch the canvas and the runs panel, and open **Verify** on a run.
+- **Same mode as Vercel:** start with `HIVE_MODE=serverless CRON_SECRET=local-test-secret` to run exactly the hosted engine path.
+- **Keys:** `pnpm keys:check` shows `[set]` / `[empty]` per key (names only).
+- **Plan status:** this file plus [docs/20_SESSION_LOG.md](docs/20_SESSION_LOG.md).
 
 ## Commands
 

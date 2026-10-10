@@ -115,7 +115,7 @@ const requiresIntegration = (actionType: string): boolean => {
     return true;
   }
 
-  // Plugin actions need a connection unless the plugin runs on platform keys (FlowLedger AI)
+  // Plugin actions need a connection unless the plugin runs on platform keys (N-Flow AI)
   const action = findActionById(actionType);
   return action !== undefined && requiresConnection(action.integration);
 };

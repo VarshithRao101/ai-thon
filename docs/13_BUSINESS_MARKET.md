@@ -8,7 +8,7 @@ Rule: every number below has a source or is labeled **estimate**. Do not round e
 - Run history lives in the vendor's database. When personal data is involved (DPDP Act), teams can't *prove* what their automations did.
 
 ## Target users (beachhead → expansion)
-1. **Beachhead: college clubs, fest and hackathon organizers** (like this event) — registrations, confirmations, team alerts. Low cost to acquire, viral (every participant sees "Powered by FlowLedger").
+1. **Beachhead: college clubs, fest and hackathon organizers** (like this event) — registrations, confirmations, team alerts. Low cost to acquire, viral (every participant sees "Powered by N-Flow").
 2. **Clinics, coaching centers, small agencies** — appointment and lead forms, reminders, follow-ups.
 3. **Startups / SMB ops teams** — lead scoring, webhooks from payments, daily digests.
 4. **Compliance-sensitive teams** (later) — verifiable audit trails for DPDP-era data processing.
@@ -19,7 +19,7 @@ Rule: every number below has a source or is labeled **estimate**. Do not round e
 - **SOM (estimate):** if 0.01% of Udyam-registered enterprises (~8,800) paid ₹499/month, that's ~₹4.4 crore ARR. *Illustrative arithmetic, not a forecast.*
 
 ## Competitors
-| | Zapier | Make | n8n | Pabbly Connect (India) | **FlowLedger** |
+| | Zapier | Make | n8n | Pabbly Connect (India) | **N-Flow** |
 |---|---|---|---|---|---|
 | Pricing currency | USD | USD | USD / self-host | INR / USD | **INR** |
 | AI builds the workflow | Yes (Copilot) | Partial | Partial | No (verify) | **Yes + Run Doctor** |
@@ -42,7 +42,7 @@ Competitor features change quickly. Re-check each "Yes/No" against the vendors' 
 - Infrastructure: one small container set serves many workspaces. Workers autoscale on queue depth.
 
 ## Go-to-market
-1. **Campus launch:** free for college clubs and hackathons, with "Powered by FlowLedger" on hosted forms (viral loop).
+1. **Campus launch:** free for college clubs and hackathons, with "Powered by N-Flow" on hosted forms (viral loop).
 2. **Template-led SEO:** "Google Form to Sheet + WhatsApp/Telegram alert", in Telugu/Hindi as well.
 3. **Partnerships:** incubators (e.g. T-Hub, WE Hub in Telangana; verify program fit), CA and IT consultants who set up tools for SMBs.
 4. **Compliance angle:** "DPDP-ready audit trail" for clinics and education.

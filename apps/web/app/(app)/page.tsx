@@ -55,7 +55,7 @@ const Home = () => {
 
   // Update page title when workflow name changes
   useEffect(() => {
-    document.title = `${currentWorkflowName} | FlowLedger`;
+    document.title = `${currentWorkflowName} | N-Flow`;
   }, [currentWorkflowName]);
 
   // Helper to create anonymous session if needed

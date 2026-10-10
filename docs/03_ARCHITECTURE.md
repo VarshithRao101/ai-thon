@@ -1,7 +1,7 @@
 # 03 — Architecture
 
 ## Style
-FlowLedger is a **modular monolith with independently scalable process roles**. There is one TypeScript codebase in a pnpm/Turborepo monorepo, built into **one container image** that starts in one of four roles:
+N-Flow is a **modular monolith with independently scalable process roles**. There is one TypeScript codebase in a pnpm/Turborepo monorepo, built into **one container image** that starts in one of four roles:
 
 | Role | Command | Scales by | Responsibility |
 |---|---|---|---|
@@ -20,7 +20,7 @@ flowchart LR
   EXT[External system] -->|webhook + HMAC| WEB
   P[Anyone with a receipt] -->|/verify| WEB
   P -. reads root directly .-> CHAIN
-  subgraph FlowLedger
+  subgraph N-Flow
     WEB[web<br/>Next.js 16]
     Q[(Redis<br/>BullMQ queues + pub/sub)]
     W[worker xN<br/>Hive engine]
@@ -88,7 +88,7 @@ sequenceDiagram
   participant X as Sheets/SMTP/Telegram/LLM
   participant A as anchorer
   participant C as Amoy contract
-  J->>WEB: POST /api/forms/{slug}/submit (consent ✓)
+  J->>WEB: POST /api/forms/{slug}/submit (consent given)
   WEB->>WEB: rate-limit, honeypot, zod-validate
   WEB->>DB: insert form_submission + execution(status=queued, idempotency key)
   WEB->>R: add job runs:{executionId} (traceparent)

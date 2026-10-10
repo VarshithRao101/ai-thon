@@ -103,7 +103,7 @@ export const TEMPLATES: TemplatePlan[] = [
           after: ["draft"],
           config: kv({
             telegramText:
-              "🐝 New registration: {{trigger.name}} ({{trigger.college}})\nTrack: {{classify.label}}",
+              "New registration: {{trigger.name}} ({{trigger.college}})\nTrack: {{classify.label}}",
           }),
         },
       ],
@@ -175,7 +175,7 @@ export const TEMPLATES: TemplatePlan[] = [
           label: "Ping sales",
           config: kv({
             telegramText:
-              "🔥 Hot lead: {{trigger.name}} ({{trigger.company}}): {{score.reason}}",
+              "Hot lead: {{trigger.name}} ({{trigger.company}}): {{score.reason}}",
           }),
         },
       ],
@@ -285,7 +285,7 @@ export const TEMPLATES: TemplatePlan[] = [
           id: "post",
           action: "telegram/send-message",
           label: "Post to team",
-          config: kv({ telegramText: "☀️ {{write.text}}" }),
+          config: kv({ telegramText: "Good morning: {{write.text}}" }),
         },
       ],
     },
@@ -333,8 +333,7 @@ export const TEMPLATES: TemplatePlan[] = [
           action: "telegram/send-message",
           label: "Alert team",
           config: kv({
-            telegramText:
-              "💸 Payment ₹{{trigger.amount}} from {{trigger.email}}",
+            telegramText: "Payment ₹{{trigger.amount}} from {{trigger.email}}",
           }),
         },
       ],

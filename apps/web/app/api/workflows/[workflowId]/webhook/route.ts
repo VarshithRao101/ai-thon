@@ -16,7 +16,7 @@ const corsHeaders = {
     "Content-Type, Authorization, Idempotency-Key",
 };
 
-// flk_ = FlowLedger keys; wfb_ = keys issued by the base template
+// flk_ = N-Flow keys; wfb_ = keys issued by the base template
 const KEY_PREFIXES = ["flk_", "wfb_"];
 
 function json(body: unknown, status = 200) {

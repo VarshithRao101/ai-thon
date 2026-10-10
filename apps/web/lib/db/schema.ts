@@ -77,7 +77,7 @@ export const verifications = pgTable("verifications", {
 
 // ---------------------------------------------------------------------------
 // Workspaces: Better Auth organization plugin (organization/member/invitation)
-// plus FlowLedger columns. Field keys must match Better Auth field names.
+// plus N-Flow columns. Field keys must match Better Auth field names.
 // ---------------------------------------------------------------------------
 
 export const workspaces = pgTable("workspaces", {

@@ -15,7 +15,7 @@ export type PlanResult = {
 const TIMEOUT_MS = 25_000;
 
 function systemPrompt(): string {
-  return `You design automations for FlowLedger, a no-code workflow tool for Indian colleges, clinics and small businesses.
+  return `You design automations for N-Flow, a no-code workflow tool for Indian colleges, clinics and small businesses.
 Turn the user's request into a plan: one trigger and 1-8 steps.
 
 Triggers:

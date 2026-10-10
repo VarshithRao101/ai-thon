@@ -25,7 +25,7 @@ Visual board: [../design/ui-preview.html](../design/ui-preview.html). Open it in
 | `--gold-deep` | `#C27503` | Gradients' end, pressed state |
 | `--metal` | `#D4AF37` | Metallic gold for hairline borders on premium cards and verified badges |
 | `--success` | `#4ADE80` | Success (kept slightly cool so gold stays the hero) |
-| `--danger` | `#F87171` | Errors, tamper ✗ |
+| `--danger` | `#F87171` | Errors, tamper alerts |
 | `--info` | `#93C5FD` | Info |
 
 - **Primary gradient:** `linear-gradient(135deg,#FFE73C 0%,#FFC326 35%,#E49000 75%,#C27503 100%)`.
@@ -44,9 +44,9 @@ Visual board: [../design/ui-preview.html](../design/ui-preview.html). Open it in
 - **Motion** (Motion library, all respecting `prefers-reduced-motion`):
   - page fade-up (180 ms, ease-out)
   - copilot nodes "drop in" one by one (60 ms stagger)
-  - **live run:** edges show flowing gold dots while data moves; nodes pulse amber while running → flash gold with a ✓ on success → red shake on error
+  - **live run:** edges show flowing gold dots while data moves; nodes pulse amber while running → flash gold with a check icon on success → red shake on error
   - verify page: four checks tick in sequence (250 ms each), then a hexagon "VERIFIED" stamp
-  - Number Ticker on dashboard KPIs; Border Beam on the pricing "Pro" card; **Animated Beam** on the landing page showing Form → FlowLedger → Sheets/Gmail/Telegram/Chain
+  - Number Ticker on dashboard KPIs; Border Beam on the pricing "Pro" card; **Animated Beam** on the landing page showing Form → N-Flow → Sheets/Gmail/Telegram/Chain
 
 ## Layout
 - App shell: a collapsible **left sidebar** (Dashboard, Workflows, Runs, Forms, Connections, Ledger, Templates, Settings) + a top bar (workspace switcher, ⌘K command palette, notifications bell, user menu).
@@ -61,13 +61,13 @@ Visual board: [../design/ui-preview.html](../design/ui-preview.html). Open it in
 | 4 | **Dashboard** `/app` | KPI tiles (runs today, success rate, p95 duration, receipts anchored, AI tokens); runs-per-day area chart (gold); success/failure donut; recent runs list with live status; "Needs attention" (failed runs → Doctor); quick actions | Empty state: "Create your first automation" with copilot box |
 | 5 | **Workflows** `/app/workflows` | Cards/table: name, trigger icon, **enable toggle**, last run status dot, runs (7d), version, updated. Search, filter, "New with AI", "From template" | Empty, loading skeletons |
 | 6 | **Builder** `/app/workflows/[id]` | Canvas (dot grid, gold edges); left **node palette** (Triggers / Actions / AI / Logic, searchable); right **config panel** (forms generated from plugin `configFields`, field picker for templates, "Test step"); bottom **run drawer** (live log); top bar: name, **Draft / Published v3** badge, enable toggle, Test run, Publish, Share form; floating **Copilot** panel (chat + "Generate", diff preview, Apply) | Validation issues list (from the base `workflow-issues-overlay`); unsaved changes guard |
-| 7 | **Runs** `/app/runs` | Table: status, workflow, trigger, started, duration, attempts, **receipt badge** (Pending / ✓ On-chain); filters; CSV export | Live row insertion via SSE |
+| 7 | **Runs** `/app/runs` | Table: status, workflow, trigger, started, duration, attempts, **receipt badge** (Pending / On-chain); filters; CSV export | Live row insertion via SSE |
 | 8 | **Run detail** `/app/runs/[id]` | Header (status, duration, trigger, version hash); **timeline** of steps (expand → redacted input/output, attempts, error); **mini canvas** replay; "Retry from failed step"; **Ask Run Doctor** card; **Receipt** panel (receipt hash, batch, tx link, "Open public verify page") | Running (live), failed, skipped |
 | 9 | **Forms** `/app/forms` + editor | Field list editor (drag to reorder, types: text, email, phone, select, textarea, checkbox), consent text, success message, theme (honey/dark); **Share**: URL, **QR code**, embed snippet; submissions table | Closed form state |
-| 10 | **Hosted form** `/f/[slug]` | Mobile-first card, workspace logo, fields, consent checkbox, honey submit button, success screen ("You're in! Check your inbox"), "Powered by FlowLedger" | Validation, rate-limit message |
+| 10 | **Hosted form** `/f/[slug]` | Mobile-first card, workspace logo, fields, consent checkbox, honey submit button, success screen ("You're in! Check your inbox"), "Powered by N-Flow" | Validation, rate-limit message |
 | 11 | **Connections (vault)** `/app/connections` | Grid of integrations with status (OK / Error / Untested), last tested, "Test", "Rotate", "Edit"; add-connection wizard per plugin `formFields`; secrets masked | Error detail with Doctor hint |
 | 12 | **Ledger** `/app/ledger` | Batches table (root, leaves, status, tx, block, gas); batch detail (Merkle tree visual: hexagon leaves → root); "Anchor now" (admin); contract address + network badge; **Tamper simulator** (demo workspace) | Chain offline banner |
-| 13 | **Public verify** `/verify/[id]` | Standalone page: receipt summary, the **four verification layers** with animated checks, Polygonscan link, "How this works" accordion, download receipt JSON; owner-only data-integrity layer when signed in | ✓ Verified / ⏳ Pending anchor / ✗ Tampered (step highlighted) |
+| 13 | **Public verify** `/verify/[id]` | Standalone page: receipt summary, the **four verification layers** with animated checks, Polygonscan link, "How this works" accordion, download receipt JSON; owner-only data-integrity layer when signed in | Verified / Pending anchor / Tampered (step highlighted) |
 | 14 | **Templates** `/app/templates` | Gallery cards with mini-diagram, "Use template", "Explain" (AI) | — |
 | 15 | **Settings** | Workspace (name, logo, AI data sharing toggle, retention); **Members & roles**; **API keys** (create, shown once); **Webhooks** (secret reveal/rotate); **Usage & plan** (meters vs. limits, upgrade CTA); **Audit log**; Profile (2FA) | — |
 | 16 | **System** (owner) | bull-board embed (queues, DLQ re-drive), worker list, links to Grafana/Jaeger when running | — |

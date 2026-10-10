@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Verify a run",
   description:
-    "Check a FlowLedger run's receipt against the blockchain, in your own browser.",
+    "Check a N-Flow run's receipt against the blockchain, in your own browser.",
   robots: { index: false, follow: false },
 };
 
@@ -37,9 +37,9 @@ export default async function VerifyPage({ params }: Props) {
           <span className="text-brand-gradient">exactly like this?</span>
         </h1>
         <p className="mt-2 text-muted-foreground text-sm">
-          Every FlowLedger run gets a receipt. Receipts are batched into a
-          Merkle tree and the root is written to a public blockchain. These
-          checks run in your browser, so you don't have to trust us.
+          Every N-Flow run gets a receipt. Receipts are batched into a Merkle
+          tree and the root is written to a public blockchain. These checks run
+          in your browser, so you don't have to trust us.
         </p>
         <div className="mt-6">
           <VerifyRun initial={receipt} />

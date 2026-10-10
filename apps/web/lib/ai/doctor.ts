@@ -194,7 +194,7 @@ export async function diagnose(input: DoctorInput): Promise<Diagnosis> {
         schema: doctorSchema,
         abortSignal: AbortSignal.timeout(20_000),
         system:
-          "You are FlowLedger's Run Doctor. Explain why a workflow step failed, for a non-technical user. Propose a fix only if changing ONE config key would fix it.",
+          "You are N-Flow's Run Doctor. Explain why a workflow step failed, for a non-technical user. Propose a fix only if changing ONE config key would fix it.",
         prompt: [
           `Step: "${node.data.label}" (${actionType})`,
           `Error (${input.errorClass ?? "unknown"}): ${input.error}`,

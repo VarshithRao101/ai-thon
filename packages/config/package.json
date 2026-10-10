@@ -2,7 +2,7 @@
   "name": "@flowledger/config",
   "version": "0.1.0",
   "private": true,
-  "description": "Typed, validated environment configuration for every FlowLedger process role.",
+  "description": "Typed, validated environment configuration for every N-Flow process role.",
   "license": "Apache-2.0",
   "type": "module",
   "exports": {

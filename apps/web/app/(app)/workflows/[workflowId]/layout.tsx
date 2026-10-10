@@ -47,14 +47,14 @@ export async function generateMetadata({
     : `${baseUrl}/og-default.png`;
 
   return {
-    title, // root layout template appends " | FlowLedger"
-    description: `View and explore the "${title}" workflow built with FlowLedger.`,
+    title, // root layout template appends " | N-Flow"
+    description: `View and explore the "${title}" workflow built with N-Flow.`,
     openGraph: {
-      title: `${title} | FlowLedger`,
-      description: `View and explore the "${title}" workflow built with FlowLedger.`,
+      title: `${title} | N-Flow`,
+      description: `View and explore the "${title}" workflow built with N-Flow.`,
       type: "website",
       url: workflowUrl,
-      siteName: "FlowLedger",
+      siteName: "N-Flow",
       images: [
         {
           url: ogImageUrl,
@@ -66,8 +66,8 @@ export async function generateMetadata({
     },
     twitter: {
       card: "summary_large_image",
-      title: `${title} | FlowLedger`,
-      description: `View and explore the "${title}" workflow built with FlowLedger.`,
+      title: `${title} | N-Flow`,
+      description: `View and explore the "${title}" workflow built with N-Flow.`,
       images: [ogImageUrl],
     },
   };

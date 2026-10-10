@@ -1,4 +1,4 @@
-// End-to-end tenancy check against a running FlowLedger (local dev only).
+// End-to-end tenancy check against a running N-Flow (local dev only).
 // Creates two throwaway accounts (*.example.test, random passwords never
 // printed) and verifies workspace isolation, RBAC, API keys and the audit log.
 // Usage: node scripts/e2e-tenancy.mjs [baseUrl]   (default http://localhost:3000)
@@ -69,7 +69,7 @@ async function signUp(user, name) {
 const alice = client("Alice");
 const bob = client("Bob");
 
-console.log(`FlowLedger tenancy e2e against ${BASE}`);
+console.log(`N-Flow tenancy e2e against ${BASE}`);
 
 // --- accounts and personal workspaces
 check("Alice signs up", (await signUp(alice, "Alice Test")) === 200);
