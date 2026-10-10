@@ -10,7 +10,7 @@ import { isAiMock, withAi } from "./provider";
  */
 
 const SYSTEM =
-  "You are N-Flow's automation assistant. Be accurate and concise. Never invent facts that are not in the input.";
+  "You write on behalf of the user's own organisation inside an automated workflow. Be accurate and concise. Never invent facts that are not in the input, and never mention the automation tool or yourself.";
 
 const LIST_SEPARATOR = /[,\n]/;
 
@@ -51,6 +51,7 @@ export async function classify(input: {
   return await withAi("fast", async ({ model, label: modelLabel }) => {
     const { object } = await generateObject({
       model,
+      maxRetries: 1,
       system: SYSTEM,
       schema: z.object({
         label: z.enum(labels as [string, ...string[]]),
@@ -91,6 +92,7 @@ export async function draftEmail(input: {
   return await withAi("fast", async ({ model, label }) => {
     const { object } = await generateObject({
       model,
+      maxRetries: 1,
       system: SYSTEM,
       schema: z.object({
         subject: z.string().max(120),
@@ -128,6 +130,7 @@ export async function extractFields(input: {
   return await withAi("fast", async ({ model, label }) => {
     const { object } = await generateObject({
       model,
+      maxRetries: 1,
       system: SYSTEM,
       schema: z.object(
         Object.fromEntries(fields.map((f) => [f, z.string().nullable()]))
@@ -151,6 +154,7 @@ export async function generate(input: {
   return await withAi("fast", async ({ model, label }) => {
     const { text } = await generateText({
       model,
+      maxRetries: 1,
       system: input.tone ? `${SYSTEM} Write in a ${input.tone} tone.` : SYSTEM,
       prompt: input.prompt,
     });

@@ -1,0 +1,173 @@
+{
+  "description": "Copilot golden set: plain-English requests and what a correct workflow must contain. Run: pnpm --filter @flowledger/web eval:copilot",
+  "cases": [
+    {
+      "id": "hackathon-registration",
+      "prompt": "When someone registers for our hackathon, pick their track with AI, email them a welcome and add a row to our Google Sheet, then alert our Telegram group",
+      "trigger": "Form",
+      "require": ["ai/classify", "smtp-email/send-email", "google-sheets/append-row", "telegram/send-message"],
+      "order": [["ai/classify", "telegram/send-message"]],
+      "emailToForm": true
+    },
+    {
+      "id": "lead-scoring-hot",
+      "prompt": "Score every new sales lead from my website form as hot, warm or cold with AI and ping our Telegram group only when it's hot",
+      "trigger": "Form",
+      "require": ["ai/classify", "Condition", "telegram/send-message"],
+      "order": [["ai/classify", "Condition"], ["Condition", "telegram/send-message"]],
+      "conditionOnClassify": true
+    },
+    {
+      "id": "clinic-booking",
+      "prompt": "When a patient books an appointment at my clinic through a form, add it to a Google Sheet and send them a confirmation email",
+      "trigger": "Form",
+      "require": ["google-sheets/append-row", "smtp-email/send-email"],
+      "emailToForm": true
+    },
+    {
+      "id": "daily-telegram-update",
+      "prompt": "Every morning at 9, post a short AI-written motivational update to our Telegram group",
+      "trigger": "Schedule",
+      "cron": "0 9 * * *",
+      "require": ["ai/generate", "telegram/send-message"],
+      "order": [["ai/generate", "telegram/send-message"]]
+    },
+    {
+      "id": "webhook-order",
+      "prompt": "When our online store sends a new order to a webhook, log the order in a Google Sheet and email the customer a thank-you note",
+      "trigger": "Webhook",
+      "require": ["google-sheets/append-row", "smtp-email/send-email"]
+    },
+    {
+      "id": "feedback-negative-alert",
+      "prompt": "Collect customer feedback with a form. Use AI to tell if it's positive, neutral or negative, and alert the team on Telegram only for negative feedback",
+      "trigger": "Form",
+      "require": ["ai/classify", "Condition", "telegram/send-message"],
+      "order": [["ai/classify", "Condition"], ["Condition", "telegram/send-message"]],
+      "conditionOnClassify": true
+    },
+    {
+      "id": "job-application",
+      "prompt": "When someone applies for a job through our form, have AI summarise their experience, save the application to a Google Sheet and email HR the summary at hr@example.com",
+      "trigger": "Form",
+      "requireAny": [["ai/generate", "ai/extract", "ai/draft-email"]],
+      "require": ["google-sheets/append-row", "smtp-email/send-email"]
+    },
+    {
+      "id": "personal-reply",
+      "prompt": "When someone fills our contact form, have AI draft a personal reply and email it to them",
+      "trigger": "Form",
+      "require": ["ai/draft-email", "smtp-email/send-email"],
+      "order": [["ai/draft-email", "smtp-email/send-email"]],
+      "emailToForm": true,
+      "emailUsesDraft": true
+    },
+    {
+      "id": "rsvp-reminder",
+      "prompt": "For our event RSVP form: add each RSVP to a sheet, send a confirmation email right away, then wait one day and send a reminder email",
+      "trigger": "Form",
+      "require": ["google-sheets/append-row", "smtp-email/send-email", "Delay"],
+      "minCount": { "smtp-email/send-email": 2 },
+      "order": [["Delay", "smtp-email/send-email"]],
+      "emailToForm": true
+    },
+    {
+      "id": "weekly-report",
+      "prompt": "Every Monday at 10 AM, write a short AI summary of what our team should focus on this week and post it on Telegram",
+      "trigger": "Schedule",
+      "cron": "0 10 * * 1",
+      "require": ["ai/generate", "telegram/send-message"]
+    },
+    {
+      "id": "support-ticket-priority",
+      "prompt": "When a support ticket arrives by webhook, classify its priority as high, medium or low with AI, log every ticket in a sheet, and alert Telegram for high priority only",
+      "trigger": "Webhook",
+      "require": ["ai/classify", "google-sheets/append-row", "Condition", "telegram/send-message"],
+      "order": [["ai/classify", "Condition"], ["Condition", "telegram/send-message"]],
+      "conditionOnClassify": true
+    },
+    {
+      "id": "telugu-welcome",
+      "prompt": "ఎవరైనా మా ఫారం నింపితే, వారికి స్వాగత ఇమెయిల్ పంపి, వివరాలను గూగుల్ షీట్‌లో జోడించండి",
+      "trigger": "Form",
+      "require": ["smtp-email/send-email", "google-sheets/append-row"],
+      "emailToForm": true
+    },
+    {
+      "id": "hindi-alert",
+      "prompt": "जब कोई हमारा फॉर्म भरे, तो टेलीग्राम पर अलर्ट भेजो और जानकारी गूगल शीट में जोड़ो",
+      "trigger": "Form",
+      "require": ["telegram/send-message", "google-sheets/append-row"]
+    },
+    {
+      "id": "manual-hello",
+      "prompt": "A button I can press to send a test Telegram message saying hello to the team",
+      "trigger": "Manual",
+      "require": ["telegram/send-message"],
+      "forbid": ["smtp-email/send-email", "google-sheets/append-row"]
+    },
+    {
+      "id": "extract-enquiry",
+      "prompt": "Our enquiry form has one free-text message box. Use AI to extract the product they want and their budget, then add the product and budget to a Google Sheet",
+      "trigger": "Form",
+      "require": ["ai/extract", "google-sheets/append-row"],
+      "order": [["ai/extract", "google-sheets/append-row"]],
+      "sheetUsesStep": "ai/extract"
+    },
+    {
+      "id": "webinar-parallel",
+      "prompt": "When someone signs up for our webinar, email them the joining details and also notify our Telegram group",
+      "trigger": "Form",
+      "require": ["smtp-email/send-email", "telegram/send-message"],
+      "forbid": ["Condition"],
+      "emailToForm": true
+    },
+    {
+      "id": "payment-webhook",
+      "prompt": "When Razorpay sends a payment webhook, record the payment in our sheet and send the payer a thank-you email",
+      "trigger": "Webhook",
+      "require": ["google-sheets/append-row", "smtp-email/send-email"]
+    },
+    {
+      "id": "attendance-reminder",
+      "prompt": "Every day at 6 PM, remind students on Telegram to mark their attendance",
+      "trigger": "Schedule",
+      "cron": "0 18 * * *",
+      "require": ["telegram/send-message"],
+      "forbid": ["Form"]
+    },
+    {
+      "id": "course-interest-email",
+      "prompt": "When a student fills our admissions enquiry form, use AI to classify their interest as BTech, MBA or Other, and send them a tailored email for that program",
+      "trigger": "Form",
+      "require": ["ai/classify", "smtp-email/send-email"],
+      "order": [["ai/classify", "smtp-email/send-email"]],
+      "emailToForm": true
+    },
+    {
+      "id": "crm-http",
+      "prompt": "When our lead form is submitted, send the lead to our CRM API at https://crm.example.com/api/leads with a POST request and alert Telegram",
+      "trigger": "Form",
+      "require": ["HTTP Request", "telegram/send-message"],
+      "httpEndpoint": "https://crm.example.com/api/leads"
+    },
+    {
+      "id": "edit-add-condition",
+      "existing": "hackathon-registration",
+      "prompt": "Also alert our Telegram group, but only when the AI picks the AI/ML track",
+      "trigger": "Form",
+      "require": ["ai/classify", "smtp-email/send-email", "google-sheets/append-row", "Condition", "telegram/send-message"],
+      "order": [["Condition", "telegram/send-message"]],
+      "conditionOnClassify": true
+    },
+    {
+      "id": "edit-remove-sheet",
+      "existing": "clinic-appointment",
+      "prompt": "Remove the Google Sheet step, keep everything else",
+      "trigger": "Form",
+      "require": ["smtp-email/send-email"],
+      "forbid": ["google-sheets/append-row"],
+      "emailToForm": true
+    }
+  ]
+}

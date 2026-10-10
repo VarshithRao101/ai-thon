@@ -3,6 +3,7 @@
  * Replaces server actions with API endpoints
  */
 
+import { toast } from "sonner";
 import type { IntegrationConfig, IntegrationType } from "./types/integration";
 import type { WorkflowEdge, WorkflowNode } from "./workflow-store";
 
@@ -83,6 +84,9 @@ type StreamMessage = {
     };
   };
   error?: string;
+  /** On "complete": "ai", or "template" when the model couldn't answer. */
+  source?: "ai" | "template";
+  fallbackReason?: string | null;
 };
 
 type StreamState = {
@@ -221,6 +225,16 @@ function processStreamLine(
     if (message.type === "operation" && message.operation) {
       applyOperation(message.operation, state);
       onUpdate({ ...state.currentData });
+    } else if (message.type === "complete" && message.source === "template") {
+      // Never pass a template off as the AI's answer.
+      toast.warning(
+        "The AI is busy right now, so we started from the closest template.",
+        {
+          description:
+            "Check the steps match what you asked, or try again in a minute.",
+          duration: 9000,
+        }
+      );
     } else if (message.type === "error") {
       console.error("[API Client] Error:", message.error);
       throw new Error(message.error);

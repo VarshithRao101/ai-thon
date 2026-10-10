@@ -89,6 +89,8 @@ Landing (`/`: 3D hero, live-flow and proof motion graphics, plans) → the promp
 
 ## Known gaps (say them honestly if asked)
 
+- **AI capacity:** the Gemini free tier allows ~20 Copilot requests/day. Before the demo add a Groq key (`GROQ_API_KEY`, `AI_FALLBACK_MODEL`) or enable Gemini billing; otherwise the Copilot falls back to templates (it says so on screen).
+
 - Until step 8b, "Continue with Google" is a **test-mode** sign-in into a per-browser demo account (D-050). It turns off by itself once `GOOGLE_CLIENT_ID` is set.
 
 - Delivery is at-least-once: a network drop after Gmail or Sheets accepted a request can duplicate it (D-019).

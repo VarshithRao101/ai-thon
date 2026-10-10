@@ -27,7 +27,10 @@
     "worker": "tsx --conditions=react-server scripts/worker.ts",
     "anchor:deploy": "tsx scripts/deploy-anchor.ts",
     "cloud:db": "tsx scripts/cloud.ts db",
-    "cloud:env": "tsx scripts/cloud.ts env"
+    "cloud:env": "tsx scripts/cloud.ts env",
+    "eval:copilot": "tsx --conditions=react-server scripts/eval-copilot.ts",
+    "eval:ai": "tsx --conditions=react-server scripts/eval-ai-steps.ts",
+    "check:google": "tsx --conditions=react-server scripts/check-google-oauth.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "^2.0.102",

@@ -1,0 +1,1122 @@
+{
+  "summary": {
+    "at": "2026-10-10T12:20:11.526Z",
+    "models": {
+      "smart": "gemini-3.5-flash",
+      "fast": "gemini-3.5-flash-lite",
+      "fallback": ""
+    },
+    "cases": 22,
+    "passed": 9,
+    "checksPassed": 197,
+    "checks": 221,
+    "p50ms": 27134,
+    "p95ms": 27577
+  },
+  "results": [
+    {
+      "id": "hackathon-registration",
+      "passed": false,
+      "ms": 15245,
+      "model": null,
+      "steps": "trigger:Form > ai/classify > ai/draft-email > google-sheets/append-row > smtp-email/send-email > telegram/send-message",
+      "checks": [
+        {
+          "name": "real AI (not a template fallback)",
+          "ok": false,
+          "detail": "No object generated: response did not match schema."
+        },
+        {
+          "name": "trigger",
+          "ok": true
+        },
+        {
+          "name": "has ai/classify",
+          "ok": true
+        },
+        {
+          "name": "has smtp-email/send-email",
+          "ok": true
+        },
+        {
+          "name": "has google-sheets/append-row",
+          "ok": true
+        },
+        {
+          "name": "has telegram/send-message",
+          "ok": true
+        },
+        {
+          "name": "ai/classify before telegram/send-message",
+          "ok": true
+        },
+        {
+          "name": "graph valid",
+          "ok": true
+        },
+        {
+          "name": "no broken references",
+          "ok": true
+        },
+        {
+          "name": "references point at real fields",
+          "ok": true
+        },
+        {
+          "name": "required settings filled",
+          "ok": true
+        },
+        {
+          "name": "email goes to the form's email field",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "lead-scoring-hot",
+      "passed": false,
+      "ms": 27230,
+      "model": null,
+      "steps": "trigger:Form > ai/classify > google-sheets/append-row > Condition > telegram/send-message",
+      "checks": [
+        {
+          "name": "real AI (not a template fallback)",
+          "ok": false,
+          "detail": "The operation was aborted due to timeout"
+        },
+        {
+          "name": "trigger",
+          "ok": true
+        },
+        {
+          "name": "has ai/classify",
+          "ok": true
+        },
+        {
+          "name": "has Condition",
+          "ok": true
+        },
+        {
+          "name": "has telegram/send-message",
+          "ok": true
+        },
+        {
+          "name": "ai/classify before Condition",
+          "ok": true
+        },
+        {
+          "name": "Condition before telegram/send-message",
+          "ok": true
+        },
+        {
+          "name": "graph valid",
+          "ok": true
+        },
+        {
+          "name": "no broken references",
+          "ok": true
+        },
+        {
+          "name": "references point at real fields",
+          "ok": true
+        },
+        {
+          "name": "required settings filled",
+          "ok": true
+        },
+        {
+          "name": "condition tests one of the classifier's labels",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "clinic-booking",
+      "passed": false,
+      "ms": 27431,
+      "model": null,
+      "steps": "trigger:Form > google-sheets/append-row > smtp-email/send-email > Delay > smtp-email/send-email",
+      "checks": [
+        {
+          "name": "real AI (not a template fallback)",
+          "ok": false,
+          "detail": "The operation was aborted due to timeout"
+        },
+        {
+          "name": "trigger",
+          "ok": true
+        },
+        {
+          "name": "has google-sheets/append-row",
+          "ok": true
+        },
+        {
+          "name": "has smtp-email/send-email",
+          "ok": true
+        },
+        {
+          "name": "graph valid",
+          "ok": true
+        },
+        {
+          "name": "no broken references",
+          "ok": true
+        },
+        {
+          "name": "references point at real fields",
+          "ok": true
+        },
+        {
+          "name": "required settings filled",
+          "ok": true
+        },
+        {
+          "name": "email goes to the form's email field",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "daily-telegram-update",
+      "passed": true,
+      "ms": 13558,
+      "model": "google:gemini-3.5-flash-lite",
+      "steps": "trigger:Schedule > ai/generate > telegram/send-message",
+      "checks": [
+        {
+          "name": "real AI (not a template fallback)",
+          "ok": true
+        },
+        {
+          "name": "trigger",
+          "ok": true
+        },
+        {
+          "name": "has ai/generate",
+          "ok": true
+        },
+        {
+          "name": "has telegram/send-message",
+          "ok": true
+        },
+        {
+          "name": "ai/generate before telegram/send-message",
+          "ok": true
+        },
+        {
+          "name": "graph valid",
+          "ok": true
+        },
+        {
+          "name": "no broken references",
+          "ok": true
+        },
+        {
+          "name": "references point at real fields",
+          "ok": true
+        },
+        {
+          "name": "required settings filled",
+          "ok": true
+        },
+        {
+          "name": "cron 0 9 * * *",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "webhook-order",
+      "passed": true,
+      "ms": 13113,
+      "model": "google:gemini-3.5-flash-lite",
+      "steps": "trigger:Webhook > google-sheets/append-row > smtp-email/send-email",
+      "checks": [
+        {
+          "name": "real AI (not a template fallback)",
+          "ok": true
+        },
+        {
+          "name": "trigger",
+          "ok": true
+        },
+        {
+          "name": "has google-sheets/append-row",
+          "ok": true
+        },
+        {
+          "name": "has smtp-email/send-email",
+          "ok": true
+        },
+        {
+          "name": "graph valid",
+          "ok": true
+        },
+        {
+          "name": "no broken references",
+          "ok": true
+        },
+        {
+          "name": "references point at real fields",
+          "ok": true
+        },
+        {
+          "name": "required settings filled",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "feedback-negative-alert",
+      "passed": false,
+      "ms": 27422,
+      "model": null,
+      "steps": "trigger:Form > ai/classify > ai/draft-email > google-sheets/append-row > smtp-email/send-email > telegram/send-message",
+      "checks": [
+        {
+          "name": "real AI (not a template fallback)",
+          "ok": false,
+          "detail": "The operation was aborted due to timeout"
+        },
+        {
+          "name": "trigger",
+          "ok": true
+        },
+        {
+          "name": "has ai/classify",
+          "ok": true
+        },
+        {
+          "name": "has Condition",
+          "ok": false,
+          "detail": "missing"
+        },
+        {
+          "name": "has telegram/send-message",
+          "ok": true
+        },
+        {
+          "name": "ai/classify before Condition",
+          "ok": false,
+          "detail": "not upstream"
+        },
+        {
+          "name": "Condition before telegram/send-message",
+          "ok": false,
+          "detail": "not upstream"
+        },
+        {
+          "name": "graph valid",
+          "ok": true
+        },
+        {
+          "name": "no broken references",
+          "ok": true
+        },
+        {
+          "name": "references point at real fields",
+          "ok": true
+        },
+        {
+          "name": "required settings filled",
+          "ok": true
+        },
+        {
+          "name": "condition tests one of the classifier's labels",
+          "ok": false
+        }
+      ]
+    },
+    {
+      "id": "job-application",
+      "passed": false,
+      "ms": 27577,
+      "model": null,
+      "steps": "trigger:Form > ai/classify > ai/draft-email > google-sheets/append-row > smtp-email/send-email > telegram/send-message",
+      "checks": [
+        {
+          "name": "real AI (not a template fallback)",
+          "ok": false,
+          "detail": "The operation was aborted due to timeout"
+        },
+        {
+          "name": "trigger",
+          "ok": true
+        },
+        {
+          "name": "has google-sheets/append-row",
+          "ok": true
+        },
+        {
+          "name": "has smtp-email/send-email",
+          "ok": true
+        },
+        {
+          "name": "has one of ai/generate|ai/extract|ai/draft-email",
+          "ok": true
+        },
+        {
+          "name": "graph valid",
+          "ok": true
+        },
+        {
+          "name": "no broken references",
+          "ok": true
+        },
+        {
+          "name": "references point at real fields",
+          "ok": true
+        },
+        {
+          "name": "required settings filled",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "personal-reply",
+      "passed": false,
+      "ms": 27453,
+      "model": null,
+      "steps": "trigger:Form > ai/classify > ai/draft-email > google-sheets/append-row > smtp-email/send-email > telegram/send-message",
+      "checks": [
+        {
+          "name": "real AI (not a template fallback)",
+          "ok": false,
+          "detail": "The operation was aborted due to timeout"
+        },
+        {
+          "name": "trigger",
+          "ok": true
+        },
+        {
+          "name": "has ai/draft-email",
+          "ok": true
+        },
+        {
+          "name": "has smtp-email/send-email",
+          "ok": true
+        },
+        {
+          "name": "ai/draft-email before smtp-email/send-email",
+          "ok": true
+        },
+        {
+          "name": "graph valid",
+          "ok": true
+        },
+        {
+          "name": "no broken references",
+          "ok": true
+        },
+        {
+          "name": "references point at real fields",
+          "ok": true
+        },
+        {
+          "name": "required settings filled",
+          "ok": true
+        },
+        {
+          "name": "email goes to the form's email field",
+          "ok": true
+        },
+        {
+          "name": "email uses the AI draft",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "rsvp-reminder",
+      "passed": false,
+      "ms": 29945,
+      "model": null,
+      "steps": "trigger:Form > ai/classify > ai/draft-email > google-sheets/append-row > smtp-email/send-email > telegram/send-message",
+      "checks": [
+        {
+          "name": "real AI (not a template fallback)",
+          "ok": false,
+          "detail": "The operation was aborted due to timeout"
+        },
+        {
+          "name": "trigger",
+          "ok": true
+        },
+        {
+          "name": "has google-sheets/append-row",
+          "ok": true
+        },
+        {
+          "name": "has smtp-email/send-email",
+          "ok": true
+        },
+        {
+          "name": "has Delay",
+          "ok": false,
+          "detail": "missing"
+        },
+        {
+          "name": "2+ smtp-email/send-email",
+          "ok": false,
+          "detail": "got 1"
+        },
+        {
+          "name": "Delay before smtp-email/send-email",
+          "ok": false,
+          "detail": "not upstream"
+        },
+        {
+          "name": "graph valid",
+          "ok": true
+        },
+        {
+          "name": "no broken references",
+          "ok": true
+        },
+        {
+          "name": "references point at real fields",
+          "ok": true
+        },
+        {
+          "name": "required settings filled",
+          "ok": true
+        },
+        {
+          "name": "email goes to the form's email field",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "weekly-report",
+      "passed": true,
+      "ms": 9382,
+      "model": "google:gemini-3.5-flash-lite",
+      "steps": "trigger:Schedule > ai/generate > telegram/send-message",
+      "checks": [
+        {
+          "name": "real AI (not a template fallback)",
+          "ok": true
+        },
+        {
+          "name": "trigger",
+          "ok": true
+        },
+        {
+          "name": "has ai/generate",
+          "ok": true
+        },
+        {
+          "name": "has telegram/send-message",
+          "ok": true
+        },
+        {
+          "name": "graph valid",
+          "ok": true
+        },
+        {
+          "name": "no broken references",
+          "ok": true
+        },
+        {
+          "name": "references point at real fields",
+          "ok": true
+        },
+        {
+          "name": "required settings filled",
+          "ok": true
+        },
+        {
+          "name": "cron 0 10 * * 1",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "support-ticket-priority",
+      "passed": true,
+      "ms": 10786,
+      "model": "google:gemini-3.5-flash-lite",
+      "steps": "trigger:Webhook > ai/classify > google-sheets/append-row > Condition > telegram/send-message",
+      "checks": [
+        {
+          "name": "real AI (not a template fallback)",
+          "ok": true
+        },
+        {
+          "name": "trigger",
+          "ok": true
+        },
+        {
+          "name": "has ai/classify",
+          "ok": true
+        },
+        {
+          "name": "has google-sheets/append-row",
+          "ok": true
+        },
+        {
+          "name": "has Condition",
+          "ok": true
+        },
+        {
+          "name": "has telegram/send-message",
+          "ok": true
+        },
+        {
+          "name": "ai/classify before Condition",
+          "ok": true
+        },
+        {
+          "name": "Condition before telegram/send-message",
+          "ok": true
+        },
+        {
+          "name": "graph valid",
+          "ok": true
+        },
+        {
+          "name": "no broken references",
+          "ok": true
+        },
+        {
+          "name": "references point at real fields",
+          "ok": true
+        },
+        {
+          "name": "required settings filled",
+          "ok": true
+        },
+        {
+          "name": "condition tests one of the classifier's labels",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "telugu-welcome",
+      "passed": false,
+      "ms": 27295,
+      "model": null,
+      "steps": "trigger:Form > ai/classify > ai/draft-email > google-sheets/append-row > smtp-email/send-email > telegram/send-message",
+      "checks": [
+        {
+          "name": "real AI (not a template fallback)",
+          "ok": false,
+          "detail": "The operation was aborted due to timeout"
+        },
+        {
+          "name": "trigger",
+          "ok": true
+        },
+        {
+          "name": "has smtp-email/send-email",
+          "ok": true
+        },
+        {
+          "name": "has google-sheets/append-row",
+          "ok": true
+        },
+        {
+          "name": "graph valid",
+          "ok": true
+        },
+        {
+          "name": "no broken references",
+          "ok": true
+        },
+        {
+          "name": "references point at real fields",
+          "ok": true
+        },
+        {
+          "name": "required settings filled",
+          "ok": true
+        },
+        {
+          "name": "email goes to the form's email field",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "hindi-alert",
+      "passed": false,
+      "ms": 9209,
+      "model": null,
+      "steps": "trigger:Form > ai/classify > ai/draft-email > google-sheets/append-row > smtp-email/send-email > telegram/send-message",
+      "checks": [
+        {
+          "name": "real AI (not a template fallback)",
+          "ok": false,
+          "detail": "No object generated: response did not match schema."
+        },
+        {
+          "name": "trigger",
+          "ok": true
+        },
+        {
+          "name": "has telegram/send-message",
+          "ok": true
+        },
+        {
+          "name": "has google-sheets/append-row",
+          "ok": true
+        },
+        {
+          "name": "graph valid",
+          "ok": true
+        },
+        {
+          "name": "no broken references",
+          "ok": true
+        },
+        {
+          "name": "references point at real fields",
+          "ok": true
+        },
+        {
+          "name": "required settings filled",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "manual-hello",
+      "passed": true,
+      "ms": 8958,
+      "model": "google:gemini-3.5-flash-lite",
+      "steps": "trigger:Manual > telegram/send-message",
+      "checks": [
+        {
+          "name": "real AI (not a template fallback)",
+          "ok": true
+        },
+        {
+          "name": "trigger",
+          "ok": true
+        },
+        {
+          "name": "has telegram/send-message",
+          "ok": true
+        },
+        {
+          "name": "no smtp-email/send-email",
+          "ok": true
+        },
+        {
+          "name": "no google-sheets/append-row",
+          "ok": true
+        },
+        {
+          "name": "graph valid",
+          "ok": true
+        },
+        {
+          "name": "no broken references",
+          "ok": true
+        },
+        {
+          "name": "references point at real fields",
+          "ok": true
+        },
+        {
+          "name": "required settings filled",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "extract-enquiry",
+      "passed": false,
+      "ms": 27134,
+      "model": null,
+      "steps": "trigger:Form > ai/classify > ai/draft-email > google-sheets/append-row > smtp-email/send-email > telegram/send-message",
+      "checks": [
+        {
+          "name": "real AI (not a template fallback)",
+          "ok": false,
+          "detail": "The operation was aborted due to timeout"
+        },
+        {
+          "name": "trigger",
+          "ok": true
+        },
+        {
+          "name": "has ai/extract",
+          "ok": false,
+          "detail": "missing"
+        },
+        {
+          "name": "has google-sheets/append-row",
+          "ok": true
+        },
+        {
+          "name": "ai/extract before google-sheets/append-row",
+          "ok": false,
+          "detail": "not upstream"
+        },
+        {
+          "name": "graph valid",
+          "ok": true
+        },
+        {
+          "name": "no broken references",
+          "ok": true
+        },
+        {
+          "name": "references point at real fields",
+          "ok": true
+        },
+        {
+          "name": "required settings filled",
+          "ok": true
+        },
+        {
+          "name": "sheet row uses ai/extract",
+          "ok": false
+        }
+      ]
+    },
+    {
+      "id": "webinar-parallel",
+      "passed": false,
+      "ms": 27480,
+      "model": null,
+      "steps": "trigger:Form > ai/classify > ai/draft-email > google-sheets/append-row > smtp-email/send-email > telegram/send-message",
+      "checks": [
+        {
+          "name": "real AI (not a template fallback)",
+          "ok": false,
+          "detail": "The operation was aborted due to timeout"
+        },
+        {
+          "name": "trigger",
+          "ok": true
+        },
+        {
+          "name": "has smtp-email/send-email",
+          "ok": true
+        },
+        {
+          "name": "has telegram/send-message",
+          "ok": true
+        },
+        {
+          "name": "no Condition",
+          "ok": true
+        },
+        {
+          "name": "graph valid",
+          "ok": true
+        },
+        {
+          "name": "no broken references",
+          "ok": true
+        },
+        {
+          "name": "references point at real fields",
+          "ok": true
+        },
+        {
+          "name": "required settings filled",
+          "ok": true
+        },
+        {
+          "name": "email goes to the form's email field",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "payment-webhook",
+      "passed": true,
+      "ms": 9111,
+      "model": "google:gemini-3.5-flash-lite",
+      "steps": "trigger:Webhook > google-sheets/append-row > smtp-email/send-email",
+      "checks": [
+        {
+          "name": "real AI (not a template fallback)",
+          "ok": true
+        },
+        {
+          "name": "trigger",
+          "ok": true
+        },
+        {
+          "name": "has google-sheets/append-row",
+          "ok": true
+        },
+        {
+          "name": "has smtp-email/send-email",
+          "ok": true
+        },
+        {
+          "name": "graph valid",
+          "ok": true
+        },
+        {
+          "name": "no broken references",
+          "ok": true
+        },
+        {
+          "name": "references point at real fields",
+          "ok": true
+        },
+        {
+          "name": "required settings filled",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "attendance-reminder",
+      "passed": true,
+      "ms": 8941,
+      "model": "google:gemini-3.5-flash-lite",
+      "steps": "trigger:Schedule > telegram/send-message",
+      "checks": [
+        {
+          "name": "real AI (not a template fallback)",
+          "ok": true
+        },
+        {
+          "name": "trigger",
+          "ok": true
+        },
+        {
+          "name": "has telegram/send-message",
+          "ok": true
+        },
+        {
+          "name": "no Form",
+          "ok": true
+        },
+        {
+          "name": "graph valid",
+          "ok": true
+        },
+        {
+          "name": "no broken references",
+          "ok": true
+        },
+        {
+          "name": "references point at real fields",
+          "ok": true
+        },
+        {
+          "name": "required settings filled",
+          "ok": true
+        },
+        {
+          "name": "cron 0 18 * * *",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "course-interest-email",
+      "passed": false,
+      "ms": 27321,
+      "model": null,
+      "steps": "trigger:Form > ai/classify > ai/draft-email > google-sheets/append-row > smtp-email/send-email > telegram/send-message",
+      "checks": [
+        {
+          "name": "real AI (not a template fallback)",
+          "ok": false,
+          "detail": "The operation was aborted due to timeout"
+        },
+        {
+          "name": "trigger",
+          "ok": true
+        },
+        {
+          "name": "has ai/classify",
+          "ok": true
+        },
+        {
+          "name": "has smtp-email/send-email",
+          "ok": true
+        },
+        {
+          "name": "ai/classify before smtp-email/send-email",
+          "ok": true
+        },
+        {
+          "name": "graph valid",
+          "ok": true
+        },
+        {
+          "name": "no broken references",
+          "ok": true
+        },
+        {
+          "name": "references point at real fields",
+          "ok": true
+        },
+        {
+          "name": "required settings filled",
+          "ok": true
+        },
+        {
+          "name": "email goes to the form's email field",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "crm-http",
+      "passed": true,
+      "ms": 9555,
+      "model": "google:gemini-3.5-flash-lite",
+      "steps": "trigger:Form > HTTP Request > telegram/send-message",
+      "checks": [
+        {
+          "name": "real AI (not a template fallback)",
+          "ok": true
+        },
+        {
+          "name": "trigger",
+          "ok": true
+        },
+        {
+          "name": "has HTTP Request",
+          "ok": true
+        },
+        {
+          "name": "has telegram/send-message",
+          "ok": true
+        },
+        {
+          "name": "graph valid",
+          "ok": true
+        },
+        {
+          "name": "no broken references",
+          "ok": true
+        },
+        {
+          "name": "references point at real fields",
+          "ok": true
+        },
+        {
+          "name": "required settings filled",
+          "ok": true
+        },
+        {
+          "name": "HTTP endpoint as asked",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "edit-add-condition",
+      "passed": true,
+      "ms": 10377,
+      "model": "google:gemini-3.5-flash-lite",
+      "steps": "trigger:Form > ai/classify > ai/draft-email > google-sheets/append-row > smtp-email/send-email > Condition > telegram/send-message",
+      "checks": [
+        {
+          "name": "real AI (not a template fallback)",
+          "ok": true
+        },
+        {
+          "name": "trigger",
+          "ok": true
+        },
+        {
+          "name": "has ai/classify",
+          "ok": true
+        },
+        {
+          "name": "has smtp-email/send-email",
+          "ok": true
+        },
+        {
+          "name": "has google-sheets/append-row",
+          "ok": true
+        },
+        {
+          "name": "has Condition",
+          "ok": true
+        },
+        {
+          "name": "has telegram/send-message",
+          "ok": true
+        },
+        {
+          "name": "Condition before telegram/send-message",
+          "ok": true
+        },
+        {
+          "name": "graph valid",
+          "ok": true
+        },
+        {
+          "name": "no broken references",
+          "ok": true
+        },
+        {
+          "name": "references point at real fields",
+          "ok": true
+        },
+        {
+          "name": "required settings filled",
+          "ok": true
+        },
+        {
+          "name": "condition tests one of the classifier's labels",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "edit-remove-sheet",
+      "passed": false,
+      "ms": 27380,
+      "model": null,
+      "steps": "trigger:Form > ai/classify > ai/draft-email > google-sheets/append-row > smtp-email/send-email > telegram/send-message",
+      "checks": [
+        {
+          "name": "real AI (not a template fallback)",
+          "ok": false,
+          "detail": "The operation was aborted due to timeout"
+        },
+        {
+          "name": "trigger",
+          "ok": true
+        },
+        {
+          "name": "has smtp-email/send-email",
+          "ok": true
+        },
+        {
+          "name": "no google-sheets/append-row",
+          "ok": false,
+          "detail": "present"
+        },
+        {
+          "name": "graph valid",
+          "ok": true
+        },
+        {
+          "name": "no broken references",
+          "ok": true
+        },
+        {
+          "name": "references point at real fields",
+          "ok": true
+        },
+        {
+          "name": "required settings filled",
+          "ok": true
+        },
+        {
+          "name": "email goes to the form's email field",
+          "ok": true
+        }
+      ]
+    }
+  ]
+}

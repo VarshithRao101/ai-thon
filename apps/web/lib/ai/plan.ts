@@ -207,6 +207,83 @@ const CONNECTED_ACTIONS: Record<string, string> = {
   "telegram/send-message": "telegram",
 };
 
+// Trigger outputs that exist without a form field (see lib/hive/runner.ts).
+const TRIGGER_BUILTINS = new Set([
+  "submittedAt",
+  "runId",
+  "verifyUrl",
+  "timestamp",
+  "triggered",
+  "trigger",
+  "consent",
+  "submissionId",
+]);
+const CAMEL_BREAK = /([a-z0-9])([A-Z])/g;
+const NUMBER_KEY = /(amount|budget|age|count|number|quantity)/;
+const LONG_TEXT_KEY =
+  /(message|idea|details|description|feedback|notes|about|experience|summary)/;
+const UNDERSCORES = /_+/g;
+
+type PlanField = NonNullable<CopilotPlan["trigger"]["formFields"]>[number];
+
+/** A form field for a key a step references but the plan forgot to ask for. */
+function fieldFor(key: string): PlanField {
+  const words = key
+    .replace(CAMEL_BREAK, "$1 $2")
+    .replace(UNDERSCORES, " ")
+    .trim();
+  const label = words.charAt(0).toUpperCase() + words.slice(1).toLowerCase();
+  const lower = key.toLowerCase();
+  let type: PlanField["type"] = "text";
+  if (lower.includes("email")) {
+    type = "email";
+  } else if (lower.includes("phone") || lower.includes("mobile")) {
+    type = "phone";
+  } else if (NUMBER_KEY.test(lower)) {
+    type = "number";
+  } else if (LONG_TEXT_KEY.test(lower)) {
+    type = "textarea";
+  }
+  return { key, label, type, required: type === "email" };
+}
+
+/**
+ * The form must ask for every field the steps use: add any referenced key that
+ * is missing (a model often writes {{trigger.fullName}} but asks for "name").
+ */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: one scan over every step value
+function reconcileFormFields(plan: CopilotPlan, notes: string[]): PlanField[] {
+  const fields = (plan.trigger.formFields ?? []).filter((f) =>
+    FIELD_KEY.test(f.key)
+  );
+  const base =
+    fields.length > 0 ? fields : [...(DEFAULT_FIELDS as PlanField[])];
+  const have = new Set(base.map((f) => f.key));
+  const added: string[] = [];
+  for (const step of plan.steps) {
+    for (const { value } of step.config) {
+      for (const match of value.matchAll(REF)) {
+        const [, ref, path] = match;
+        const key = (path ?? "").split(".")[0] ?? "";
+        if (
+          ref === "trigger" &&
+          FIELD_KEY.test(key) &&
+          !have.has(key) &&
+          !TRIGGER_BUILTINS.has(key)
+        ) {
+          have.add(key);
+          base.push(fieldFor(key));
+          added.push(key);
+        }
+      }
+    }
+  }
+  if (added.length > 0) {
+    notes.push(`Added form fields the steps use: ${added.join(", ")}`);
+  }
+  return base;
+}
+
 function rand(): string {
   return Math.random().toString(36).slice(2, 6);
 }
@@ -322,12 +399,7 @@ export function buildWorkflow(
   };
   if (plan.trigger.type === "Form") {
     triggerConfig.formTitle = plan.trigger.formTitle || plan.name;
-    const fields = (plan.trigger.formFields ?? []).filter((f) =>
-      FIELD_KEY.test(f.key)
-    );
-    triggerConfig.formFields = JSON.stringify(
-      fields.length > 0 ? fields : DEFAULT_FIELDS
-    );
+    triggerConfig.formFields = JSON.stringify(reconcileFormFields(plan, notes));
   }
   if (plan.trigger.type === "Schedule") {
     triggerConfig.scheduleCron = plan.trigger.scheduleCron || "0 9 * * *";

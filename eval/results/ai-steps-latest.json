@@ -1,0 +1,160 @@
+{
+  "at": "2026-10-10T12:12:23.386Z",
+  "models": {
+    "fast": "gemini-3.5-flash-lite",
+    "smart": "gemini-3.5-flash"
+  },
+  "byKind": {
+    "classify": {
+      "pass": 12,
+      "total": 12
+    },
+    "extract": {
+      "pass": 3,
+      "total": 3
+    },
+    "draft": {
+      "pass": 2,
+      "total": 2
+    },
+    "generate": {
+      "pass": 2,
+      "total": 2
+    }
+  },
+  "rows": [
+    {
+      "kind": "classify",
+      "case": "A chatbot that uses a fine-tuned LLM to answer farmers' crop questions in Telugu",
+      "ms": 3182,
+      "ok": true,
+      "got": "AI/ML (0.95) want AI/ML"
+    },
+    {
+      "kind": "classify",
+      "case": "Verifying degree certificates on a blockchain so employers can check them instantly",
+      "ms": 4587,
+      "ok": true,
+      "got": "Web3 (0.95) want Web3"
+    },
+    {
+      "kind": "classify",
+      "case": "An app that reminds diabetic patients to take insulin and alerts their doctor",
+      "ms": 1242,
+      "ok": true,
+      "got": "HealthTech (1) want HealthTech"
+    },
+    {
+      "kind": "classify",
+      "case": "Gamified quizzes that help Class 10 students revise maths before board exams",
+      "ms": 1992,
+      "ok": true,
+      "got": "EdTech (1) want EdTech"
+    },
+    {
+      "kind": "classify",
+      "case": "UPI expense splitting for hostel roommates with automatic monthly settlements",
+      "ms": 1875,
+      "ok": true,
+      "got": "FinTech (0.95) want FinTech"
+    },
+    {
+      "kind": "classify",
+      "case": "A smart dustbin that alerts the municipality when it is full",
+      "ms": 1427,
+      "ok": true,
+      "got": "Other (0.95) want Other"
+    },
+    {
+      "kind": "classify",
+      "case": "We have budget approved and need 50 seats of your product by next week. Please call me today.",
+      "ms": 2357,
+      "ok": true,
+      "got": "Hot (1) want Hot"
+    },
+    {
+      "kind": "classify",
+      "case": "Just browsing, maybe next year. Send me a brochure.",
+      "ms": 1966,
+      "ok": true,
+      "got": "Cold (0.95) want Cold"
+    },
+    {
+      "kind": "classify",
+      "case": "Interested, comparing a few tools this quarter, can you share pricing?",
+      "ms": 2213,
+      "ok": true,
+      "got": "Warm (0.85) want Warm"
+    },
+    {
+      "kind": "classify",
+      "case": "The delivery was late and the food was cold. Very disappointed.",
+      "ms": 1843,
+      "ok": true,
+      "got": "Negative (1) want Negative"
+    },
+    {
+      "kind": "classify",
+      "case": "Loved the workshop! The speakers were brilliant and very helpful.",
+      "ms": 1842,
+      "ok": true,
+      "got": "Positive (1) want Positive"
+    },
+    {
+      "kind": "classify",
+      "case": "Our payment gateway is down for all customers, nobody can check out!",
+      "ms": 1047,
+      "ok": true,
+      "got": "High (1) want High"
+    },
+    {
+      "kind": "extract",
+      "case": "Hi, I'm looking for a 2BHK flat in Hanamkonda, budget around 25 lakhs, need it by March.",
+      "ms": 5340,
+      "ok": true,
+      "got": "{\"location\":\"Hanamkonda\",\"budget\":\"25 lakhs\",\"deadline\":\"March\"}"
+    },
+    {
+      "kind": "extract",
+      "case": "Please send 200 printed T-shirts (size M) to NIT Warangal before 15 Nov. Contact Ravi on 9876543210.",
+      "ms": 5549,
+      "ok": true,
+      "got": "{\"product\":\"printed T-shirts (size M)\",\"quantity\":\"200\",\"phone\":\"9876543210\"}"
+    },
+    {
+      "kind": "extract",
+      "case": "Need a laptop for video editing, my budget is ₹80,000.",
+      "ms": 8616,
+      "ok": true,
+      "got": "{\"product\":\"laptop\",\"budget\":\"₹80,000\"}"
+    },
+    {
+      "kind": "draft",
+      "case": "Welcome her and confirm her track",
+      "ms": 8214,
+      "ok": true,
+      "got": "\"Welcome to the TRI-CITY AI Hackathon\" (469 chars)"
+    },
+    {
+      "kind": "draft",
+      "case": "Confirm the appointment and ask them to arrive 10 minutes early",
+      "ms": 5411,
+      "ok": true,
+      "got": "\"Appointment Confirmation - Sai Clinic\" (306 chars)"
+    },
+    {
+      "kind": "generate",
+      "case": "Write a 2-sentence motivational message for a college coding club's Telegram group for Monday morning.",
+      "ms": 6621,
+      "ok": true,
+      "got": "Happy Monday, N-Flow coders! Let's kick off the week by crushing those bugs and building something amazing together."
+    },
+    {
+      "kind": "generate",
+      "case": "Summarise in one line: Our webinar on UPI fraud prevention had 120 attendees, 4.6/5 rating, and 30 asked for a follow-up session.",
+      "ms": 3823,
+      "ok": true,
+      "got": "The UPI fraud prevention webinar attracted 120 attendees, achieved a 4.6/5 rating, and generated 30 requests for a follow-up session."
+    }
+  ]
+}

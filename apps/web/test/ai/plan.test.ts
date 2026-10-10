@@ -103,3 +103,85 @@ describe("Copilot plan → workflow", () => {
     );
   });
 });
+
+describe("Copilot: form fields match what the steps use", () => {
+  const plan = (
+    fields?: CopilotPlan["trigger"]["formFields"]
+  ): CopilotPlan => ({
+    name: "Leads",
+    description: "x",
+    trigger: { type: "Form", formFields: fields },
+    steps: [
+      {
+        id: "score",
+        action: "ai/classify",
+        label: "Score",
+        config: [
+          {
+            key: "aiInput",
+            value: "{{trigger.fullName}} wants {{trigger.projectDetails}}",
+          },
+          { key: "aiLabels", value: "Hot, Warm, Cold" },
+        ],
+      },
+      {
+        id: "mail",
+        action: "smtp-email/send-email",
+        label: "Mail",
+        config: [
+          { key: "emailTo", value: "{{trigger.workEmail}}" },
+          { key: "emailSubject", value: "Hi {{trigger.fullName}}" },
+          { key: "emailBody", value: "Sent {{trigger.submittedAt}}" },
+        ],
+      },
+    ],
+  });
+  const fieldsOf = (p: CopilotPlan) => {
+    const trigger = buildWorkflow(p).nodes.find((n) => n.type === "trigger");
+    return JSON.parse(String(trigger?.data.config.formFields)) as {
+      key: string;
+      type: string;
+    }[];
+  };
+
+  it("adds referenced keys the plan forgot, with sensible types", () => {
+    const fields = fieldsOf(
+      plan([{ key: "name", label: "Name", type: "text", required: true }])
+    );
+    const byKey = Object.fromEntries(fields.map((f) => [f.key, f.type]));
+    expect(byKey).toMatchObject({
+      name: "text",
+      fullName: "text",
+      projectDetails: "textarea",
+      workEmail: "email",
+    });
+    expect(byKey.submittedAt).toBeUndefined();
+  });
+
+  it("starts from the default fields when the plan gives none", () => {
+    const keys = fieldsOf(plan(undefined)).map((f) => f.key);
+    expect(keys).toEqual(
+      expect.arrayContaining(["email", "fullName", "workEmail"])
+    );
+  });
+
+  it("never duplicates a field the plan already has", () => {
+    const fields = fieldsOf(
+      plan([
+        { key: "fullName", label: "Full name", type: "text", required: true },
+        { key: "workEmail", label: "Email", type: "email", required: true },
+        {
+          key: "projectDetails",
+          label: "Details",
+          type: "textarea",
+          required: false,
+        },
+      ])
+    );
+    expect(fields.map((f) => f.key).sort()).toEqual([
+      "fullName",
+      "projectDetails",
+      "workEmail",
+    ]);
+  });
+});

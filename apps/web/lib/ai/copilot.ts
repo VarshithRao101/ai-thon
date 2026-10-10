@@ -36,6 +36,8 @@ Rules:
 - For Google Sheets, rowValues has one value per line in column order.
 - Condition expressions compare references with single-quoted strings, e.g. {{score.label}} === 'Hot'.
 - Never invent API keys, email addresses or URLs; use references or leave them empty.
+- For a Form trigger, formFields MUST include every field you reference as {{trigger.<key>}}, with the SAME key (e.g. if you write {{trigger.fullName}}, add a field with key "fullName"). Include an "email" field (type email) whenever an email goes to the person who filled the form, and send it to {{trigger.email}}.
+- A Condition must compare a classifier's {{<id>.label}} with one of the exact labels you gave that classifier.
 - Keep labels short (2-4 words).`;
 }
 
@@ -62,6 +64,8 @@ export async function planWorkflow(
         system: systemPrompt(),
         prompt: userPrompt,
         abortSignal: AbortSignal.timeout(TIMEOUT_MS),
+        // A quota error won't clear in seconds; move to the next model instead.
+        maxRetries: 1,
       });
       return { plan: object, source: "ai" as const, model: label };
     });
