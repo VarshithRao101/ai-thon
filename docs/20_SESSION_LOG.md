@@ -125,3 +125,8 @@
 - Hosted checks: `publicUrl` = the zeta URL; test-mode sign-in is off; `/api/hive/tick` → 401 without the secret, 202 with it.
 - **Hosted live end-to-end (`E2E_BASE_URL=https://ai-thon-zeta.vercel.app node scripts/e2e-live.mjs`): all checks pass** — Copilot 1.9 s (groq gpt-oss-120b), run done 3.6 s after submit, anchored on Polygon Amoy 8.5 s after submit (tx `0xba1e02a3…17b3`), `/verify` green. The serverless Hive (drain after response) works on Vercel.
 - Still open: Google rejects the hosted callback (`redirect_uri_mismatch`) until `https://ai-thon-zeta.vercel.app/api/auth/callback/google` is added to the OAuth client; cron-job.org job not created yet; no connectors saved yet.
+
+## 2026-10-11 (just after midnight): blockchain layer removed (D-053)
+- Owner decision after faucets refused (they need a mainnet ETH balance): remove the wallet/chain system; a new innovation will replace it.
+- Deleted `packages/contracts`, `packages/ledger`, `lib/ledger`, `/verify`, `/api/ledger/*`, receipts/anchoring in the Hive (worker hook, drain, tick), wallet/deploy/ledger-e2e scripts, `viem` and `@openzeppelin/merkle-tree`. Removed every proof/Polygon mention from the landing page, flow demo, dashboard, runs panel, form thank-you page, email footer, login, builder and legal pages. New tagline: "Automate anything. Just say it." Dashboard stat "Receipts on-chain" → "Succeeded, 7 days".
+- Checks: typecheck, lint, 89 web + 31 engine + 6 config unit tests; live suites hive, tenancy, forms; `e2e-live.mjs` (real Groq AI: Copilot 3.2 s, run 3.8 s, dashboard shows it). Vercel chain secrets removed.

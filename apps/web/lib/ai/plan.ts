@@ -211,7 +211,6 @@ const CONNECTED_ACTIONS: Record<string, string> = {
 const TRIGGER_BUILTINS = new Set([
   "submittedAt",
   "runId",
-  "verifyUrl",
   "timestamp",
   "triggered",
   "trigger",

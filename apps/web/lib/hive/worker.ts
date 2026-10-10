@@ -3,8 +3,6 @@ import "server-only";
 import { and, eq, notInArray } from "drizzle-orm";
 import { workflowExecutions } from "@/lib/db/schema";
 import { tdb } from "@/lib/db/tenant";
-import { startAnchorer } from "@/lib/ledger/anchorer";
-import { issueReceipt } from "@/lib/ledger/receipts";
 import { getBoss } from "./boss";
 import { publishEvent } from "./events";
 import { enqueueRun } from "./ingress";
@@ -13,19 +11,14 @@ import { runExecution } from "./runner";
 import { fireSchedule } from "./schedules";
 
 type SettledHook = (job: RunJobData, status: string) => Promise<void>;
-const settledHooks: SettledHook[] = [
-  // Proof-of-Execution: every final run gets a receipt (docs/08).
-  async (job) => {
-    await issueReceipt(job.executionId, job.workspaceId);
-  },
-];
+const settledHooks: SettledHook[] = [];
 
-/** Called once per run that reaches a final state (the ledger issues receipts here). */
+/** Called once per run that reaches a final state. */
 export function onRunSettled(hook: SettledHook): void {
   settledHooks.push(hook);
 }
 
-/** One run job: execute, park durable waits, fire settled hooks (receipts). */
+/** One run job: execute, park durable waits, fire settled hooks. */
 export async function handleRunJob(data: RunJobData): Promise<void> {
   const outcome = await runExecution(data);
   if (!outcome) {
@@ -120,9 +113,6 @@ export function startHiveWorker(): Promise<void> {
     );
 
     console.info(`[hive] worker started (concurrency ${concurrency})`);
-    if (process.env.ANCHORER_ENABLED !== "false") {
-      startAnchorer();
-    }
   })().catch((error) => {
     globalForWorker.hiveWorker = undefined;
     throw error;

@@ -30,8 +30,8 @@ export default function OpenSourcePage() {
         Version 2.0. Copyright 2025 Vercel, Inc. We modified it substantially:
         monorepo packaging, rebranding, the Hive execution engine (replacing the
         Workflow DevKit runtime), workspaces and row-level security, hosted
-        forms, new integrations, the Proof-of-Execution ledger, and the AI
-        Copilot and Run Doctor. See the NOTICE file in the repository.
+        forms, new integrations, and the AI Copilot and Run Doctor. See the
+        NOTICE file in the repository.
       </p>
       <h2>Dependencies ({list.length})</h2>
       <p>

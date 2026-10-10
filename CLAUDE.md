@@ -8,17 +8,16 @@ Our entry for the **TRI-CITY AI HACKATHON** (Centle; Warangal / Hanamkonda / Kaz
 Problem statement #5 (submitted 2026-10-09): *"Build a Zapier-like tool where users create automations between forms, sheets, emails and notifications."*
 Official MVP scope: workflow builder, triggers, actions, execution logs, a sample workflow, and enable/disable controls.
 
-**N-Flow** is an AI-powered no-code automation platform with **blockchain-verified execution ("Proof-of-Execution")**:
+**N-Flow** is an AI-powered no-code automation platform (the blockchain layer was removed on 2026-10-10, D-053; the innovation slot is open):
 - A user describes an automation in plain English. The AI builds it on a visual canvas.
 - Each run executes on our own queue-based engine ("Hive"), and every step is logged.
-- Every run produces a hashed receipt. Receipts are batched into a Merkle tree and the root is anchored on Polygon Amoy. Anyone can check on the public verify page that a log was not altered.
 
 ## Judging rubric (build for this, in this order)
 | Working MVP | AI/SaaS relevance | UI/UX | Market potential | Innovation | Demo & pitch |
 |---|---|---|---|---|---|
 | **30%** core flow works live | **20%** AI meaningfully improves it | **15%** clear, demo-friendly | **15%** target user + business value | **10%** fresh thinking / strong execution | **10%** problem, solution, future scope |
 
-**Rule #1:** the hero flow (Form → AI → Sheets + Email + Telegram → on-chain receipt → Verify) must work live, every time. Reliability beats feature count.
+**Rule #1:** the hero flow (Form → AI → Sheets + Email + Telegram) must work live, every time. Reliability beats feature count.
 
 ## Phases
 - **P0 Plan** (2026-10-09): all docs in `docs/`, UI design board in `design/`.
@@ -49,9 +48,8 @@ Split each phase into parts, test each part, run an end-of-phase check, then **s
 - Tenant code: wrap handlers with `tenantRoute()` (lib/api/route.ts); query with `tdb()` (lib/db/tenant.ts); always filter `workspace_id` explicitly too (public-read policies).
 - Live tenancy check: `node scripts/e2e-tenancy.mjs` (needs dev server + DB; creates throwaway *.example.test accounts).
 - App: `pnpm dev` → http://localhost:3000 (the Hive worker and anchorer run in-process). Without AI keys: `AI_MOCK=true pnpm dev`.
-- Keys: `node scripts/check-keys.mjs` (names only). Wallet: `pnpm --filter @flowledger/web wallet:new`. Deploy the anchor: `pnpm --filter @flowledger/web anchor:deploy [--save]`.
-- Local chain: `pnpm --filter @flowledger/contracts chain`, then `CHAIN_ID=31337 CHAIN_RPC_URL=http://127.0.0.1:8545 npx tsx scripts/deploy-anchor.ts` (from apps/web) and start the app with those `CHAIN_*` plus `ANCHOR_CONTRACT_ADDRESS`.
-- Live suites (dev server running): `node scripts/e2e-hive.mjs`, `node scripts/e2e-forms.mjs` (needs `AI_MOCK=true` without keys), `node scripts/e2e-tenancy.mjs`, and from apps/web `npx tsx scripts/e2e-ledger.ts` (needs a chain).
+- Keys: `node scripts/check-keys.mjs` (names only).
+- Live suites (dev server running): `node scripts/e2e-hive.mjs`, `node scripts/e2e-forms.mjs` (needs `AI_MOCK=true` without keys), `node scripts/e2e-tenancy.mjs`, and from apps/web `node scripts/e2e-live.mjs` (real AI, no mocks).
 - Demo on a production build (`pnpm build` then `next start`): the dev server's HMR reload-loops `/verify`.
 - **Hosted (D-047): Vercel + Neon.** On Vercel the Hive is serverless (`HIVE_MODE=serverless`, auto when `VERCEL=1`): triggers drain the queue after the response (`lib/hive/drain.ts`), and `/api/hive/tick` (cron-job.org, `CRON_SECRET`) covers retries, delays, schedules, maintenance and anchoring. Test locally with `HIVE_MODE=serverless CRON_SECRET=… pnpm dev`. Cloud setup: `pnpm cloud:db` (Neon roles, migrations, queues; secrets in `apps/web/.env.cloud.local`), `pnpm cloud:env --url https://….vercel.app [--project name]` (pushes env to Vercel; needs `npx vercel login`).
 - Gates: `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build` (Turborepo).

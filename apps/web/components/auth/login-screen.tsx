@@ -35,9 +35,9 @@ function GoogleIcon() {
 }
 
 const PERKS = [
-  "Your workflows, runs and receipts, saved to your account",
+  "Your workflows and runs, saved to your account",
   "Connect your own Gmail, Sheets and Telegram: your keys, encrypted",
-  "Every run gets a public proof page",
+  "Built by AI from one sentence",
 ];
 
 function GoogleHint({ google, demo }: { google: boolean; demo: boolean }) {
@@ -171,7 +171,7 @@ export function LoginScreen() {
             <h1 className="max-w-md font-display font-semibold text-5xl leading-[1.05] tracking-tight">
               Automate anything.
               <br />
-              <span className="nf-gold-char">Prove everything.</span>
+              <span className="nf-gold-char">Just say it.</span>
             </h1>
             <ul className="mt-10 space-y-4" ref={perksRef}>
               {PERKS.map((perk) => (

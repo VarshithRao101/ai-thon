@@ -31,11 +31,6 @@ export default function SecurityPage() {
           <strong>Public forms:</strong> rate limits, a bot trap, consent
           capture, and duplicate-submit protection.
         </li>
-        <li>
-          <strong>Proof-of-Execution:</strong> run receipts are anchored on a
-          public blockchain, so silent edits to run history can be detected by
-          anyone.
-        </li>
       </ul>
       <h2>Reporting a vulnerability</h2>
       <p>

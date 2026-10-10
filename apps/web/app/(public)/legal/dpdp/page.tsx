@@ -24,11 +24,6 @@ export default function DpdpPage() {
           at any time by contacting the form owner.
         </li>
         <li>
-          Each submission gets a tamper-proof receipt. Only salted hashes go
-          into it, and only a Merkle root of many receipts goes on a public
-          blockchain. Your answers are never on-chain.
-        </li>
-        <li>
           To access, correct or erase your answers, contact the form owner. If
           you cannot reach them, contact {contactLine()}.
         </li>

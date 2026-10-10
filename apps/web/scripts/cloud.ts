@@ -131,13 +131,6 @@ const FROM_LOCAL = [
   "GOOGLE_CLIENT_ID",
   "GOOGLE_CLIENT_SECRET",
 ];
-const CHAIN_KEYS = [
-  "CHAIN_ID",
-  "CHAIN_RPC_URL",
-  "EXPLORER_BASE_URL",
-  "ANCHOR_CONTRACT_ADDRESS",
-  "ANCHORER_PRIVATE_KEY",
-];
 const SENSITIVE = new Set([
   "DATABASE_URL",
   "DATABASE_ADMIN_URL",
@@ -147,8 +140,6 @@ const SENSITIVE = new Set([
   "CRON_SECRET",
   "GOOGLE_GENERATIVE_AI_API_KEY",
   "GROQ_API_KEY",
-  "ANCHORER_PRIVATE_KEY",
-  "CHAIN_RPC_URL",
   "GOOGLE_CLIENT_SECRET",
 ]);
 
@@ -197,8 +188,6 @@ function productionValues(url: string): Record<string, string> {
     REQUIRE_RLS: "true",
     HIVE_MODE: "serverless",
     DEMO_TAMPER_ENABLED: "true",
-    // One anchor transaction per minute at most; runs in between share it.
-    ANCHOR_MIN_INTERVAL_MS: "55000",
     NEXT_PUBLIC_AUTH_PROVIDERS: local.GOOGLE_CLIENT_ID
       ? "google,email"
       : "email",
@@ -206,10 +195,7 @@ function productionValues(url: string): Record<string, string> {
   if (local.GOOGLE_CLIENT_ID) {
     values.NEXT_PUBLIC_GOOGLE_CLIENT_ID = local.GOOGLE_CLIENT_ID;
   }
-  // Only a public testnet goes to the cloud, never the laptop's local chain.
-  const publicChain = Boolean(local.CHAIN_ID) && local.CHAIN_ID !== "31337";
-  const copy = publicChain ? [...FROM_LOCAL, ...CHAIN_KEYS] : FROM_LOCAL;
-  for (const key of copy) {
+  for (const key of FROM_LOCAL) {
     if (local[key]) {
       values[key] = local[key];
     }
@@ -241,7 +227,7 @@ function syncEnv() {
   for (const [name, value] of Object.entries(values)) {
     setVercelEnv(name, value);
   }
-  const skipped = [...FROM_LOCAL, ...CHAIN_KEYS].filter((k) => !(k in values));
+  const skipped = FROM_LOCAL.filter((k) => !(k in values));
   if (skipped.length > 0) {
     console.log(`[cloud] not set yet (empty locally): ${skipped.join(", ")}`);
   }

@@ -24,7 +24,7 @@ function presentedSecret(request: Request): string {
 // GET /api/hive/tick: the serverless Hive heartbeat (D-047). cron-job.org calls
 // it every minute with `Authorization: Bearer $CRON_SECRET`. It answers at once,
 // then picks up retries, durable delays and schedule ticks, runs pg-boss
-// maintenance and anchors pending receipts.
+// maintenance.
 export function GET(request: Request) {
   const secret = process.env.CRON_SECRET;
   if (!secret) {

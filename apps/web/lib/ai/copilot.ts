@@ -20,8 +20,8 @@ function systemPrompt(): string {
 Turn the user's request into a plan: one trigger and 1-8 steps.
 
 Triggers:
-- Form: a hosted form (give formTitle and formFields). Form outputs: every field key, plus submittedAt, runId, verifyUrl.
-- Webhook: an HTTP POST from another app. Outputs: the JSON body fields, plus runId, verifyUrl, timestamp.
+- Form: a hosted form (give formTitle and formFields). Form outputs: every field key, plus submittedAt, runId.
+- Webhook: an HTTP POST from another app. Outputs: the JSON body fields, plus runId, timestamp.
 - Schedule: a cron in IST (scheduleCron). Outputs: timestamp, runId.
 - Manual: a test button.
 

@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   output: "standalone",
   poweredByHeader: false,
   // Workspace packages ship TypeScript source.
-  transpilePackages: ["@flowledger/engine", "@flowledger/ledger"],
+  transpilePackages: ["@flowledger/engine"],
 };
 
 export default nextConfig;

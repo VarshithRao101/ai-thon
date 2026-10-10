@@ -59,14 +59,6 @@ export default function PrivacyPage() {
         </li>
       </ul>
 
-      <h2>What goes on the blockchain</h2>
-      <p>
-        Only 32-byte Merkle roots, computed from receipts that contain salted
-        hashes and ids. No names, emails or answers are ever written on-chain.
-        Deleting the salt for a run makes its hashes permanently unlinkable to
-        the person.
-      </p>
-
       <h2>Retention and security</h2>
       <ul>
         <li>

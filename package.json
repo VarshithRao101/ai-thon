@@ -17,7 +17,6 @@
     "db:stop": "node scripts/dev-db-stop.mjs",
     "db:migrate": "pnpm --filter @flowledger/web db:migrate",
     "demo": "pnpm --filter @flowledger/web build && pnpm --filter @flowledger/web start",
-    "chain": "pnpm --filter @flowledger/contracts chain",
     "keys:check": "node scripts/check-keys.mjs",
     "cloud:db": "pnpm --filter @flowledger/web cloud:db",
     "cloud:env": "pnpm --filter @flowledger/web cloud:env"

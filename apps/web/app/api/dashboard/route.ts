@@ -1,12 +1,7 @@
 import { and, desc, eq, gte, sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { tenantRoute } from "@/lib/api/route";
-import {
-  integrations,
-  receipts,
-  workflowExecutions,
-  workflows,
-} from "@/lib/db/schema";
+import { integrations, workflowExecutions, workflows } from "@/lib/db/schema";
 import { tdb } from "@/lib/db/tenant";
 
 export const dynamic = "force-dynamic";
@@ -65,20 +60,12 @@ export const GET = tenantRoute("dashboard.read", async (ctx) => {
         startedAt: workflowExecutions.startedAt,
         duration: workflowExecutions.duration,
         error: workflowExecutions.error,
-        receiptStatus: receipts.status,
       })
       .from(workflowExecutions)
       .innerJoin(workflows, eq(workflows.id, workflowExecutions.workflowId))
-      .leftJoin(
-        receipts,
-        and(
-          eq(receipts.executionId, workflowExecutions.id),
-          eq(receipts.workspaceId, ws)
-        )
-      )
       .where(eq(workflowExecutions.workspaceId, ws))
-      .orderBy(desc(workflowExecutions.startedAt), desc(receipts.version))
-      .limit(24);
+      .orderBy(desc(workflowExecutions.startedAt))
+      .limit(12);
 
     const [week] = await tx
       .select({
@@ -92,13 +79,6 @@ export const GET = tenantRoute("dashboard.read", async (ctx) => {
           eq(workflowExecutions.workspaceId, ws),
           gte(workflowExecutions.startedAt, since)
         )
-      );
-
-    const [anchored] = await tx
-      .select({ count: sql<number>`count(*)::int` })
-      .from(receipts)
-      .where(
-        and(eq(receipts.workspaceId, ws), eq(receipts.status, "anchored"))
       );
 
     const apps = await tx
@@ -132,16 +112,14 @@ export const GET = tenantRoute("dashboard.read", async (ctx) => {
           lastStatus: lastStatus.get(w.id) ?? null,
           updatedAt: w.updatedAt.toISOString(),
         })),
-      // A retried run has several receipt versions: keep the newest per run.
-      recentRuns: recent
-        .filter((r, i) => recent.findIndex((x) => x.id === r.id) === i)
-        .slice(0, 12)
-        .map((r) => ({ ...r, startedAt: r.startedAt.toISOString() })),
+      recentRuns: recent.map((r) => ({
+        ...r,
+        startedAt: r.startedAt.toISOString(),
+      })),
       stats: {
         runs7d: week?.runs ?? 0,
         succeeded7d: week?.succeeded ?? 0,
         failed7d: week?.failed ?? 0,
-        anchored: anchored?.count ?? 0,
       },
       connections: [...new Set(apps.map((a) => a.type))],
     };

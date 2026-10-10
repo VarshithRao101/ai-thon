@@ -43,13 +43,6 @@ export default function TermsPage() {
         </li>
       </ul>
 
-      <h2>Receipts</h2>
-      <p>
-        Proof-of-Execution receipts show what N-Flow recorded for a run and that
-        the record has not changed since. They do not prove that a third-party
-        service (for example an email provider) delivered something.
-      </p>
-
       <h2>Plans, availability and liability</h2>
       <ul>
         <li>

@@ -20,7 +20,7 @@ export const TEMPLATES: TemplatePlan[] = [
     slug: "hackathon-registration",
     title: "Hackathon registration",
     summary:
-      "Form → AI picks the track → personal email + Sheet row + Telegram alert, each with a proof link",
+      "Form → AI picks the track → personal email + Sheet row + Telegram alert",
     keywords: [
       "regist",
       "hackathon",
@@ -92,8 +92,7 @@ export const TEMPLATES: TemplatePlan[] = [
           config: kv({
             emailTo: "{{trigger.email}}",
             emailSubject: "{{draft.subject}}",
-            emailBody:
-              "{{draft.body}}\\n\\nProof of your registration: {{trigger.verifyUrl}}",
+            emailBody: "{{draft.body}}",
           }),
         },
         {
@@ -324,8 +323,7 @@ export const TEMPLATES: TemplatePlan[] = [
           config: kv({
             emailTo: "{{trigger.email}}",
             emailSubject: "Payment received. Thank you!",
-            emailBody:
-              "We received ₹{{trigger.amount}}. Receipt: {{trigger.verifyUrl}}",
+            emailBody: "We received ₹{{trigger.amount}}. Thank you!",
           }),
         },
         {

@@ -6,8 +6,8 @@ import * as THREE from "three";
 
 /**
  * Landing hero (three.js): an automation graph whose data packets flow from
- * triggers through steps into a chain of hexagonal ledger blocks. Packets light
- * the nodes they pass; every arrival at the chain flashes the newest block.
+ * triggers through steps into a honeycomb (the Hive engine). Packets light
+ * the nodes they pass; every arrival at the hive flashes the newest cell.
  * Pauses off-screen, honours reduced motion, disposes everything on unmount.
  */
 

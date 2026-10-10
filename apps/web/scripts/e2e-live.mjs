@@ -1,8 +1,7 @@
 /**
  * Live end-to-end smoke test with REAL services (no mocks): the configured AI
  * model builds a workflow from a sentence, it is published, a form submission
- * runs it, the receipt is anchored on the configured chain, and /verify loads.
- * Optional connector steps run only if the signed-in workspace has them.
+ * runs it, and the dashboard shows it.
  *
  *   node scripts/e2e-live.mjs [screenshot.png]   (dev server on :3000)
  *
@@ -132,27 +131,14 @@ for (const l of logs) {
   );
 }
 
-let led;
-for (let i = 0; i < 90; i++) {
-  led = await api("GET", `/api/ledger/${exec}`);
-  const s = JSON.stringify(led.json ?? {});
-  if (s.includes('"anchored"') || s.includes('txHash":"0x')) {
-    break;
-  }
-  await page.waitForTimeout(2000);
-}
-const ledText = JSON.stringify(led.json ?? {});
-const tx = /"(?:txHash|anchorTxHash)":"(0x[0-9a-f]{64})"/i.exec(ledText)?.[1];
-check(
-  "receipt anchored on-chain",
-  ledText.includes('"anchored"') || Boolean(tx),
-  `${Date.now() - t0} ms after submit${tx ? `, tx ${tx}` : ""}`
-);
-
-await page.goto(`${B}/verify/${exec}`, { waitUntil: "load" });
-await page.waitForTimeout(8000);
+await page.goto(`${B}/dashboard`, { waitUntil: "load" });
+await page.waitForTimeout(6000);
 const body = (await page.innerText("body")).replace(/\s+/g, " ");
-check("public verify page loads", /verif/i.test(body), body.slice(0, 160));
+check(
+  "dashboard shows the run",
+  body.includes(gen.json?.name ?? "~"),
+  body.slice(0, 120)
+);
 if (shot) {
   await page.screenshot({ path: shot, fullPage: true });
 }

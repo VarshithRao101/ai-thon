@@ -35,15 +35,9 @@ type Actions = {
   select: (executionId: string) => void;
 };
 
-function notifyFinished(executionId: string, status: string) {
+function notifyFinished(_executionId: string, status: string) {
   if (status === "success") {
-    toast.success("Run finished", {
-      action: {
-        label: "Verify",
-        onClick: () =>
-          window.open(`/verify/${executionId}`, "_blank", "noopener"),
-      },
-    });
+    toast.success("Run finished");
   } else if (status === "error") {
     toast.error("Run failed: open Runs and ask the Doctor");
   }

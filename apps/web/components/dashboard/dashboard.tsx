@@ -8,14 +8,12 @@ import {
   CircleDashed,
   Clock,
   FileSpreadsheet,
-  Fingerprint,
   KeyRound,
   LogOut,
   Mail,
   Plus,
   Search,
   Send,
-  ShieldCheck,
   Sparkles,
   Workflow,
   XCircle,
@@ -63,7 +61,6 @@ type DashRun = {
   startedAt: string;
   duration: string | null;
   error: string | null;
-  receiptStatus: string | null;
 };
 type DashData = {
   workflows: DashWorkflow[];
@@ -72,7 +69,6 @@ type DashData = {
     runs7d: number;
     succeeded7d: number;
     failed7d: number;
-    anchored: number;
   };
   connections: string[];
 };
@@ -368,8 +364,8 @@ export function Dashboard() {
     { done: workflows.length > 0, label: "Create a workflow" },
     { done: workflows.some((w) => w.published), label: "Publish it" },
     {
-      done: (data?.stats.anchored ?? 0) > 0,
-      label: "Get your first on-chain receipt",
+      done: (data?.stats.succeeded7d ?? 0) > 0,
+      label: "Get your first successful run",
     },
   ];
   const progress = checklist.filter((c) => c.done).length;
@@ -528,9 +524,9 @@ export function Dashboard() {
               icon: Activity,
             },
             {
-              label: "Receipts on-chain",
-              value: data?.stats.anchored ?? 0,
-              icon: Fingerprint,
+              label: "Succeeded, 7 days",
+              value: data?.stats.succeeded7d ?? 0,
+              icon: CheckCircle2,
             },
           ].map((s, i) => {
             const Icon = s.icon;
@@ -780,22 +776,8 @@ export function Dashboard() {
                           </span>
                           <span className="flex items-center gap-2 text-white/40 text-xs">
                             {timeAgo(r.startedAt)} · {r.trigger ?? "manual"}
-                            {r.receiptStatus === "anchored" && (
-                              <span className="inline-flex items-center gap-0.5 text-[#ffc326]">
-                                <ShieldCheck className="size-3" /> on-chain
-                              </span>
-                            )}
                           </span>
                         </Link>
-                        {r.receiptStatus && (
-                          <Link
-                            className="shrink-0 rounded-md border border-white/10 px-1.5 py-0.5 text-[10px] text-white/55 hover:border-[#ffc326]/50 hover:text-[#ffe08a]"
-                            href={`/verify/${r.id}`}
-                            target="_blank"
-                          >
-                            Verify
-                          </Link>
-                        )}
                       </div>
                     </motion.li>
                   ))}

@@ -42,7 +42,6 @@ import {
 
 /** Fails fast per provider when an integration keeps failing (docs/07). */
 const breaker = new CircuitBreaker();
-const TRAILING_SLASH = /\/$/;
 
 const TERMINAL = new Set(["success", "error", "cancelled", "skipped"]);
 const INTERNAL_INPUT_FIELDS = new Set([
@@ -427,20 +426,13 @@ async function execute(
         ...triggerInput,
       };
       await startLog(node, attempt, "trigger", redactSensitiveData(data));
-      const base = (
-        process.env.PUBLIC_APP_URL ||
-        process.env.BETTER_AUTH_URL ||
-        ""
-      ).replace(TRAILING_SLASH, "");
       return {
         status: "success",
         output: {
           triggered: true,
           timestamp: Date.now(),
           trigger: triggerType,
-          // Lets a workflow share the run's public proof, e.g. in a confirmation email.
           runId: executionId,
-          verifyUrl: `${base}/verify/${executionId}`,
           ...data,
         },
       };

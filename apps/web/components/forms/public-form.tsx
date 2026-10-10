@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, Loader2, ShieldCheck } from "lucide-react";
+import { CheckCircle2, Loader2 } from "lucide-react";
 import { nanoid } from "nanoid";
 import { type FormEvent, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -131,15 +131,6 @@ export function PublicForm({ form, workflowId }: Props) {
       <output className="flex flex-col items-center gap-3 py-6 text-center">
         <CheckCircle2 className="size-12 text-primary" />
         <p className="font-display font-semibold text-lg">{done.message}</p>
-        {done.executionId && (
-          <a
-            className="inline-flex items-center gap-1.5 text-muted-foreground text-sm underline underline-offset-4 hover:text-foreground"
-            href={`/verify/${done.executionId}`}
-          >
-            <ShieldCheck className="size-4" />
-            View the proof of this submission
-          </a>
-        )}
       </output>
     );
   }

@@ -34,7 +34,7 @@ function toHtml(body: string): string {
     .split(/\n{2,}/)
     .map((p) => `<p style="margin:0 0 14px">${p.replace(/\n/g, "<br>")}</p>`)
     .join("");
-  return `<div style="font-family:Inter,Segoe UI,Arial,sans-serif;font-size:15px;line-height:1.55;color:#1c1917;max-width:560px">${paragraphs}<p style="margin:24px 0 0;font-size:12px;color:#78716c">Sent by N-Flow · every run has a verifiable receipt</p></div>`;
+  return `<div style="font-family:Inter,Segoe UI,Arial,sans-serif;font-size:15px;line-height:1.55;color:#1c1917;max-width:560px">${paragraphs}<p style="margin:24px 0 0;font-size:12px;color:#78716c">Sent with N-Flow</p></div>`;
 }
 
 async function stepHandler(

@@ -6,7 +6,7 @@ import { isAiMock, withAi } from "./provider";
 
 /**
  * The AI work inside workflow steps (docs/09 "AI nodes"). Every result names
- * the model that produced it, so run receipts can commit to it.
+ * the model that produced it, which is shown in the run logs.
  */
 
 const SYSTEM =

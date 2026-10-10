@@ -11,7 +11,6 @@ import {
   Loader2,
   Play,
   RotateCcw,
-  ShieldCheck,
   X,
 } from "lucide-react";
 import Image from "next/image";
@@ -938,7 +937,7 @@ export function WorkflowRuns({
   );
 }
 
-/** Proof link for finished runs; retry (from the failed step) for failed ones. */
+/** Run Doctor and retry (from the failed step) for failed runs. */
 function RunActions({ execution }: { execution: WorkflowExecution }) {
   const [retrying, setRetrying] = useState(false);
   const finished = ["success", "error", "cancelled"].includes(execution.status);
@@ -978,16 +977,6 @@ function RunActions({ execution }: { execution: WorkflowExecution }) {
           Retry
         </button>
       )}
-      <a
-        className="flex items-center gap-1 rounded px-1.5 py-1 text-primary text-xs transition-colors hover:bg-primary/10"
-        href={`/verify/${execution.id}`}
-        rel="noopener"
-        target="_blank"
-        title="Open the proof"
-      >
-        <ShieldCheck className="size-3.5" />
-        Verify
-      </a>
     </div>
   );
 }

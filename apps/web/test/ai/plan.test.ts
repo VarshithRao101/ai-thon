@@ -43,7 +43,7 @@ describe("Copilot plan → workflow", () => {
     expect(email?.data.config.integrationId).toBe("int_e");
     expect(email?.data.config.emailTo).toBe(`{{@${trigger?.id}:Form.email}}`);
     expect(String(email?.data.config.emailBody)).toContain(
-      "\n\nProof of your registration"
+      "Draft confirmation.body"
     );
     expect(built.notes.some((n) => n.includes("Connect"))).toBe(true);
   });

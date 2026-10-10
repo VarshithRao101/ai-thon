@@ -8,17 +8,17 @@ import {
 } from "animejs";
 import {
   Bot,
+  CheckCircle2,
   FileSpreadsheet,
   FileText,
   Mail,
   Send,
-  ShieldCheck,
 } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 /**
  * "Sentence to system" motion graphic (anime.js): the hero workflow assembles,
- * its edges draw in, then data packets run it on a loop and the receipt seals.
+ * its edges draw in, then data packets run it on a loop until it completes.
  * Coordinates are in a 1000 x 420 frame; HTML nodes sit on top of the SVG.
  */
 const W = 1000;
@@ -69,9 +69,9 @@ const NODES = [
     id: "proof",
     x: 790,
     y: 182,
-    label: "Receipt anchored",
-    sub: "Polygon Amoy",
-    icon: ShieldCheck,
+    label: "Run complete",
+    sub: "Every step logged",
+    icon: CheckCircle2,
   },
 ] as const;
 
@@ -293,7 +293,7 @@ export function FlowDemo() {
           data-seal
           style={{ left: "80%", top: "68%", opacity: 0 }}
         >
-          Verified on-chain
+          Done in seconds
         </div>
       </div>
     </div>

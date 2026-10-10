@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     template: "%s | N-Flow",
   },
   description:
-    "AI-powered no-code automation with blockchain-verified execution. Describe a workflow in plain English, run it reliably, and prove every run. By TRNT BEE.",
+    "AI-powered no-code automation. Describe a workflow in plain English and N-Flow builds and runs it across forms, Google Sheets, Gmail and Telegram.",
   applicationName: "N-Flow",
 };
 
@@ -28,7 +28,7 @@ type RootLayoutProps = {
 };
 
 // Builder pages add the canvas and app providers in (app)/layout.tsx; public
-// pages (hosted forms, receipt verification) render without them.
+// pages (hosted forms, legal) render without them.
 const RootLayout = ({ children }: RootLayoutProps) => (
   <html lang="en" suppressHydrationWarning>
     <body

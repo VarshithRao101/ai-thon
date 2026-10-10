@@ -49,7 +49,6 @@ const REF = /\{\{@([^:}]+):[^.}]*\.([\w.]+)\}\}/g;
 const TRIGGER_OUTPUTS = new Set([
   "submittedAt",
   "runId",
-  "verifyUrl",
   "timestamp",
   "triggered",
   "trigger",

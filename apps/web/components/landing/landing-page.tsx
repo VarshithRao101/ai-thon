@@ -6,12 +6,11 @@ import {
   Bot,
   Boxes,
   Check,
-  Fingerprint,
   KeyRound,
   LifeBuoy,
   QrCode,
   Radio,
-  ShieldCheck,
+  RotateCcw,
   Sparkles,
   Workflow,
 } from "lucide-react";
@@ -30,7 +29,6 @@ import { BeeMark } from "@/components/brand/brand-lockup";
 import { isGuest } from "@/lib/auth/guest";
 import { useSession } from "@/lib/auth-client";
 import { FlowDemo } from "./flow-demo";
-import { ProofGraphic } from "./proof-graphic";
 
 const HeroScene = dynamic(
   () => import("./hero-scene").then((m) => m.HeroScene),
@@ -55,7 +53,6 @@ const INTEGRATIONS = [
   "Conditions",
   "Delays",
   "HTTP requests",
-  "Polygon",
 ];
 
 const STEPS = [
@@ -73,9 +70,9 @@ const STEPS = [
   },
   {
     n: "03",
-    title: "Prove it",
-    body: "Each run gets a receipt anchored on Polygon.",
-    icon: ShieldCheck,
+    title: "Fix it fast",
+    body: "Run Doctor explains failures and fixes them.",
+    icon: LifeBuoy,
   },
 ];
 
@@ -87,9 +84,9 @@ const FEATURES = [
     wide: true,
   },
   {
-    title: "Public verify page",
-    body: "Anyone can check a run.",
-    icon: Fingerprint,
+    title: "Retries built in",
+    body: "Failed steps retry automatically.",
+    icon: RotateCcw,
   },
   {
     title: "Run Doctor",
@@ -130,7 +127,7 @@ const PLANS = [
       "3 active workflows",
       "300 runs a month",
       "1 hosted form",
-      "Receipts anchored daily",
+      "Community support",
       "90-day history",
     ],
     cta: "Start free",
@@ -146,7 +143,7 @@ const PLANS = [
       "5,000 runs a month",
       "Unlimited forms",
       "AI steps included",
-      "Receipts anchored every 5 min",
+      "Priority runs",
       "1-year history, 3 members",
     ],
     cta: "Choose Pro",
@@ -172,15 +169,15 @@ const PLANS = [
 
 // Measured on 10 Oct 2026 (docs/20 session log, docs/08). No estimates here.
 const STATS = [
-  { value: 115, label: "tests passing" },
-  { value: 132, label: "live checks passing" },
-  { value: 78_257, label: "gas per batch (local chain)" },
+  { value: 126, label: "unit tests passing" },
+  { value: 107, label: "live checks passing" },
+  { value: 21, label: "of 22 test prompts built right by AI" },
   { value: 0, label: "known vulnerabilities" },
 ];
 
 function Headline() {
   const ref = useRef<HTMLHeadingElement>(null);
-  const lines = ["Automate anything.", "Prove everything."];
+  const lines = ["Automate anything.", "Just say it."];
   useEffect(() => {
     const el = ref.current;
     if (!el) {
@@ -457,9 +454,6 @@ export function LandingPage() {
             <a className="transition-colors hover:text-white" href="#demo">
               Live flow
             </a>
-            <a className="transition-colors hover:text-white" href="#proof">
-              Proof
-            </a>
             <a className="transition-colors hover:text-white" href="#features">
               Features
             </a>
@@ -508,7 +502,7 @@ export function LandingPage() {
             transition={{ duration: 0.7, delay: 0.1 }}
           >
             <span className="nf-live-dot size-1.5 rounded-full bg-[#ffc326]" />
-            AI automation, proven on-chain
+            AI-built automations
           </motion.p>
           <Headline />
           <motion.p
@@ -517,7 +511,7 @@ export function LandingPage() {
             initial={{ opacity: 0, y: 16 }}
             transition={{ duration: 0.8, delay: 1.1 }}
           >
-            Forms, Sheets, Gmail, Telegram. Built by AI. Proven on Polygon.
+            Forms, Sheets, Gmail, Telegram. Built by AI in seconds.
           </motion.p>
           <motion.div
             animate={{ opacity: 1, y: 0 }}
@@ -536,9 +530,9 @@ export function LandingPage() {
               </Link>
               <a
                 className="nf-ghost-btn inline-flex items-center gap-2 rounded-xl px-5 py-3 font-medium"
-                href="#proof"
+                href="#demo"
               >
-                <ShieldCheck className="size-4" /> How proof works
+                <Sparkles className="size-4" /> See it live
               </a>
             </div>
           </motion.div>
@@ -581,7 +575,7 @@ export function LandingPage() {
         sub="Three steps. No code."
         title={
           <>
-            Describe. Run. <span className="nf-gold-text">Prove.</span>
+            Describe. Run. <span className="nf-gold-text">Done.</span>
           </>
         }
       >
@@ -625,11 +619,11 @@ export function LandingPage() {
       <Section
         eyebrow="Live flow"
         id="demo"
-        sub="Form in. AI decides. Sheet, email, Telegram. Receipt."
+        sub="Form in. AI decides. Sheet, email, Telegram."
         title={
           <>
             One submission. Four systems.{" "}
-            <span className="nf-gold-text">One proof.</span>
+            <span className="nf-gold-text">Zero code.</span>
           </>
         }
       >
@@ -637,24 +631,6 @@ export function LandingPage() {
           <div className="nf-grid-bg pointer-events-none absolute inset-0 opacity-60" />
           <div className="relative">
             <FlowDemo />
-          </div>
-        </div>
-      </Section>
-
-      <Section
-        eyebrow="Proof-of-Execution"
-        id="proof"
-        sub="Only hashes go on-chain. Change one byte and it breaks."
-        title={
-          <>
-            Logs you don't have to <span className="nf-gold-text">trust</span>
-          </>
-        }
-      >
-        <div className="nf-card relative overflow-hidden rounded-3xl px-3 py-10 sm:px-10 sm:py-14">
-          <div className="pointer-events-none absolute -top-40 left-1/2 size-[520px] -translate-x-1/2 rounded-full bg-[#ffc326]/10 blur-[120px]" />
-          <div className="relative">
-            <ProofGraphic />
           </div>
         </div>
       </Section>
@@ -702,7 +678,7 @@ export function LandingPage() {
       <Section
         eyebrow="Plans"
         id="plans"
-        sub="Bring your own apps. We run and prove."
+        sub="Bring your own apps. We build and run them."
         title={
           <>
             Simple <span className="nf-gold-text">pricing</span>

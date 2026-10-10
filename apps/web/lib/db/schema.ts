@@ -409,7 +409,8 @@ export const auditEvents = pgTable(
   (t) => [index("audit_events_workspace_at_idx").on(t.workspaceId, t.at)]
 );
 
-// Proof-of-Execution (docs/08). A batch covers receipts from many workspaces,
+// Proof-of-Execution tables (docs/08): unused since D-053 removed the blockchain layer; kept so existing databases need no destructive migration.
+// A batch covers receipts from many workspaces,
 // so ledger_batches is global: it holds only roots and chain metadata.
 export type LedgerBatchStatus =
   | "building"
