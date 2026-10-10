@@ -5,6 +5,22 @@ import { drainHive } from "@/lib/hive/drain";
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
 
+const BEARER = /^bearer\s+/i;
+const QUOTES = /^["']|["']$/g;
+
+/**
+ * The secret from `Authorization: Bearer <secret>` (any case, optional quotes
+ * or spaces, or the bare secret), or from an `x-cron-secret` header: cron
+ * services differ in how they let you set headers.
+ */
+function presentedSecret(request: Request): string {
+  const raw =
+    request.headers.get("authorization") ??
+    request.headers.get("x-cron-secret") ??
+    "";
+  return raw.trim().replace(QUOTES, "").trim().replace(BEARER, "").trim();
+}
+
 // GET /api/hive/tick: the serverless Hive heartbeat (D-047). cron-job.org calls
 // it every minute with `Authorization: Bearer $CRON_SECRET`. It answers at once,
 // then picks up retries, durable delays and schedule ticks, runs pg-boss
@@ -17,8 +33,8 @@ export function GET(request: Request) {
       { status: 503 }
     );
   }
-  const given = Buffer.from(request.headers.get("authorization") ?? "");
-  const expected = Buffer.from(`Bearer ${secret}`);
+  const given = Buffer.from(presentedSecret(request));
+  const expected = Buffer.from(secret.trim());
   if (given.length !== expected.length || !timingSafeEqual(given, expected)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
