@@ -106,7 +106,7 @@ export async function draftEmail(input: {
   if (isAiMock()) {
     const name = input.recipientName || "there";
     return {
-      subject: input.goal.slice(0, 80) || "Hello from N-Flow",
+      subject: input.goal.slice(0, 80) || "Hello from ZETA",
       body: `Hi ${name},\n\n${input.goal}\n\n${input.context}\n\nBest,\n${input.senderName || "The team"}`,
       model: "mock",
       privacy: shield.report(),

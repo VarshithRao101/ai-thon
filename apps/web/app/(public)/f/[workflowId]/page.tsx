@@ -48,7 +48,7 @@ export default async function HostedFormPage({ params }: Props) {
         <footer className="mt-6 flex flex-col items-center gap-2 text-center text-muted-foreground text-xs">
           <BrandLockup showByline={false} />
           <p>
-            Powered by N-Flow.{" "}
+            Powered by ZETA.{" "}
             <a className="underline underline-offset-2" href="/legal/dpdp">
               Privacy notice
             </a>

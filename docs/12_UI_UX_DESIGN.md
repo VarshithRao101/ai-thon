@@ -46,7 +46,7 @@ Visual board: [../design/ui-preview.html](../design/ui-preview.html). Open it in
   - copilot nodes "drop in" one by one (60 ms stagger)
   - **live run:** edges show flowing gold dots while data moves; nodes pulse amber while running → flash gold with a check icon on success → red shake on error
   - verify page: four checks tick in sequence (250 ms each), then a hexagon "VERIFIED" stamp
-  - Number Ticker on dashboard KPIs; Border Beam on the pricing "Pro" card; **Animated Beam** on the landing page showing Form → N-Flow → Sheets/Gmail/Telegram/Chain
+  - Number Ticker on dashboard KPIs; Border Beam on the pricing "Pro" card; **Animated Beam** on the landing page showing Form → ZETA → Sheets/Gmail/Telegram/Chain
 
 ## Layout
 - App shell: a collapsible **left sidebar** (Dashboard, Workflows, Runs, Forms, Connections, Ledger, Templates, Settings) + a top bar (workspace switcher, ⌘K command palette, notifications bell, user menu).
@@ -64,7 +64,7 @@ Visual board: [../design/ui-preview.html](../design/ui-preview.html). Open it in
 | 7 | **Runs** `/app/runs` | Table: status, workflow, trigger, started, duration, attempts, **receipt badge** (Pending / On-chain); filters; CSV export | Live row insertion via SSE |
 | 8 | **Run detail** `/app/runs/[id]` | Header (status, duration, trigger, version hash); **timeline** of steps (expand → redacted input/output, attempts, error); **mini canvas** replay; "Retry from failed step"; **Ask Run Doctor** card; **Receipt** panel (receipt hash, batch, tx link, "Open public verify page") | Running (live), failed, skipped |
 | 9 | **Forms** `/app/forms` + editor | Field list editor (drag to reorder, types: text, email, phone, select, textarea, checkbox), consent text, success message, theme (honey/dark); **Share**: URL, **QR code**, embed snippet; submissions table | Closed form state |
-| 10 | **Hosted form** `/f/[slug]` | Mobile-first card, workspace logo, fields, consent checkbox, honey submit button, success screen ("You're in! Check your inbox"), "Powered by N-Flow" | Validation, rate-limit message |
+| 10 | **Hosted form** `/f/[slug]` | Mobile-first card, workspace logo, fields, consent checkbox, honey submit button, success screen ("You're in! Check your inbox"), "Powered by ZETA" | Validation, rate-limit message |
 | 11 | **Connections (vault)** `/app/connections` | Grid of integrations with status (OK / Error / Untested), last tested, "Test", "Rotate", "Edit"; add-connection wizard per plugin `formFields`; secrets masked | Error detail with Doctor hint |
 | 12 | **Ledger** `/app/ledger` | Batches table (root, leaves, status, tx, block, gas); batch detail (Merkle tree visual: hexagon leaves → root); "Anchor now" (admin); contract address + network badge; **Tamper simulator** (demo workspace) | Chain offline banner |
 | 13 | **Public verify** `/verify/[id]` | Standalone page: receipt summary, the **four verification layers** with animated checks, Polygonscan link, "How this works" accordion, download receipt JSON; owner-only data-integrity layer when signed in | Verified / Pending anchor / Tampered (step highlighted) |

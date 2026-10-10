@@ -2,13 +2,16 @@ import "server-only";
 
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createGroq } from "@ai-sdk/groq";
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import type { StepError } from "@flowledger/engine";
 import { APICallError, type LanguageModel } from "ai";
 
 /**
- * N-Flow AI provider layer (docs/09, D-009). Model ids come from env only
+ * ZETA AI provider layer (docs/09, D-009). Model ids come from env only
  * (CLAUDE.md hard rule): AI_PRIMARY_PROVIDER + AI_MODEL_FAST / AI_MODEL_SMART,
- * with an optional AI_FALLBACK_PROVIDER + AI_FALLBACK_MODEL tried on failure.
+ * with an optional AI_FALLBACK_PROVIDER + AI_FALLBACK_MODEL tried on failure,
+ * and an optional last resort on any OpenAI-compatible API (OpenRouter,
+ * Cerebras, Mistral, …): AI_COMPAT_BASE_URL + AI_COMPAT_API_KEY + AI_COMPAT_MODEL.
  * AI_MOCK=true swaps in deterministic local outputs for development and tests.
  */
 export type AiTier = "fast" | "smart";
@@ -55,6 +58,29 @@ function build(
     : null;
 }
 
+const API_PREFIX = /^api\./;
+
+/** Any OpenAI-compatible endpoint, used last when configured. */
+function buildCompat(): AiCandidate | null {
+  const baseURL = process.env.AI_COMPAT_BASE_URL;
+  const apiKey = process.env.AI_COMPAT_API_KEY;
+  const modelId = process.env.AI_COMPAT_MODEL;
+  if (!(baseURL && apiKey && modelId)) {
+    return null;
+  }
+  const name =
+    new URL(baseURL).hostname.replace(API_PREFIX, "").split(".")[0] || "compat";
+  return {
+    model: createOpenAICompatible({
+      name,
+      baseURL,
+      apiKey,
+      supportsStructuredOutputs: true,
+    })(modelId),
+    label: `${name}:${modelId}`,
+  };
+}
+
 /** Configured models for a tier, primary first. */
 export function aiCandidates(tier: AiTier): AiCandidate[] {
   const primary: Provider = isProvider(process.env.AI_PRIMARY_PROVIDER)
@@ -74,6 +100,7 @@ export function aiCandidates(tier: AiTier): AiCandidate[] {
   if (isProvider(fallback)) {
     candidates.push(build(fallback, process.env.AI_FALLBACK_MODEL));
   }
+  candidates.push(buildCompat());
   return candidates.filter((c): c is AiCandidate => c !== null);
 }
 

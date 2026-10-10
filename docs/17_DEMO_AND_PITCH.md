@@ -27,7 +27,7 @@
 5. Total failure → 90-second recorded backup video.
 
 ## Pitch deck outline (10 slides, black and gold)
-1. **Title:** N-Flow — *Automate anything. Prove everything.* (bee logo, Team Hydra, TRNT BEE)
+1. **Title:** ZETA — *Automate anything. Prove everything.* (bee logo, Team Hydra, TRNT BEE)
 2. **Problem:** manual work + USD pricing + unverifiable logs (one stat each, sourced)
 3. **Solution:** three pillars: AI Copilot · Hive engine · Proof-of-Execution
 4. **Live demo** (switch to the app)

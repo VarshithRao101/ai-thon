@@ -164,7 +164,7 @@ export function LoginScreen() {
           <Link className="flex items-center gap-2" href="/">
             <BeeMark className="size-8" />
             <span className="font-display font-semibold text-lg">
-              N-<span className="text-[#ffc326]">Flow</span>
+              ZE<span className="text-[#ffc326]">TA</span>
             </span>
           </Link>
           <div>
@@ -186,9 +186,7 @@ export function LoginScreen() {
               ))}
             </ul>
           </div>
-          <p className="text-sm text-white/35">
-            N-Flow by TRNT BEE · Team Hydra
-          </p>
+          <p className="text-sm text-white/35">ZETA by TRNT BEE · Team Hydra</p>
         </div>
       </div>
 
@@ -208,7 +206,7 @@ export function LoginScreen() {
         >
           <BeeMark className="size-11 lg:hidden" />
           <h2 className="mt-6 font-display font-semibold text-3xl tracking-tight lg:mt-0">
-            Welcome to N-<span className="text-[#ffc326]">Flow</span>
+            Welcome to ZE<span className="text-[#ffc326]">TA</span>
           </h2>
           <p className="mt-2 text-white/55">
             Sign in to see your workflows, runs and history.

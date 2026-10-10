@@ -11,7 +11,7 @@ const TONES = [
 
 const aiPlugin: IntegrationPlugin = {
   type: "ai",
-  label: "N-Flow AI",
+  label: "ZETA AI",
   description:
     "Classify, extract, draft emails and generate text (Gemini, Groq fallback)",
   icon: AiIcon,

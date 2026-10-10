@@ -43,7 +43,7 @@
 | `otel-collector` | `otel/opentelemetry-collector-contrib` | 4318 | `observability` |
 | `jaeger` | `jaegertracing/all-in-one` (v2) | 16686 | `observability` |
 | `prometheus` | `prom/prometheus` | 9090 | `observability` |
-| `grafana` | `grafana/grafana` (provisioned datasource + "N-Flow Overview" dashboard) | 3001 | `observability` |
+| `grafana` | `grafana/grafana` (provisioned datasource + "ZETA Overview" dashboard) | 3001 | `observability` |
 | `cloudflared` | `cloudflare/cloudflared` (`tunnel --url http://web:3000`) | — | `tunnel` |
 
 Startup order uses `depends_on: condition: service_healthy`. Commands: `docker compose up -d`, then `docker compose --profile observability --profile tunnel up -d`.
@@ -78,7 +78,7 @@ Postgres and Redis are external in the chart (managed services). For kind, Bitna
 
 ## Observability
 - **Traces:** OpenTelemetry SDK in web and worker, OTLP/HTTP to the collector, then Jaeger. One trace shows `POST /api/forms/x/submit → queue wait → run → 5 steps → Sheets/SMTP/Telegram calls`. This is a strong live-demo moment if time allows.
-- **Metrics:** prom-client (list in [07](07_HIVE_ENGINE.md)). The Grafana "N-Flow Overview" dashboard shows runs/min, success rate, p95 step latency by action, queue depth, workers, anchor batches, AI tokens.
+- **Metrics:** prom-client (list in [07](07_HIVE_ENGINE.md)). The Grafana "ZETA Overview" dashboard shows runs/min, success rate, p95 step latency by action, queue depth, workers, anchor batches, AI tokens.
 - **Logs:** pino JSON with `traceId`, `executionId`, `workspaceId`, redaction paths for secrets.
 - **Alerts** (Should): DLQ > 0, anchor failures > 2 in a row, p95 run latency > 30 s.
 

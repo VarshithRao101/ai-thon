@@ -11,7 +11,7 @@ export default function PrivacyPage() {
 
       <h2>Who we are</h2>
       <p>
-        N-Flow is a no-code automation product built by TRNT BEE (Team Hydra).
+        ZETA is a no-code automation product built by TRNT BEE (Team Hydra).
         Contact: {contactLine()}.
       </p>
 
@@ -47,7 +47,7 @@ export default function PrivacyPage() {
 
       <h2>Who processes data for us</h2>
       <ul>
-        <li>Hosting and database providers that run N-Flow.</li>
+        <li>Hosting and database providers that run ZETA.</li>
         <li>
           Services you connect: Google (Sheets, Gmail), Telegram, and AI
           providers (Google Gemini, with Groq as a backup). Data reaches them
@@ -80,7 +80,7 @@ export default function PrivacyPage() {
       </p>
 
       <h2>Children</h2>
-      <p>N-Flow is not directed at people under 18.</p>
+      <p>ZETA is not directed at people under 18.</p>
 
       <h2>Changes</h2>
       <p>We will update this page and its date when practices change.</p>

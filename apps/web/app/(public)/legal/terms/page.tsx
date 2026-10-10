@@ -9,7 +9,7 @@ export default function TermsPage() {
       <h1>Terms of use</h1>
       <p>Last updated {LAST_UPDATED}.</p>
 
-      <h2>Using N-Flow</h2>
+      <h2>Using ZETA</h2>
       <ul>
         <li>
           By creating an account or a guest session you accept these terms.
@@ -19,8 +19,8 @@ export default function TermsPage() {
           workflows do.
         </li>
         <li>
-          Do not use N-Flow for spam, unlawful data collection, harassment, or
-          to abuse connected services or their limits.
+          Do not use ZETA for spam, unlawful data collection, harassment, or to
+          abuse connected services or their limits.
         </li>
       </ul>
 
@@ -28,14 +28,14 @@ export default function TermsPage() {
       <p>
         Workspace owners own their workflows and the data they process. For form
         submissions and other personal data, the workspace owner is the data
-        fiduciary and N-Flow is the processor.
+        fiduciary and ZETA is the processor.
       </p>
 
       <h2>Connected services and AI</h2>
       <ul>
         <li>
           Google, Telegram and AI providers have their own terms and limits.
-          N-Flow is not responsible for their availability.
+          ZETA is not responsible for their availability.
         </li>
         <li>
           AI steps can be wrong. Review AI drafts before relying on them for

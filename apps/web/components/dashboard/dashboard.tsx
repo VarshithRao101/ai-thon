@@ -33,8 +33,6 @@ import {
 } from "react";
 import { toast } from "sonner";
 import { BeeMark } from "@/components/brand/brand-lockup";
-import { IntegrationsOverlay } from "@/components/overlays/integrations-overlay";
-import { useOverlay } from "@/components/overlays/overlay-provider";
 import { markSigningOut } from "@/lib/auth/guest";
 import { signOut, useSession } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
@@ -258,7 +256,6 @@ function Toggle({
 export function Dashboard() {
   const router = useRouter();
   const { data: session } = useSession();
-  const { open } = useOverlay();
   const [data, setData] = useState<DashData | null>(null);
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>("All");
   const [query, setQuery] = useState("");
@@ -380,7 +377,7 @@ export function Dashboard() {
           <Link className="flex items-center gap-2" href="/dashboard">
             <BeeMark className="size-7" />
             <span className="font-display font-semibold tracking-tight">
-              N-<span className="text-[#ffc326]">Flow</span>
+              ZE<span className="text-[#ffc326]">TA</span>
             </span>
           </Link>
           <nav className="hidden items-center gap-1 text-sm md:flex">
@@ -393,13 +390,12 @@ export function Dashboard() {
             >
               Builder
             </Link>
-            <button
+            <Link
               className="rounded-lg px-3 py-1.5 text-white/60 hover:bg-white/[0.04] hover:text-white"
-              onClick={() => open(IntegrationsOverlay, {})}
-              type="button"
+              href="/connections"
             >
               Connections
-            </button>
+            </Link>
           </nav>
           <div className="flex items-center gap-2">
             <Link
@@ -730,13 +726,12 @@ export function Dashboard() {
                       {ok ? (
                         <CheckCircle2 className="size-4 text-emerald-400" />
                       ) : (
-                        <button
+                        <Link
                           className="rounded-lg border border-[#ffc326]/40 px-2.5 py-1 font-medium text-[#ffe08a] text-xs hover:bg-[#ffc326]/10"
-                          onClick={() => open(IntegrationsOverlay, {})}
-                          type="button"
+                          href={`/connections#${app.type}`}
                         >
                           Connect
-                        </button>
+                        </Link>
                       )}
                     </li>
                   );

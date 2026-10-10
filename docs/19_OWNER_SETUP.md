@@ -31,22 +31,22 @@
 ## 3. Gmail sender (10 min)
 1. Create a new Gmail account for the demo (e.g. `nflow.demo…@gmail.com`).
 2. Turn on **2-Step Verification** (Google Account → Security).
-3. Go to https://myaccount.google.com/apppasswords, create an app password named "N-Flow" and keep the **16-character password**.
+3. Go to https://myaccount.google.com/apppasswords, create an app password named "ZETA" and keep the **16-character password**.
 - Report: the Gmail address.
 
 ## 4. Google Sheets (20 min)
 1. https://console.cloud.google.com → create a project named `n-flow`. Use a personal Google account: college Workspace accounts often block service-account keys.
 2. **APIs & Services → Library →** enable **Google Sheets API**.
 3. **IAM & Admin → Service Accounts → Create** `flowledger-sheets` (no roles needed) → open it → **Keys → Add key → JSON**. Keep the downloaded file private.
-4. Create a Google Sheet named **N-Flow Demo — Registrations** with this header row in row 1:
+4. Create a Google Sheet named **ZETA Demo — Registrations** with this header row in row 1:
    `Submitted At | Name | Email | College | Idea | Track | Run ID`
 5. **Share** the Sheet with the service account's email (`client_email` in the JSON, ending in `iam.gserviceaccount.com`) as **Editor**.
 6. Copy the **spreadsheet ID** from the URL: the part between `/d/` and `/edit`.
 - Report: the spreadsheet ID and the service-account email.
 
 ## 5. Telegram (10 min)
-1. In Telegram, open **@BotFather** → `/newbot` → name it "N-Flow Bot", with a username ending in `bot`. Keep the **token**.
-2. Create a group named **N-Flow Live**, add the bot, then send `/start@<your_bot_username>` in the group.
+1. In Telegram, open **@BotFather** → `/newbot` → name it "ZETA Bot", with a username ending in `bot`. Keep the **token**.
+2. Create a group named **ZETA Live**, add the bot, then send `/start@<your_bot_username>` in the group.
 3. To get the **chat id**, open `https://api.telegram.org/bot<TOKEN>/getUpdates` in a browser **on the laptop only** (the URL contains the token, so never share it). Find `"chat":{"id":-100…`; that negative number is the chat id.
 - Report: the chat id (not secret) and the bot username.
 
@@ -87,8 +87,8 @@ A phone with mobile data (also a hotspot backup), the Telegram group open on a s
 
 ## 13. Google sign-in (10 min)
 Users sign in with Google, so the app needs an OAuth client.
-1. https://console.cloud.google.com, in the same `n-flow` project → **APIs & Services → OAuth consent screen**: User type **External**, app name **N-Flow**, your support email. Scopes: leave the defaults (email, profile, openid). Then press **Publish app** so anyone (judges) can sign in; basic scopes need no Google review.
-2. **Credentials → Create credentials → OAuth client ID → Web application**, name `N-Flow web`.
+1. https://console.cloud.google.com, in the same `n-flow` project → **APIs & Services → OAuth consent screen**: User type **External**, app name **ZETA**, your support email. Scopes: leave the defaults (email, profile, openid). Then press **Publish app** so anyone (judges) can sign in; basic scopes need no Google review.
+2. **Credentials → Create credentials → OAuth client ID → Web application**, name `ZETA web`.
    - Authorized JavaScript origins: `http://localhost:3000` and `https://<your-app>.vercel.app`
    - Authorized redirect URIs: `http://localhost:3000/api/auth/callback/google` and `https://<your-app>.vercel.app/api/auth/callback/google`
 3. Press **Download JSON** on the new client (a `client_secret_….json` file), then run `node scripts/google-setup.mjs <that file>` (or paste the JSON into `apps/web/.env.local` and run `node scripts/google-setup.mjs`). It writes the four values below; nothing is printed. A **service-account** JSON is a different credential: it's for the Sheets connector, not sign-in.

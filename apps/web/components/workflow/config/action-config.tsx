@@ -440,7 +440,7 @@ export function ActionConfig({
       return SYSTEM_ACTION_INTEGRATIONS[actionType];
     }
 
-    // Check plugin actions (keyless plugins such as N-Flow AI need no connection)
+    // Check plugin actions (keyless plugins such as ZETA AI need no connection)
     const action = findActionById(actionType);
     const type = action?.integration as IntegrationType | undefined;
     return type && requiresConnection(type) ? type : undefined;

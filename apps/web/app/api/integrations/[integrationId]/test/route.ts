@@ -50,7 +50,7 @@ export async function POST(
       }
 
       if (integration.type === "database") {
-        // SSRF vector (user-supplied URL); not supported in N-Flow (docs/10).
+        // SSRF vector (user-supplied URL); not supported in ZETA (docs/10).
         return NextResponse.json(
           { error: "Database connections are not supported" },
           { status: 400 }

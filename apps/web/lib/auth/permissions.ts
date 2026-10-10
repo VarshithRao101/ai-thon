@@ -7,9 +7,9 @@ import {
 } from "better-auth/plugins/organization/access";
 
 /**
- * Better Auth organization-plugin roles, mapped to N-Flow workspace roles.
+ * Better Auth organization-plugin roles, mapped to ZETA workspace roles.
  * These govern the plugin's own endpoints (invite, change role, remove member).
- * N-Flow features are checked separately with lib/auth/rbac.ts.
+ * ZETA features are checked separately with lib/auth/rbac.ts.
  */
 export const ac = createAccessControl(defaultStatements);
 

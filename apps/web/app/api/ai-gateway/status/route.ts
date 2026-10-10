@@ -1,9 +1,9 @@
 /**
  * GET /api/ai-gateway/status
  *
- * Vercel AI Gateway "managed keys" required Vercel OAuth, which N-Flow does
+ * Vercel AI Gateway "managed keys" required Vercel OAuth, which ZETA does
  * not use (D-027). The feature reports itself disabled so the UI never offers
- * it; N-Flow's own AI provider layer (Gemini/Groq) lands in P1G.
+ * it; ZETA's own AI provider layer (Gemini/Groq) lands in P1G.
  */
 export function GET() {
   return Response.json({

@@ -3,7 +3,7 @@ export function contactLine(): string {
   const email = process.env.CONTACT_EMAIL?.trim();
   return email
     ? email
-    : "the N-Flow team (Team Hydra, TRNT BEE); a contact address will be published before launch";
+    : "the ZETA team (Team Hydra, TRNT BEE); a contact address will be published before launch";
 }
 
 export const LAST_UPDATED = "10 October 2026";

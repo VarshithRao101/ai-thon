@@ -1,7 +1,7 @@
 # 03 — Architecture
 
 ## Style
-N-Flow is a **modular monolith with independently scalable process roles**. There is one TypeScript codebase in a pnpm/Turborepo monorepo, built into **one container image** that starts in one of four roles:
+ZETA is a **modular monolith with independently scalable process roles**. There is one TypeScript codebase in a pnpm/Turborepo monorepo, built into **one container image** that starts in one of four roles:
 
 | Role | Command | Scales by | Responsibility |
 |---|---|---|---|
@@ -20,7 +20,7 @@ flowchart LR
   EXT[External system] -->|webhook + HMAC| WEB
   P[Anyone with a receipt] -->|/verify| WEB
   P -. reads root directly .-> CHAIN
-  subgraph N-Flow
+  subgraph ZETA
     WEB[web<br/>Next.js 16]
     Q[(Redis<br/>BullMQ queues + pub/sub)]
     W[worker xN<br/>Hive engine]

@@ -452,7 +452,7 @@ export function LandingPage() {
           <Link className="flex items-center gap-2" href="/">
             <BeeMark className="size-7" />
             <span className="font-display font-semibold tracking-tight">
-              N-<span className="text-[#ffc326]">Flow</span>
+              ZE<span className="text-[#ffc326]">TA</span>
             </span>
           </Link>
           <nav className="hidden items-center gap-7 text-sm text-white/65 md:flex">
@@ -815,7 +815,7 @@ export function LandingPage() {
           <div className="flex items-center gap-2">
             <BeeMark className="size-6" />
             <span>
-              N-Flow by TRNT BEE · Team Hydra · TRI-CITY AI Hackathon 2026
+              ZETA by TRNT BEE · Team Hydra · TRI-CITY AI Hackathon 2026
             </span>
           </div>
           <nav className="flex flex-wrap justify-center gap-x-5 gap-y-2">

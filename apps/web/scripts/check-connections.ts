@@ -116,7 +116,7 @@ async function liveAction(
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           chat_id: creds.TELEGRAM_CHAT_ID,
-          text: `N-Flow connection check (${stamp}): Telegram works.`,
+          text: `ZETA connection check (${stamp}): Telegram works.`,
         }),
       }
     );
@@ -129,9 +129,9 @@ async function liveAction(
     const { createTransport } = await import("../plugins/smtp-email/transport");
     const to = creds.SMTP_USER?.trim();
     await createTransport(creds).sendMail({
-      from: { name: creds.SMTP_FROM_NAME?.trim() || "N-Flow", address: to },
+      from: { name: creds.SMTP_FROM_NAME?.trim() || "ZETA", address: to },
       to,
-      subject: "N-Flow connection check",
+      subject: "ZETA connection check",
       text: `Gmail works. Sent ${stamp}.`,
     });
     return `emailed ${to}`;
@@ -149,7 +149,7 @@ async function liveAction(
       `/${encodeURIComponent(id)}/values/A1:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`,
       {
         method: "POST",
-        body: JSON.stringify({ values: [[stamp, "N-Flow connection check"]] }),
+        body: JSON.stringify({ values: [[stamp, "ZETA connection check"]] }),
       }
     );
     return `appended ${res.updates?.updatedRange ?? "a row"}`;

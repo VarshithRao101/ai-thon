@@ -15,7 +15,7 @@ import {
   workspaces,
 } from "./db/schema";
 
-// Better Auth models -> N-Flow tables (organization = workspace)
+// Better Auth models -> ZETA tables (organization = workspace)
 const schema = {
   user: users,
   session: sessions,
@@ -126,7 +126,7 @@ export const auth = betterAuth({
     enabled: true,
     requireEmailVerification: false,
   },
-  // Signing in with Google using an address that already has an N-Flow
+  // Signing in with Google using an address that already has an ZETA
   // account links to it (Google verifies the address), so history is kept.
   account: {
     accountLinking: { enabled: true, trustedProviders: ["google"] },

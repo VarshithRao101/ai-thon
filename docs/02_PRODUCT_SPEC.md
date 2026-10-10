@@ -8,12 +8,12 @@ Small businesses, colleges, clinics and startups in India move data by hand. A t
 
 Tools like Zapier are priced in USD and get expensive as runs grow (sourced in [13](13_BUSINESS_MARKET.md)). Their run history also lives in the vendor's database, so it can be edited and nobody outside can prove what actually ran. That matters when the data is personal and the DPDP Act applies.
 
-## Solution: N-Flow
+## Solution: ZETA
 A no-code automation platform with four parts:
 1. **Describe it in plain English** → the AI Copilot builds the workflow on a visual canvas.
 2. **Connect triggers and actions:** forms, webhooks and schedules trigger Sheets, email, Telegram, Discord, Slack, AI steps and HTTP calls.
 3. **Run reliably** on the Hive engine: a queue, horizontally scalable workers, retries, a dead-letter queue (DLQ), and resume from the failed step.
-4. **Prove it:** each run gets a cryptographic receipt that is anchored on-chain. Anyone can verify it on a public page without trusting N-Flow.
+4. **Prove it:** each run gets a cryptographic receipt that is anchored on-chain. Anyone can verify it on a public page without trusting ZETA.
 
 ## Personas
 | Persona | Need | Example |
@@ -24,7 +24,7 @@ A no-code automation platform with four parts:
 | **Workspace admin** | Team access, API keys, audit trail, usage limits | Settings and Ledger screens |
 
 ## MVP scope (official) → our feature
-| Official MVP item | N-Flow feature |
+| Official MVP item | ZETA feature |
 |---|---|
 | Workflow builder | React Flow canvas: node palette, config panel, AI Copilot side panel, versioned publish |
 | Triggers | Form submitted (hosted form + QR), webhook (HMAC or API key), schedule (cron), manual test run |

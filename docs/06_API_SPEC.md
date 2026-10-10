@@ -5,7 +5,7 @@ The API is served by `web` (Next.js route handlers). JSON in and out, validated 
 **Auth modes:**
 - **S** — session cookie (Better Auth, `httpOnly; Secure; SameSite=Lax`), with the workspace taken from the active session.
 - **K** — API key `Authorization: Bearer flk_…` (sha256-hashed at rest, scoped).
-- **H** — HMAC signature `X-N-Flow-Signature: t=<unix>,v1=<hex>`, computed as `HMAC_SHA256(secret, t + "." + body)`, with 5-minute replay tolerance.
+- **H** — HMAC signature `X-ZETA-Signature: t=<unix>,v1=<hex>`, computed as `HMAC_SHA256(secret, t + "." + body)`, with 5-minute replay tolerance.
 - **P** — public, rate-limited.
 
 **Roles:** O = owner, A = admin, E = editor, V = viewer.

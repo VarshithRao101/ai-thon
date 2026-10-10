@@ -55,7 +55,7 @@ const Home = () => {
 
   // Update page title when workflow name changes
   useEffect(() => {
-    document.title = `${currentWorkflowName} | N-Flow`;
+    document.title = `${currentWorkflowName} | ZETA`;
   }, [currentWorkflowName]);
 
   // Helper to create anonymous session if needed

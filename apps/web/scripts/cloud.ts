@@ -130,6 +130,9 @@ const FROM_LOCAL = [
   "CONTACT_EMAIL",
   "GOOGLE_CLIENT_ID",
   "GOOGLE_CLIENT_SECRET",
+  "AI_COMPAT_BASE_URL",
+  "AI_COMPAT_API_KEY",
+  "AI_COMPAT_MODEL",
 ];
 const SENSITIVE = new Set([
   "DATABASE_URL",
@@ -141,6 +144,7 @@ const SENSITIVE = new Set([
   "GOOGLE_GENERATIVE_AI_API_KEY",
   "GROQ_API_KEY",
   "GOOGLE_CLIENT_SECRET",
+  "AI_COMPAT_API_KEY",
 ]);
 
 function vercel(args: string[], input?: string) {

@@ -1,4 +1,4 @@
-N-Flow
+ZETA
 Copyright 2026 TRNT BEE (Team Hydra)
 
 This product includes software developed by Vercel, Inc.:
@@ -9,7 +9,7 @@ This product includes software developed by Vercel, Inc.:
   Licensed under the Apache License, Version 2.0 (see apps/web/LICENSE).
 
 Files originating from that template live under apps/web/ and have been
-modified by the N-Flow team. Modifications include: monorepo packaging,
+modified by the ZETA team. Modifications include: monorepo packaging,
 rebranding and theme, the Hive execution engine (replacing the Workflow DevKit
 runtime), workspaces and RBAC, hosted forms, new integrations, the
 Proof-of-Execution ledger, AI features, and deployment infrastructure.

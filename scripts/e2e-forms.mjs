@@ -1,4 +1,4 @@
-// End-to-end check of hosted forms + AI steps against a running N-Flow.
+// End-to-end check of hosted forms + AI steps against a running ZETA.
 // Start the server with AI_MOCK=true to run without AI keys. Local dev only;
 // creates a throwaway *.example.test account (random password, never printed).
 // Usage: node scripts/e2e-forms.mjs [baseUrl]   (default http://localhost:3000)
@@ -75,7 +75,7 @@ const node = (id, type, label, config, x) => ({
 });
 const edge = (s, t) => ({ id: `${s}-${t}`, source: s, target: t, type: "animated" });
 
-console.log(`N-Flow forms + AI e2e against ${BASE}`);
+console.log(`ZETA forms + AI e2e against ${BASE}`);
 const signup = await call("POST", "/api/auth/sign-up/email", {
   email: `forms.${randomBytes(4).toString("hex")}@example.test`,
   password: randomBytes(18).toString("base64url"),

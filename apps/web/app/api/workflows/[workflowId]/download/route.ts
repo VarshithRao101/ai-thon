@@ -292,7 +292,7 @@ export default withWorkflow(nextConfig);
     // Add a README with instructions
     allFiles["README.md"] = `# ${workflow.name}
 
-This is a Next.js workflow project generated from N-Flow.
+This is a Next.js workflow project generated from ZETA.
 
 ## Getting Started
 

@@ -1,11 +1,11 @@
 <p align="center"><img src="brand/bee-mark-honey.png" width="96" alt="TRNT BEE"></p>
 
-<h1 align="center">N-Flow</h1>
+<h1 align="center">ZETA</h1>
 <p align="center"><b>Automate anything. Prove everything.</b><br>AI-powered no-code automation with blockchain-verified execution. By TRNT BEE (Team Hydra).</p>
 
 ---
 
-N-Flow lets anyone describe an automation in plain English ("when someone registers, save them to a sheet, email them and alert my team on Telegram"). The AI Copilot builds it on a visual canvas. The Hive engine runs it reliably on queue-backed workers. Every run gets a cryptographic receipt, anchored on Polygon, that anyone can verify in their own browser.
+ZETA lets anyone describe an automation in plain English ("when someone registers, save them to a sheet, email them and alert my team on Telegram"). The AI Copilot builds it on a visual canvas. The Hive engine runs it reliably on queue-backed workers. Every run gets a cryptographic receipt, anchored on Polygon, that anyone can verify in their own browser.
 
 Built for the TRI-CITY AI HACKATHON, problem statement #5 (Zapier-like automation between forms, sheets, emails and notifications).
 
@@ -55,7 +55,7 @@ This list is updated as each phase lands.
 - **1C–1G:**
   - **Hive engine** on Postgres (pg-boss): queued runs, retries with backoff, durable Delay waits, a dead-letter queue, resume from the failed step, idempotent triggers, publish → immutable versions, enable/disable, and live run events streamed to the canvas.
   - **Triggers:** hosted forms with QR codes, consent, a bot trap and rate limits; webhooks with API keys and idempotency keys; schedules (IST cron).
-  - **Integrations:** Google Sheets (service account), email via Gmail SMTP, Telegram, and N-Flow AI (classify, draft email, extract, generate; Gemini with a Groq fallback; models from config).
+  - **Integrations:** Google Sheets (service account), email via Gmail SMTP, Telegram, and ZETA AI (classify, draft email, extract, generate; Gemini with a Groq fallback; models from config).
   - **Proof-of-Execution:** a receipt for every run, Merkle batches anchored by `FlowLedgerAnchor`, a public `/verify` page that checks everything in the browser (including the contract's own `verifyReceipt()`), and a recorded tamper simulator.
   - **AI Copilot** (a schema-validated plan built deterministically, with five templates as the offline fallback) and **Run Doctor** (plain-language diagnosis and one-click fixes).
   - **Hardening:** SSRF guard for HTTP steps, UTF-8 and UTC database defaults, legal pages (privacy, DPDP notice, terms, cookies, security, open source).

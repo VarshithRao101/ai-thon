@@ -1,7 +1,7 @@
 {
   "name": "flowledger",
   "private": true,
-  "description": "N-Flow: AI-powered no-code automation with blockchain-verified execution. By TRNT BEE.",
+  "description": "ZETA: AI-powered no-code automation with blockchain-verified execution. By TRNT BEE.",
   "license": "Apache-2.0",
   "packageManager": "pnpm@10.34.6",
   "engines": {

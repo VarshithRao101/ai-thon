@@ -9,7 +9,7 @@ export default function CookiesPage() {
       <h1>Cookies</h1>
       <p>Last updated {LAST_UPDATED}.</p>
       <p>
-        N-Flow uses only strictly necessary cookies. There are no analytics or
+        ZETA uses only strictly necessary cookies. There are no analytics or
         advertising cookies, so there is no cookie banner. Hosted forms set no
         cookies at all.
       </p>

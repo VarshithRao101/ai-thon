@@ -75,7 +75,7 @@ The consent banner offers **Accept all / Reject non-essential / Customize**, wit
 | Breach readiness | Audit trail + tamper-evident logs + incident runbook (docs/runbook in P3) |
 | Retention | Plan-based retention with an automatic sweep |
 
-Roles: N-Flow is the **processor** for workspace data. The workspace owner is the **data fiduciary** for their forms. This is stated in the Terms and the DPA summary. These pages are templates and **not legal advice** (see [18](18_LEGAL_PAGES.md)).
+Roles: ZETA is the **processor** for workspace data. The workspace owner is the **data fiduciary** for their forms. This is stated in the Terms and the DPA summary. These pages are templates and **not legal advice** (see [18](18_LEGAL_PAGES.md)).
 
 ## Secrets handling (team rules)
 - `.env.local` for dev only. Deployed secrets go in platform env (Vercel/Render) or Kubernetes Secrets (External Secrets operator noted as the production path).

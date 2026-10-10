@@ -1,4 +1,4 @@
-# N-Flow — Development Plan (single source of truth)
+# ZETA — Development Plan (single source of truth)
 
 All upcoming work lives here. Update this file whenever the plan changes (and log the reason in [docs/15_DECISIONS.md](docs/15_DECISIONS.md)).
 
@@ -41,7 +41,7 @@ Click-by-click: [docs/19_OWNER_SETUP.md](docs/19_OWNER_SETUP.md). Tell Claude "*
 | **2** | **Neon**: sign up with GitHub → project `n-flow`, Postgres 17, region **AWS Asia Pacific (Singapore)** → Connect → **pooling OFF** → copy the connection string | 5 min | `.env.local`: `CLOUD_DATABASE_ADMIN_URL=` |
 | **3** | **Vercel**: sign up with GitHub (Hobby) → Add New → Project → import `VarshithRao101/ai-thon` → **Root Directory = `apps/web`** → Deploy (the first build may fail without env vars; that's expected). Then in the VS Code/Claude terminal run `npx vercel login` | 10 min | Nothing to paste |
 | **4** | **Gemini API key** + two model IDs (a Flash and a Pro) from AI Studio | 5 min | `.env.local`: `GOOGLE_GENERATIVE_AI_API_KEY`, `AI_MODEL_FAST`, `AI_MODEL_SMART` |
-| **5** | **Telegram bot** (@BotFather) + group "N-Flow Live" + chat id | 10 min | Keep private; enter in the hosted app → Connections (step 9) |
+| **5** | **Telegram bot** (@BotFather) + group "ZETA Live" + chat id | 10 min | Keep private; enter in the hosted app → Connections (step 9) |
 | **6** | **Gmail app password** on a new demo Gmail (2-Step Verification on) | 10 min | Same as 5 |
 | **7** | **Google Cloud service account** (JSON key) + Sheets API + a demo Sheet shared with it as Editor | 15 min | Same as 5 |
 | 8 | Optional: **Alchemy** Amoy RPC URL | 5 min | `.env.local`: `CHAIN_RPC_URL` |
@@ -64,7 +64,7 @@ Click-by-click: [docs/19_OWNER_SETUP.md](docs/19_OWNER_SETUP.md). Tell Claude "*
 
 ## User journey (D-049)
 
-Landing (`/`: 3D hero, live-flow and proof motion graphics, plans) → the prompt box or any CTA → **`/login`** (Continue with Google; email as a fallback) → **`/dashboard`** (greeting + composer, getting-started checklist, stats, your workflows with Active/Paused/Draft filters and on/off switches, your apps, recent runs with Verify links, log out) → **`/build`** (Copilot, with the landing prompt carried over) → `/workflows/[id]`. Guests can't reach `/dashboard`, `/build` or `/workflows/*`. Every user connects **their own** Gmail, Sheets and Telegram credentials (encrypted per workspace); N-Flow runs and proves the workflows.
+Landing (`/`: 3D hero, live-flow and proof motion graphics, plans) → the prompt box or any CTA → **`/login`** (Continue with Google; email as a fallback) → **`/dashboard`** (greeting + composer, getting-started checklist, stats, your workflows with Active/Paused/Draft filters and on/off switches, your apps, recent runs with Verify links, log out) → **`/build`** (Copilot, with the landing prompt carried over) → `/workflows/[id]`. Guests can't reach `/dashboard`, `/build` or `/workflows/*`. Every user connects **their own** Gmail, Sheets and Telegram credentials (encrypted per workspace); ZETA runs and proves the workflows.
 
 ## Timeline (IST, 10 Oct)
 

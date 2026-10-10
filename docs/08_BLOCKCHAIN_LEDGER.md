@@ -1,6 +1,6 @@
 # 08 — Proof-of-Execution Ledger (blockchain)
 
-**Claim we make:** "Every N-Flow run gets a receipt. Anyone can check, without trusting us, that the receipt existed at time T and hasn't changed since. An owner can also check that the stored run data still matches it."
+**Claim we make:** "Every ZETA run gets a receipt. Anyone can check, without trusting us, that the receipt existed at time T and hasn't changed since. An owner can also check that the stored run data still matches it."
 
 **Claims we don't make:**
 - That we "store data on blockchain". We store only Merkle roots.

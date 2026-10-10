@@ -47,14 +47,14 @@ export async function generateMetadata({
     : `${baseUrl}/og-default.png`;
 
   return {
-    title, // root layout template appends " | N-Flow"
-    description: `View and explore the "${title}" workflow built with N-Flow.`,
+    title, // root layout template appends " | ZETA"
+    description: `View and explore the "${title}" workflow built with ZETA.`,
     openGraph: {
-      title: `${title} | N-Flow`,
-      description: `View and explore the "${title}" workflow built with N-Flow.`,
+      title: `${title} | ZETA`,
+      description: `View and explore the "${title}" workflow built with ZETA.`,
       type: "website",
       url: workflowUrl,
-      siteName: "N-Flow",
+      siteName: "ZETA",
       images: [
         {
           url: ogImageUrl,
@@ -66,8 +66,8 @@ export async function generateMetadata({
     },
     twitter: {
       card: "summary_large_image",
-      title: `${title} | N-Flow`,
-      description: `View and explore the "${title}" workflow built with N-Flow.`,
+      title: `${title} | ZETA`,
+      description: `View and explore the "${title}" workflow built with ZETA.`,
       images: [ogImageUrl],
     },
   };

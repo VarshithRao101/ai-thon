@@ -135,3 +135,9 @@
 - **Privacy Shield** (`lib/ai/privacy.ts`): emails, Indian phones, Aadhaar, PAN, UPI, Luhn-valid cards → placeholders before every AI call; answers un-masked server-side. Live on Groq: an email draft hid 3 items and still contained the real email/phone (no placeholder leaked, Aadhaar never echoed); extract returned the real phone/email; classify's reason didn't contain the card; the Copilot kept `hr@nflow-demo.in`. Run logs show "Privacy Shield: … hidden from the AI". New landing section (anime.js) + nav link + feature card. 5 unit tests.
 - **Connector data:** secrets are write-only (GET masks password-type and key/token/secret fields), edits merge with stored values (previously saving one field wiped the rest), and "Test" on an edit merges too. 3 unit tests. Credentials remain envelope-encrypted per workspace with RLS.
 - **Cron:** tick accepts `?key=` (full URL written to `apps/web/.env.cloud.local` as `CRON_TICK_URL`); dashboard/canvas self-tick ≤1/min; `.github/workflows/hive-tick.yml` backup (needs repo secret `CRON_SECRET`).
+
+## 2026-10-11: ZETA, self-serve connections, extra AI slot (D-055)
+- Renamed N-Flow → **ZETA** in 60 files (logo lockup "ZE**TA**").
+- New `/connections` page: guided Gmail / Google Sheets / Telegram cards with links, Save-and-test, "Send a test" (real Telegram message, email to the signed-in user, sheet row), Telegram "Find my chats", Sheets share-with email from the pasted key. Browser-tested with fake credentials: clear "Login refused … app password" message, status "Needs attention", password not readable via API. Dashboard Connect buttons and nav link here.
+- `@ai-sdk/openai-compatible@1.0.58`: optional last-resort provider via `AI_COMPAT_*` env.
+- 97 unit tests; hive, tenancy, forms, e2e-live green.

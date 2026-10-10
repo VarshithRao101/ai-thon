@@ -8,12 +8,12 @@ import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: {
-    default: "N-Flow | Automate anything. Prove everything.",
-    template: "%s | N-Flow",
+    default: "ZETA | Automate anything. Prove everything.",
+    template: "%s | ZETA",
   },
   description:
-    "AI-powered no-code automation. Describe a workflow in plain English and N-Flow builds and runs it across forms, Google Sheets, Gmail and Telegram.",
-  applicationName: "N-Flow",
+    "AI-powered no-code automation. Describe a workflow in plain English and ZETA builds and runs it across forms, Google Sheets, Gmail and Telegram.",
+  applicationName: "ZETA",
 };
 
 export const viewport: Viewport = {
