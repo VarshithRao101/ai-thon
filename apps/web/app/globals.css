@@ -172,8 +172,9 @@
   body {
     @apply bg-background text-foreground;
   }
-  html,
-  body {
+  /* Only the builder locks page scroll (components/workflow/persistent-canvas.tsx). */
+  html.nf-lock-scroll,
+  html.nf-lock-scroll body {
     @apply overflow-hidden;
   }
 }
