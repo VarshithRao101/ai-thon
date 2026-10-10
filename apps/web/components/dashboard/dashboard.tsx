@@ -77,18 +77,48 @@ type DashData = {
 };
 
 const APPS = [
-  { type: "smtp-email", label: "Gmail", hint: "Send email from your address", icon: Mail },
-  { type: "google-sheets", label: "Google Sheets", hint: "Your service account + sheet", icon: FileSpreadsheet },
-  { type: "telegram", label: "Telegram", hint: "Your bot token + chat", icon: Send },
+  {
+    type: "smtp-email",
+    label: "Gmail",
+    hint: "Send email from your address",
+    icon: Mail,
+  },
+  {
+    type: "google-sheets",
+    label: "Google Sheets",
+    hint: "Your service account + sheet",
+    icon: FileSpreadsheet,
+  },
+  {
+    type: "telegram",
+    label: "Telegram",
+    hint: "Your bot token + chat",
+    icon: Send,
+  },
 ];
 
 const FILTERS = ["All", "Active", "Paused", "Drafts"] as const;
+
+const RUN_DOT: Record<string, string> = {
+  success: "bg-emerald-400",
+  error: "bg-red-400",
+};
+
+function workflowState(w: { published: boolean; enabled: boolean }): string {
+  if (!w.published) {
+    return "Draft";
+  }
+  return w.enabled ? "Active" : "Paused";
+}
 
 function timeAgo(iso: string | null): string {
   if (!iso) {
     return "never";
   }
-  const s = Math.max(1, Math.round((Date.now() - new Date(iso).getTime()) / 1000));
+  const s = Math.max(
+    1,
+    Math.round((Date.now() - new Date(iso).getTime()) / 1000)
+  );
   if (s < 60) {
     return `${s}s ago`;
   }
@@ -105,7 +135,11 @@ function timeAgo(iso: string | null): string {
 
 function greeting(): string {
   const h = Number(
-    new Intl.DateTimeFormat("en-IN", { hour: "numeric", hour12: false, timeZone: "Asia/Kolkata" }).format(new Date())
+    new Intl.DateTimeFormat("en-IN", {
+      hour: "numeric",
+      hour12: false,
+      timeZone: "Asia/Kolkata",
+    }).format(new Date())
   );
   if (h < 12) {
     return "Good morning";
@@ -118,19 +152,48 @@ function greeting(): string {
 
 function StatusPill({ status }: { status: string | null }) {
   const map: Record<string, { label: string; cls: string; icon: ReactNode }> = {
-    success: { label: "Succeeded", cls: "text-emerald-300 bg-emerald-500/10 border-emerald-400/30", icon: <CheckCircle2 className="size-3.5" /> },
-    error: { label: "Failed", cls: "text-red-300 bg-red-500/10 border-red-400/30", icon: <XCircle className="size-3.5" /> },
-    running: { label: "Running", cls: "text-amber-200 bg-amber-500/10 border-amber-400/30", icon: <Activity className="size-3.5 animate-pulse" /> },
-    queued: { label: "Queued", cls: "text-amber-200 bg-amber-500/10 border-amber-400/30", icon: <Clock className="size-3.5" /> },
-    waiting: { label: "Waiting", cls: "text-sky-200 bg-sky-500/10 border-sky-400/30", icon: <Clock className="size-3.5" /> },
-    skipped: { label: "Skipped", cls: "text-white/60 bg-white/5 border-white/15", icon: <CircleDashed className="size-3.5" /> },
+    success: {
+      label: "Succeeded",
+      cls: "text-emerald-300 bg-emerald-500/10 border-emerald-400/30",
+      icon: <CheckCircle2 className="size-3.5" />,
+    },
+    error: {
+      label: "Failed",
+      cls: "text-red-300 bg-red-500/10 border-red-400/30",
+      icon: <XCircle className="size-3.5" />,
+    },
+    running: {
+      label: "Running",
+      cls: "text-amber-200 bg-amber-500/10 border-amber-400/30",
+      icon: <Activity className="size-3.5 animate-pulse" />,
+    },
+    queued: {
+      label: "Queued",
+      cls: "text-amber-200 bg-amber-500/10 border-amber-400/30",
+      icon: <Clock className="size-3.5" />,
+    },
+    waiting: {
+      label: "Waiting",
+      cls: "text-sky-200 bg-sky-500/10 border-sky-400/30",
+      icon: <Clock className="size-3.5" />,
+    },
+    skipped: {
+      label: "Skipped",
+      cls: "text-white/60 bg-white/5 border-white/15",
+      icon: <CircleDashed className="size-3.5" />,
+    },
   };
   const item = status ? map[status] : undefined;
   if (!item) {
     return <span className="text-white/35 text-xs">No runs yet</span>;
   }
   return (
-    <span className={cn("inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-medium text-[11px]", item.cls)}>
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-medium text-[11px]",
+        item.cls
+      )}
+    >
       {item.icon}
       {item.label}
     </span>
@@ -158,7 +221,15 @@ function CountUp({ value }: { value: number }) {
   return <span ref={ref}>0</span>;
 }
 
-function Toggle({ on, onChange, disabled }: { on: boolean; onChange: () => void; disabled?: boolean }) {
+function Toggle({
+  on,
+  onChange,
+  disabled,
+}: {
+  on: boolean;
+  onChange: () => void;
+  disabled?: boolean;
+}) {
   return (
     <button
       aria-checked={on}
@@ -177,7 +248,10 @@ function Toggle({ on, onChange, disabled }: { on: boolean; onChange: () => void;
     >
       <motion.span
         animate={{ x: on ? 20 : 2 }}
-        className={cn("absolute top-0.5 left-0 size-[18px] rounded-full shadow", on ? "bg-[#0a0a0a]" : "bg-white")}
+        className={cn(
+          "absolute top-0.5 left-0 size-[18px] rounded-full shadow",
+          on ? "bg-[#0a0a0a]" : "bg-white"
+        )}
         transition={{ type: "spring", stiffness: 500, damping: 32 }}
       />
     </button>
@@ -228,6 +302,7 @@ export function Dashboard() {
   }, [data, filter, query]);
 
   const loaded = data !== null;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: re-run the entrance animation when the filter changes
   useEffect(() => {
     if (!(loaded && gridRef.current)) {
       return;
@@ -281,7 +356,10 @@ export function Dashboard() {
     { done: connected.size > 0, label: "Connect one of your apps" },
     { done: workflows.length > 0, label: "Create a workflow" },
     { done: workflows.some((w) => w.published), label: "Publish it" },
-    { done: (data?.stats.anchored ?? 0) > 0, label: "Get your first on-chain receipt" },
+    {
+      done: (data?.stats.anchored ?? 0) > 0,
+      label: "Get your first on-chain receipt",
+    },
   ];
   const progress = checklist.filter((c) => c.done).length;
 
@@ -299,8 +377,13 @@ export function Dashboard() {
             </span>
           </Link>
           <nav className="hidden items-center gap-1 text-sm md:flex">
-            <span className="rounded-lg bg-white/[0.06] px-3 py-1.5 text-white">Dashboard</span>
-            <Link className="rounded-lg px-3 py-1.5 text-white/60 hover:bg-white/[0.04] hover:text-white" href="/build">
+            <span className="rounded-lg bg-white/[0.06] px-3 py-1.5 text-white">
+              Dashboard
+            </span>
+            <Link
+              className="rounded-lg px-3 py-1.5 text-white/60 hover:bg-white/[0.04] hover:text-white"
+              href="/build"
+            >
               Builder
             </Link>
             <button
@@ -312,19 +395,31 @@ export function Dashboard() {
             </button>
           </nav>
           <div className="flex items-center gap-2">
-            <Link className="nf-gold-btn hidden items-center gap-1.5 rounded-xl px-3.5 py-2 font-semibold text-sm sm:inline-flex" href="/build">
+            <Link
+              className="nf-gold-btn hidden items-center gap-1.5 rounded-xl px-3.5 py-2 font-semibold text-sm sm:inline-flex"
+              href="/build"
+            >
               <Plus className="size-4" /> New workflow
             </Link>
             <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] py-1 pr-1 pl-1">
               {user?.image ? (
                 // biome-ignore lint/performance/noImgElement: Google avatars come from many hosts
-                <img alt="" className="size-7 rounded-lg" referrerPolicy="no-referrer" src={user.image} />
+                <img
+                  alt=""
+                  className="size-7 rounded-lg"
+                  height={28}
+                  referrerPolicy="no-referrer"
+                  src={user.image}
+                  width={28}
+                />
               ) : (
                 <span className="grid size-7 place-items-center rounded-lg bg-[#ffc326] font-bold text-[#0a0a0a] text-xs">
                   {first.charAt(0).toUpperCase()}
                 </span>
               )}
-              <span className="hidden max-w-[160px] truncate text-sm text-white/75 lg:block">{user?.email}</span>
+              <span className="hidden max-w-[160px] truncate text-sm text-white/75 lg:block">
+                {user?.email}
+              </span>
               <button
                 aria-label="Log out"
                 className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm text-white/60 transition hover:bg-red-500/10 hover:text-red-200"
@@ -354,9 +449,13 @@ export function Dashboard() {
                 {greeting()}, {first}
               </p>
               <h1 className="mt-2 font-display font-semibold text-3xl tracking-tight sm:text-4xl">
-                What should we <span className="nf-gold-char">automate</span> next?
+                What should we <span className="nf-gold-char">automate</span>{" "}
+                next?
               </h1>
-              <form className="nf-prompt mt-6 flex items-center gap-3 rounded-2xl p-2 pl-4" onSubmit={create}>
+              <form
+                className="nf-prompt mt-6 flex items-center gap-3 rounded-2xl p-2 pl-4"
+                onSubmit={create}
+              >
                 <Sparkles className="size-5 shrink-0 text-[#ffc326]" />
                 <input
                   className="min-w-0 flex-1 bg-transparent py-2 text-white outline-none placeholder:text-white/35"
@@ -364,7 +463,10 @@ export function Dashboard() {
                   placeholder="e.g. When a lead fills my form, score it with AI and alert Telegram"
                   value={prompt}
                 />
-                <button className="nf-gold-btn inline-flex items-center gap-1.5 rounded-xl px-4 py-2.5 font-semibold text-sm" type="submit">
+                <button
+                  className="nf-gold-btn inline-flex items-center gap-1.5 rounded-xl px-4 py-2.5 font-semibold text-sm"
+                  type="submit"
+                >
                   Build <ArrowRight className="size-4" />
                 </button>
               </form>
@@ -390,7 +492,13 @@ export function Dashboard() {
                     ) : (
                       <CircleDashed className="size-4 text-white/30" />
                     )}
-                    <span className={c.done ? "text-white/50 line-through" : "text-white/80"}>{c.label}</span>
+                    <span
+                      className={
+                        c.done ? "text-white/50 line-through" : "text-white/80"
+                      }
+                    >
+                      {c.label}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -403,8 +511,16 @@ export function Dashboard() {
           {[
             { label: "Workflows", value: workflows.length, icon: Workflow },
             { label: "Active now", value: active, icon: Zap },
-            { label: "Runs, last 7 days", value: data?.stats.runs7d ?? 0, icon: Activity },
-            { label: "Receipts on-chain", value: data?.stats.anchored ?? 0, icon: Fingerprint },
+            {
+              label: "Runs, last 7 days",
+              value: data?.stats.runs7d ?? 0,
+              icon: Activity,
+            },
+            {
+              label: "Receipts on-chain",
+              value: data?.stats.anchored ?? 0,
+              icon: Fingerprint,
+            },
           ].map((s, i) => {
             const Icon = s.icon;
             return (
@@ -416,11 +532,17 @@ export function Dashboard() {
                 transition={{ delay: 0.1 + i * 0.06, duration: 0.5 }}
               >
                 <div className="flex items-center justify-between text-white/45">
-                  <span className="text-xs uppercase tracking-wider">{s.label}</span>
+                  <span className="text-xs uppercase tracking-wider">
+                    {s.label}
+                  </span>
                   <Icon className="size-4 text-[#ffc326]/80" />
                 </div>
                 <p className="mt-3 font-display font-semibold text-3xl tabular-nums">
-                  {loaded ? <CountUp value={s.value} /> : <span className="text-white/20">-</span>}
+                  {loaded ? (
+                    <CountUp value={s.value} />
+                  ) : (
+                    <span className="text-white/20">-</span>
+                  )}
                 </p>
               </motion.div>
             );
@@ -431,7 +553,9 @@ export function Dashboard() {
           {/* Workflows */}
           <section>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <h2 className="font-display font-semibold text-xl">Your workflows</h2>
+              <h2 className="font-display font-semibold text-xl">
+                Your workflows
+              </h2>
               <div className="flex items-center gap-2">
                 <div className="relative">
                   <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-white/35" />
@@ -447,14 +571,24 @@ export function Dashboard() {
                     <button
                       className={cn(
                         "relative rounded-lg px-2.5 py-1.5 text-xs transition-colors",
-                        filter === f ? "text-[#0a0a0a]" : "text-white/55 hover:text-white"
+                        filter === f
+                          ? "text-[#0a0a0a]"
+                          : "text-white/55 hover:text-white"
                       )}
                       key={f}
                       onClick={() => setFilter(f)}
                       type="button"
                     >
                       {filter === f && (
-                        <motion.span className="absolute inset-0 rounded-lg bg-[#ffc326]" layoutId="nf-filter" transition={{ type: "spring", stiffness: 400, damping: 34 }} />
+                        <motion.span
+                          className="absolute inset-0 rounded-lg bg-[#ffc326]"
+                          layoutId="nf-filter"
+                          transition={{
+                            type: "spring",
+                            stiffness: 400,
+                            damping: 34,
+                          }}
+                        />
                       )}
                       <span className="relative">{f}</span>
                     </button>
@@ -469,14 +603,21 @@ export function Dashboard() {
                 data-card
                 href="/build"
               >
-                <span className="grid size-12 place-items-center rounded-2xl bg-[#ffc326]/10 text-[#ffc326] transition-transform group-hover:scale-110 group-hover:rotate-90">
+                <span className="grid size-12 place-items-center rounded-2xl bg-[#ffc326]/10 text-[#ffc326] transition-transform group-hover:rotate-90 group-hover:scale-110">
                   <Plus className="size-6" />
                 </span>
                 <span className="font-medium">Create a new workflow</span>
-                <span className="text-white/45 text-xs">Describe it, or start from a template</span>
+                <span className="text-white/45 text-xs">
+                  Describe it, or start from a template
+                </span>
               </Link>
               {!loaded &&
-                [0, 1, 2].map((i) => <div className="nf-card h-[176px] animate-pulse rounded-2xl" key={i} />)}
+                [0, 1, 2].map((i) => (
+                  <div
+                    className="nf-card h-[176px] animate-pulse rounded-2xl"
+                    key={i}
+                  />
+                ))}
               {filtered.map((w) => (
                 <Link
                   className="nf-card nf-spotlight group relative flex min-h-[176px] flex-col rounded-2xl p-5 transition-transform hover:-translate-y-0.5"
@@ -485,8 +626,14 @@ export function Dashboard() {
                   key={w.id}
                   onPointerMove={(event) => {
                     const rect = event.currentTarget.getBoundingClientRect();
-                    event.currentTarget.style.setProperty("--x", `${event.clientX - rect.left}px`);
-                    event.currentTarget.style.setProperty("--y", `${event.clientY - rect.top}px`);
+                    event.currentTarget.style.setProperty(
+                      "--x",
+                      `${event.clientX - rect.left}px`
+                    );
+                    event.currentTarget.style.setProperty(
+                      "--y",
+                      `${event.clientY - rect.top}px`
+                    );
                   }}
                 >
                   <div className="flex items-start justify-between gap-3">
@@ -498,13 +645,23 @@ export function Dashboard() {
                           <span className="size-2 rounded-full bg-white/25" />
                         )}
                         <span className="text-[11px] text-white/45 uppercase tracking-wider">
-                          {w.published ? (w.enabled ? "Active" : "Paused") : "Draft"} · {w.trigger}
+                          {workflowState(w)} · {w.trigger}
                         </span>
                       </div>
-                      <h3 className="mt-2 truncate font-semibold text-white">{w.name}</h3>
-                      {w.description && <p className="mt-1 line-clamp-2 text-sm text-white/50">{w.description}</p>}
+                      <h3 className="mt-2 truncate font-semibold text-white">
+                        {w.name}
+                      </h3>
+                      {w.description && (
+                        <p className="mt-1 line-clamp-2 text-sm text-white/50">
+                          {w.description}
+                        </p>
+                      )}
                     </div>
-                    <Toggle disabled={busyToggle === w.id} on={w.enabled && w.published} onChange={() => toggle(w)} />
+                    <Toggle
+                      disabled={busyToggle === w.id}
+                      on={w.enabled && w.published}
+                      onChange={() => toggle(w)}
+                    />
                   </div>
                   <div className="mt-auto flex items-center justify-between pt-5 text-white/45 text-xs">
                     <span className="flex items-center gap-3">
@@ -518,7 +675,9 @@ export function Dashboard() {
               ))}
             </div>
             {loaded && filtered.length === 0 && workflows.length > 0 && (
-              <p className="mt-6 text-center text-sm text-white/40">Nothing matches this filter.</p>
+              <p className="mt-6 text-center text-sm text-white/40">
+                Nothing matches this filter.
+              </p>
             )}
           </section>
 
@@ -530,20 +689,35 @@ export function Dashboard() {
                 <KeyRound className="size-4 text-[#ffc326]/80" />
               </div>
               <p className="mt-1 text-white/45 text-xs leading-relaxed">
-                Workflows run with your own credentials. They're encrypted in our vault and only used for your runs.
+                Workflows run with your own credentials. They're encrypted in
+                our vault and only used for your runs.
               </p>
               <ul className="mt-4 space-y-2">
                 {APPS.map((app) => {
                   const Icon = app.icon;
                   const ok = connected.has(app.type);
                   return (
-                    <li className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-2.5" key={app.type}>
-                      <span className={cn("grid size-9 place-items-center rounded-lg", ok ? "bg-[#ffc326] text-[#0a0a0a]" : "bg-white/[0.06] text-white/60")}>
+                    <li
+                      className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-2.5"
+                      key={app.type}
+                    >
+                      <span
+                        className={cn(
+                          "grid size-9 place-items-center rounded-lg",
+                          ok
+                            ? "bg-[#ffc326] text-[#0a0a0a]"
+                            : "bg-white/[0.06] text-white/60"
+                        )}
+                      >
                         <Icon className="size-4" />
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className="block font-medium text-sm">{app.label}</span>
-                        <span className="block truncate text-white/40 text-xs">{ok ? "Connected" : app.hint}</span>
+                        <span className="block font-medium text-sm">
+                          {app.label}
+                        </span>
+                        <span className="block truncate text-white/40 text-xs">
+                          {ok ? "Connected" : app.hint}
+                        </span>
                       </span>
                       {ok ? (
                         <CheckCircle2 className="size-4 text-emerald-400" />
@@ -566,22 +740,33 @@ export function Dashboard() {
               <div className="flex items-center justify-between">
                 <h2 className="font-display font-semibold">Recent runs</h2>
                 <span className="flex items-center gap-1.5 text-white/40 text-xs">
-                  <span className="nf-live-dot size-1.5 rounded-full bg-[#ffc326]" /> live
+                  <span className="nf-live-dot size-1.5 rounded-full bg-[#ffc326]" />{" "}
+                  live
                 </span>
               </div>
               <ol className="relative mt-4 space-y-1 before:absolute before:top-2 before:bottom-2 before:left-[7px] before:w-px before:bg-white/10">
                 <AnimatePresence initial={false}>
                   {(data?.recentRuns ?? []).map((r) => (
-                    <motion.li animate={{ opacity: 1, x: 0 }} initial={{ opacity: 0, x: -8 }} key={r.id} layout>
+                    <motion.li
+                      animate={{ opacity: 1, x: 0 }}
+                      initial={{ opacity: 0, x: -8 }}
+                      key={r.id}
+                      layout
+                    >
                       <div className="flex items-start gap-3 rounded-lg p-1.5 hover:bg-white/[0.03]">
                         <span
                           className={cn(
                             "relative mt-1 size-[15px] shrink-0 rounded-full border-2 border-[#0a0a0a]",
-                            r.status === "success" ? "bg-emerald-400" : r.status === "error" ? "bg-red-400" : "bg-amber-300"
+                            RUN_DOT[r.status] ?? "bg-amber-300"
                           )}
                         />
-                        <Link className="min-w-0 flex-1" href={`/workflows/${r.workflowId}`}>
-                          <span className="block truncate text-sm">{r.workflowName}</span>
+                        <Link
+                          className="min-w-0 flex-1"
+                          href={`/workflows/${r.workflowId}`}
+                        >
+                          <span className="block truncate text-sm">
+                            {r.workflowName}
+                          </span>
                           <span className="flex items-center gap-2 text-white/40 text-xs">
                             {timeAgo(r.startedAt)} · {r.trigger ?? "manual"}
                             {r.receiptStatus === "anchored" && (
@@ -605,7 +790,9 @@ export function Dashboard() {
                   ))}
                 </AnimatePresence>
                 {loaded && (data?.recentRuns.length ?? 0) === 0 && (
-                  <li className="pl-7 text-sm text-white/40">Runs appear here the moment they start.</li>
+                  <li className="pl-7 text-sm text-white/40">
+                    Runs appear here the moment they start.
+                  </li>
                 )}
               </ol>
             </section>

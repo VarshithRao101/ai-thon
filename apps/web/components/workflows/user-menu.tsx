@@ -1,6 +1,14 @@
 "use client";
 
-import { Key, LogOut, Moon, Plug, Settings, Sun } from "lucide-react";
+import {
+  Key,
+  LayoutDashboard,
+  LogOut,
+  Moon,
+  Plug,
+  Settings,
+  Sun,
+} from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import {
@@ -47,6 +55,7 @@ export const UserMenu = () => {
 
   const handleLogout = async () => {
     await signOut();
+    window.location.href = "/";
   };
 
   // OAuth users can't edit their profile
@@ -132,6 +141,12 @@ export const UserMenu = () => {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <a href="/dashboard">
+            <LayoutDashboard className="size-4" />
+            <span>Dashboard</span>
+          </a>
+        </DropdownMenuItem>
         {!isOAuthUser && (
           <DropdownMenuItem onClick={() => openOverlay(SettingsOverlay)}>
             <Settings className="size-4" />

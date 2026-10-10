@@ -197,7 +197,9 @@ function productionValues(url: string): Record<string, string> {
     REQUIRE_RLS: "true",
     HIVE_MODE: "serverless",
     DEMO_TAMPER_ENABLED: "true",
-    NEXT_PUBLIC_AUTH_PROVIDERS: local.GOOGLE_CLIENT_ID ? "google,email" : "email",
+    NEXT_PUBLIC_AUTH_PROVIDERS: local.GOOGLE_CLIENT_ID
+      ? "google,email"
+      : "email",
   };
   if (local.GOOGLE_CLIENT_ID) {
     values.NEXT_PUBLIC_GOOGLE_CLIENT_ID = local.GOOGLE_CLIENT_ID;

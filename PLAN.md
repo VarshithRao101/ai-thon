@@ -45,7 +45,8 @@ Click-by-click: [docs/19_OWNER_SETUP.md](docs/19_OWNER_SETUP.md). Tell Claude "*
 | **6** | **Gmail app password** on a new demo Gmail (2-Step Verification on) | 10 min | Same as 5 |
 | **7** | **Google Cloud service account** (JSON key) + Sheets API + a demo Sheet shared with it as Editor | 15 min | Same as 5 |
 | 8 | Optional: **Alchemy** Amoy RPC URL | 5 min | `.env.local`: `CHAIN_RPC_URL` |
-| **9** | *(after Claude says "deployed")* Sign up on the hosted URL, open **Connections**, add Telegram, Gmail, Sheets; press each **Test** | 10 min | The hosted app |
+| **8b** | **Google sign-in (OAuth client)** in the same Google Cloud project: consent screen (External, then **Publish app**), Web client with the localhost and Vercel redirect URIs | 10 min | `.env.local`: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `NEXT_PUBLIC_GOOGLE_CLIENT_ID`, `NEXT_PUBLIC_AUTH_PROVIDERS=google,email` |
+| **9** | *(after Claude says "deployed")* Sign in with Google on the hosted URL, open **Connections**, add Telegram, Gmail, Sheets; press each **Test** | 10 min | The hosted app |
 | **10** | *(after Claude says "deployed")* **cron-job.org**: free account → new job → URL Claude gives you, every 1 minute, header `Authorization: Bearer <CRON_SECRET>` (copy the value from `apps/web/.env.cloud.local` yourself) | 5 min | cron-job.org |
 
 ## Claude's work (starts now; keys wire in as they land)
@@ -60,6 +61,10 @@ Click-by-click: [docs/19_OWNER_SETUP.md](docs/19_OWNER_SETUP.md). Tell Claude "*
 | C6 | **Live wiring on the hosted URL:** each connection test, then the hero flow from a phone on mobile data; fix whatever breaks | steps 5–10 |
 | C7 | **Measure** (hosted): submit→done p50/p95 over 10 runs, submit→anchored, Amoy gas per batch, Copilot golden-set score | C6 |
 | C8 | **Polish the app:** demo workspace seed, the 6 demo screens at 1920×1080 and on a phone, empty/error states | C6 |
+
+## User journey (D-049)
+
+Landing (`/`: 3D hero, live-flow and proof motion graphics, plans) → the prompt box or any CTA → **`/login`** (Continue with Google; email as a fallback) → **`/dashboard`** (greeting + composer, getting-started checklist, stats, your workflows with Active/Paused/Draft filters and on/off switches, your apps, recent runs with Verify links, log out) → **`/build`** (Copilot, with the landing prompt carried over) → `/workflows/[id]`. Guests can't reach `/dashboard`, `/build` or `/workflows/*`. Every user connects **their own** Gmail, Sheets and Telegram credentials (encrypted per workspace); N-Flow runs and proves the workflows.
 
 ## Timeline (IST, 10 Oct)
 

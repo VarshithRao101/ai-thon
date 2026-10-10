@@ -84,7 +84,12 @@ export function ProofGraphic() {
       )
       .add(
         el.querySelectorAll("[data-inner]"),
-        { opacity: [0, 1], scale: [0.4, 1], duration: 600, delay: stagger(140) },
+        {
+          opacity: [0, 1],
+          scale: [0.4, 1],
+          duration: 600,
+          delay: stagger(140),
+        },
         "-=500"
       )
       .add(
@@ -121,7 +126,7 @@ export function ProofGraphic() {
     const el = root.current;
     const hash = el?.querySelector<HTMLElement>("[data-hash-target]");
     if (hash) {
-      scramble(hash, next ? LEAVES[2].tampered ?? "" : LEAVES[2].hash, 450);
+      scramble(hash, next ? (LEAVES[2].tampered ?? "") : LEAVES[2].hash, 450);
     }
     if (next && el) {
       animate(el.querySelectorAll("[data-shake]"), {
@@ -138,7 +143,7 @@ export function ProofGraphic() {
     <div className="relative" ref={root}>
       <div className="relative mx-auto aspect-[760/400] w-full max-w-3xl">
         <svg
-          aria-hidden
+          aria-hidden="true"
           className="absolute inset-0 h-full w-full"
           viewBox="0 0 760 400"
         >

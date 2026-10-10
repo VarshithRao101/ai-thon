@@ -89,3 +89,10 @@
 - PLAN.md rewritten: the owner's 10-step manual list (wallet, Neon, Vercel, Gemini, Telegram, Gmail, Sheets, Alchemy, Connections, cron-job.org) and Claude's steps C1–C8. docs/19 gained Neon, Vercel, Connections and cron sections.
 - **No emojis (user request, 10 Oct afternoon):** removed every emoji and check-mark symbol from the app's message templates, the docs, the design preview and the key checker; replaced with words ("Done", "Verified", "Tampered", "[set]/[empty]"). The forms e2e now proves Telugu + Hindi storage instead of an emoji. Unit tests (63) and the forms suite (21) still pass.
 - **Renamed to N-Flow (D-048):** every user-visible "FlowLedger" became "N-Flow" (60 files: UI, titles, emails, legal pages, docs). Internal identifiers (`@flowledger/*`, DB roles, env vars, migrations, the `FlowLedgerAnchor` contract) keep the old name.
+
+## 2026-10-10 (evening): landing page, Google sign-in, dashboard (D-049)
+- Pushed the hosting + rename work (`cdf4ca9`).
+- **Landing (`/`):** three.js hero (an automation graph whose packets flow into a chain of hexagonal ledger blocks; pauses off-screen, honours reduced motion), anime.js headline and "live flow" motion graphic (nodes assemble, edges draw, packets run the hero flow on a loop, a "Verified on-chain" seal stamps), a Merkle-proof graphic with a working tamper toggle, features bento with cursor spotlight, plans (INR, labelled planned), measured stats with count-up, motion (Framer) scroll reveals and parallax.
+- **Auth flow:** `/login` (Google first, email fallback); `RequireAuth` gates `/dashboard`, `/build`, `/workflows/*` for guests; the landing prompt carries through sign-in into the Copilot.
+- **Dashboard (`/dashboard`, API `/api/dashboard`):** greeting + composer, checklist, stats, workflow cards with filters/search and on/off switches, "Your apps" (bring your own credentials), recent runs with Verify links, log out (also in the builder's user menu, plus a Dashboard link).
+- Checked in headless Edge (Playwright): no console errors, the flow-demo state machine runs (`diiiii → driiii → ddrrri → dddddr → dddddd`), tamper turns the path red, no horizontal overflow at 390 px.

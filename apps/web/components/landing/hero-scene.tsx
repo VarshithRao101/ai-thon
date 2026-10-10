@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+// biome-ignore lint/performance/noNamespaceImport: three.js is used as a namespace throughout
 import * as THREE from "three";
 
 /**
@@ -56,6 +57,7 @@ function rng(seed: number) {
   };
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: graph generation reads best as one pass
 function buildGraph() {
   const rand = rng(42);
   const nodes: GraphNode[] = [];
@@ -120,7 +122,6 @@ function buildGraph() {
   return { nodes, edges, sources: columns[0], sink };
 }
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: one self-contained render loop with setup and teardown
 export function HeroScene({ className }: { className?: string }) {
   const mountRef = useRef<HTMLDivElement>(null);
 
@@ -144,11 +145,11 @@ export function HeroScene({ className }: { className?: string }) {
       return; // No WebGL: the CSS backdrop still looks right.
     }
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setClearColor(0x000000, 0);
+    renderer.setClearColor(0x00_00_00, 0);
     mount.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x0a0a0a, 0.045);
+    scene.fog = new THREE.FogExp2(0x0a_0a_0a, 0.045);
     const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
     const world = new THREE.Group();
     scene.add(world);
@@ -234,7 +235,7 @@ export function HeroScene({ className }: { className?: string }) {
     const packetMaterial = track(
       new THREE.PointsMaterial({
         map: glow,
-        color: 0xffe08a,
+        color: 0xff_e0_8a,
         size: 0.32,
         transparent: true,
         blending: THREE.AdditiveBlending,
@@ -245,7 +246,7 @@ export function HeroScene({ className }: { className?: string }) {
 
     // Ledger: hexagonal blocks chained in a slow helix.
     const chain = new THREE.Group();
-    chain.position.set(5.9, 0, 0);
+    chain.position.set(5.5, 0, 0);
     world.add(chain);
     const hexGeometry = track(new THREE.CylinderGeometry(0.4, 0.4, 0.26, 6));
     const hexEdges = track(new THREE.EdgesGeometry(hexGeometry));
@@ -258,7 +259,7 @@ export function HeroScene({ className }: { className?: string }) {
       const group = new THREE.Group();
       const face = track(
         new THREE.MeshBasicMaterial({
-          color: 0x1a1406,
+          color: 0x1a_14_06,
           transparent: true,
           opacity: 0.85,
         })
@@ -315,7 +316,7 @@ export function HeroScene({ className }: { className?: string }) {
       dustGeometry,
       track(
         new THREE.PointsMaterial({
-          color: 0xc9a54a,
+          color: 0xc9_a5_4a,
           size: 0.045,
           transparent: true,
           opacity: 0.55,
@@ -336,7 +337,7 @@ export function HeroScene({ className }: { className?: string }) {
       const narrow = w < 768;
       camera.position.set(0, narrow ? -1.2 : 0.2, narrow ? 21 : 13.5);
       // Desktop: the graph sits right of the headline; phones: below it.
-      world.position.set(narrow ? 0 : 2.5, narrow ? -2.6 : -0.2, 0);
+      world.position.set(narrow ? 0 : 1.9, narrow ? -2.6 : -0.2, 0);
       world.scale.setScalar(narrow ? 0.8 : 0.84);
       camera.updateProjectionMatrix();
     };
@@ -354,6 +355,7 @@ export function HeroScene({ className }: { className?: string }) {
     const point = new THREE.Vector3();
     let frame = 0;
     let visible = true;
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: the per-frame update is one hot loop
     const step = () => {
       timer.update();
       const dt = Math.min(timer.getDelta(), 0.05);
@@ -404,7 +406,8 @@ export function HeroScene({ className }: { className?: string }) {
 
       pointer.x += (pointer.tx - pointer.x) * 0.04;
       pointer.y += (pointer.ty - pointer.y) * 0.04;
-      world.rotation.y = -0.32 + pointer.x * 0.16 + Math.sin(time * 0.15) * 0.05;
+      world.rotation.y =
+        -0.32 + pointer.x * 0.16 + Math.sin(time * 0.15) * 0.05;
       world.rotation.x = 0.08 + pointer.y * 0.08;
       dustPoints.rotation.y = time * 0.012;
 

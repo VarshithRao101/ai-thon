@@ -13,13 +13,13 @@ const AppLayout = ({ children }: { children: ReactNode }) => (
   <Provider>
     <AuthProvider>
       <RequireAuth>
-      <OverlayProvider>
-        <ReactFlowProvider>
-          <PersistentCanvas />
-          <div className="pointer-events-none relative z-10">{children}</div>
-        </ReactFlowProvider>
-        <GlobalModals />
-      </OverlayProvider>
+        <OverlayProvider>
+          <ReactFlowProvider>
+            <PersistentCanvas />
+            <div className="pointer-events-none relative z-10">{children}</div>
+          </ReactFlowProvider>
+          <GlobalModals />
+        </OverlayProvider>
       </RequireAuth>
     </AuthProvider>
   </Provider>

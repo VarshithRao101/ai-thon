@@ -1,6 +1,11 @@
 "use client";
 
-import { createDrawable, createMotionPath, createTimeline, stagger } from "animejs";
+import {
+  createDrawable,
+  createMotionPath,
+  createTimeline,
+  stagger,
+} from "animejs";
 import {
   Bot,
   FileSpreadsheet,
@@ -20,12 +25,54 @@ const W = 1000;
 const H = 420;
 
 const NODES = [
-  { id: "form", x: 40, y: 182, label: "Form submitted", sub: "Hosted form + QR", icon: FileText },
-  { id: "ai", x: 290, y: 182, label: "AI picks the track", sub: "Gemini, schema-checked", icon: Bot },
-  { id: "sheet", x: 540, y: 52, label: "Sheets: add row", sub: "Google Sheets", icon: FileSpreadsheet },
-  { id: "mail", x: 540, y: 182, label: "Email: send", sub: "Gmail, AI-drafted", icon: Mail },
-  { id: "tg", x: 540, y: 312, label: "Telegram: alert", sub: "Team group", icon: Send },
-  { id: "proof", x: 790, y: 182, label: "Receipt anchored", sub: "Polygon Amoy", icon: ShieldCheck },
+  {
+    id: "form",
+    x: 40,
+    y: 182,
+    label: "Form submitted",
+    sub: "Hosted form + QR",
+    icon: FileText,
+  },
+  {
+    id: "ai",
+    x: 290,
+    y: 182,
+    label: "AI picks the track",
+    sub: "Gemini, schema-checked",
+    icon: Bot,
+  },
+  {
+    id: "sheet",
+    x: 540,
+    y: 52,
+    label: "Sheets: add row",
+    sub: "Google Sheets",
+    icon: FileSpreadsheet,
+  },
+  {
+    id: "mail",
+    x: 540,
+    y: 182,
+    label: "Email: send",
+    sub: "Gmail, AI-drafted",
+    icon: Mail,
+  },
+  {
+    id: "tg",
+    x: 540,
+    y: 312,
+    label: "Telegram: alert",
+    sub: "Team group",
+    icon: Send,
+  },
+  {
+    id: "proof",
+    x: 790,
+    y: 182,
+    label: "Receipt anchored",
+    sub: "Polygon Amoy",
+    icon: ShieldCheck,
+  },
 ] as const;
 
 const NODE_W = 190;
@@ -59,7 +106,9 @@ export function FlowDemo() {
     if (!el) {
       return;
     }
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
     const nodes = el.querySelectorAll<HTMLElement>("[data-node]");
     if (reduced) {
       for (const n of nodes) {
@@ -69,7 +118,8 @@ export function FlowDemo() {
       return;
     }
     const q = (s: string) => el.querySelector(s) as HTMLElement;
-    const path = (i: number) => el.querySelector<SVGPathElement>(`[data-edge="${i}"]`);
+    const path = (i: number) =>
+      el.querySelector<SVGPathElement>(`[data-edge="${i}"]`);
     const setState = (id: string, state: string) => () => {
       const n = q(`[data-node="${id}"]`);
       if (n) {
@@ -77,7 +127,10 @@ export function FlowDemo() {
       }
     };
 
-    const intro = createTimeline({ autoplay: false, defaults: { ease: "outExpo" } })
+    const intro = createTimeline({
+      autoplay: false,
+      defaults: { ease: "outExpo" },
+    })
       .add(nodes, {
         opacity: [0, 1],
         scale: [0.6, 1],
@@ -87,15 +140,25 @@ export function FlowDemo() {
       })
       .add(
         createDrawable(el.querySelectorAll("[data-edge]")),
-        { draw: ["0 0", "0 1"], duration: 900, delay: stagger(90), ease: "inOutQuad" },
+        {
+          draw: ["0 0", "0 1"],
+          duration: 900,
+          delay: stagger(90),
+          ease: "inOutQuad",
+        },
         "-=500"
       );
 
     const run = createTimeline({ autoplay: false, loop: true, loopDelay: 900 });
-    const travel = (dot: string, i: number) => {
+    const travel = (i: number) => {
       const p = path(i);
       return p
-        ? { ...createMotionPath(p), opacity: [0, 1, 1, 0], duration: 850, ease: "inOutSine" }
+        ? {
+            ...createMotionPath(p),
+            opacity: [0, 1, 1, 0],
+            duration: 850,
+            ease: "inOutSine",
+          }
         : { duration: 850 };
     };
     run
@@ -105,7 +168,7 @@ export function FlowDemo() {
         }
         setState("form", "running")();
       })
-      .add(q("[data-dot='0']"), travel("0", 0), 300)
+      .add(q("[data-dot='0']"), travel(0), 300)
       .call(setState("form", "done"), "<<")
       .call(setState("ai", "running"))
       .add({ duration: 500 })
@@ -115,18 +178,18 @@ export function FlowDemo() {
           setState(id, "running")();
         }
       })
-      .add(q("[data-dot='1']"), travel("1", 1))
-      .add(q("[data-dot='2']"), travel("2", 2), "<<")
-      .add(q("[data-dot='3']"), travel("3", 3), "<<")
+      .add(q("[data-dot='1']"), travel(1))
+      .add(q("[data-dot='2']"), travel(2), "<<")
+      .add(q("[data-dot='3']"), travel(3), "<<")
       .call(() => {
         for (const id of ["sheet", "mail", "tg"]) {
           setState(id, "done")();
         }
         setState("proof", "running")();
       })
-      .add(q("[data-dot='4']"), travel("4", 4))
-      .add(q("[data-dot='5']"), travel("5", 5), "<<")
-      .add(q("[data-dot='6']"), travel("6", 6), "<<")
+      .add(q("[data-dot='4']"), travel(4))
+      .add(q("[data-dot='5']"), travel(5), "<<")
+      .add(q("[data-dot='6']"), travel(6), "<<")
       .call(setState("proof", "done"))
       .add(q("[data-seal]"), {
         scale: [1.8, 1],
@@ -160,7 +223,7 @@ export function FlowDemo() {
     <div className="relative mx-auto w-full max-w-5xl" ref={root}>
       <div className="relative w-full" style={{ aspectRatio: `${W} / ${H}` }}>
         <svg
-          aria-hidden
+          aria-hidden="true"
           className="absolute inset-0 h-full w-full overflow-visible"
           viewBox={`0 0 ${W} ${H}`}
         >
@@ -186,7 +249,13 @@ export function FlowDemo() {
             />
           ))}
           {EDGES.map(([a, b], i) => (
-            <circle data-dot={i} fill="url(#nf-dot)" key={`dot-${a}-${b}`} opacity="0" r="9" />
+            <circle
+              data-dot={i}
+              fill="url(#nf-dot)"
+              key={`dot-${a}-${b}`}
+              opacity="0"
+              r="9"
+            />
           ))}
         </svg>
         {NODES.map((n) => {
@@ -220,7 +289,7 @@ export function FlowDemo() {
           );
         })}
         <div
-          className="pointer-events-none absolute rounded-md border-2 border-[#ffc326] px-2 py-0.5 font-display font-bold text-[#ffc326] text-[clamp(9px,1.2vw,13px)] uppercase tracking-[0.18em]"
+          className="pointer-events-none absolute rounded-md border-2 border-[#ffc326] px-2 py-0.5 font-bold font-display text-[#ffc326] text-[clamp(9px,1.2vw,13px)] uppercase tracking-[0.18em]"
           data-seal
           style={{ left: "80%", top: "68%", opacity: 0 }}
         >

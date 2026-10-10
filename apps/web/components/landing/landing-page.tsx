@@ -4,8 +4,8 @@ import { animate, stagger, utils } from "animejs";
 import {
   ArrowRight,
   Bot,
-  Check,
   Boxes,
+  Check,
   Fingerprint,
   KeyRound,
   LifeBuoy,
@@ -27,8 +27,8 @@ import {
   useState,
 } from "react";
 import { BeeMark } from "@/components/brand/brand-lockup";
-import { useSession } from "@/lib/auth-client";
 import { isGuest } from "@/lib/auth/guest";
+import { useSession } from "@/lib/auth-client";
 import { FlowDemo } from "./flow-demo";
 import { ProofGraphic } from "./proof-graphic";
 
@@ -210,24 +210,30 @@ function Headline() {
     >
       <span className="sr-only">{lines.join(" ")}</span>
       {lines.map((line, li) => (
-        <span
-          aria-hidden
-          className="block"
-          key={line}
-        >
-          {line.split("").map((ch, i) => (
+        <span aria-hidden className="block" key={line}>
+          {/* Words never break mid-word; characters animate one by one. */}
+          {line.split(" ").map((word, wi, words) => (
             <span
-              className={
-                li === 1
-                  ? "nf-gold-char inline-block will-change-transform"
-                  : "inline-block text-white will-change-transform"
-              }
-              data-char
-              // biome-ignore lint/suspicious/noArrayIndexKey: characters repeat; the index is the identity
-              key={`${li}-${i}`}
-              style={{ opacity: 0 }}
+              className="inline-block whitespace-nowrap"
+              // biome-ignore lint/suspicious/noArrayIndexKey: words repeat; the index is the identity
+              key={`${li}-${wi}`}
             >
-              {ch === " " ? " " : ch}
+              {word.split("").map((ch, i) => (
+                <span
+                  className={
+                    li === 1
+                      ? "nf-gold-char inline-block will-change-transform"
+                      : "inline-block text-white will-change-transform"
+                  }
+                  data-char
+                  // biome-ignore lint/suspicious/noArrayIndexKey: characters repeat; the index is the identity
+                  key={`${li}-${wi}-${i}`}
+                  style={{ opacity: 0 }}
+                >
+                  {ch}
+                </span>
+              ))}
+              {wi < words.length - 1 && <span>&nbsp;</span>}
             </span>
           ))}
         </span>
@@ -511,7 +517,8 @@ export function LandingPage() {
             initial={{ opacity: 0, y: 16 }}
             transition={{ duration: 0.8, delay: 1.1 }}
           >
-            Describe an automation in plain English. N-Flow builds it across
+            Describe an automation in plain English.{" "}
+            <span className="whitespace-nowrap">N-Flow</span> builds it across
             forms, Sheets, Gmail and Telegram, runs it on its own engine, and
             gives every run a receipt anyone can verify on Polygon.
           </motion.p>
@@ -661,7 +668,8 @@ export function LandingPage() {
         id="features"
         title={
           <>
-            Built like a product, <span className="nf-gold-text">not a demo</span>
+            Built like a product,{" "}
+            <span className="nf-gold-text">not a demo</span>
           </>
         }
       >
@@ -739,7 +747,10 @@ export function LandingPage() {
                 </p>
                 <ul className="mt-6 space-y-3 text-sm">
                   {plan.features.map((f) => (
-                    <li className="flex items-center gap-2.5 text-white/75" key={f}>
+                    <li
+                      className="flex items-center gap-2.5 text-white/75"
+                      key={f}
+                    >
                       <Check className="size-4 shrink-0 text-[#ffc326]" />
                       {f}
                     </li>

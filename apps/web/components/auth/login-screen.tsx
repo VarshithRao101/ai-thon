@@ -7,13 +7,13 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { BeeMark } from "@/components/brand/brand-lockup";
-import { signIn, signUp, useSession } from "@/lib/auth-client";
 import { isGuest, safeNext } from "@/lib/auth/guest";
+import { signIn, signUp, useSession } from "@/lib/auth-client";
 import { getEnabledAuthProviders } from "@/lib/auth-providers";
 
 function GoogleIcon() {
   return (
-    <svg aria-hidden className="size-5" viewBox="0 0 48 48">
+    <svg aria-hidden="true" className="size-5" viewBox="0 0 48 48">
       <path
         d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"
         fill="#FFC107"
@@ -65,7 +65,10 @@ export function LoginScreen() {
 
   useEffect(() => {
     const items = perksRef.current?.querySelectorAll("li");
-    if (items && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (
+      items &&
+      !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
       animate(items, {
         opacity: [0, 1],
         translateX: [-16, 0],
@@ -97,7 +100,11 @@ export function LoginScreen() {
     setBusy("email");
     const result =
       emailMode === "signup"
-        ? await signUp.email({ email, password, name: name || email.split("@")[0] })
+        ? await signUp.email({
+            email,
+            password,
+            name: name || email.split("@")[0],
+          })
         : await signIn.email({ email, password });
     if (result.error) {
       setError(result.error.message ?? "That didn't work. Check the details.");
@@ -129,14 +136,20 @@ export function LoginScreen() {
             </h1>
             <ul className="mt-10 space-y-4" ref={perksRef}>
               {PERKS.map((perk) => (
-                <li className="flex items-start gap-3 text-white/70" key={perk} style={{ opacity: 0 }}>
+                <li
+                  className="flex items-start gap-3 text-white/70"
+                  key={perk}
+                  style={{ opacity: 0 }}
+                >
                   <ShieldCheck className="mt-0.5 size-5 shrink-0 text-[#ffc326]" />
                   {perk}
                 </li>
               ))}
             </ul>
           </div>
-          <p className="text-sm text-white/35">N-Flow by TRNT BEE · Team Hydra</p>
+          <p className="text-sm text-white/35">
+            N-Flow by TRNT BEE · Team Hydra
+          </p>
         </div>
       </div>
 
@@ -167,7 +180,9 @@ export function LoginScreen() {
               <Sparkles className="mt-0.5 size-4 shrink-0 text-[#ffc326]" />
               <span className="text-white/75">
                 After you sign in we'll build:{" "}
-                <span className="text-white">"{pendingPrompt.slice(0, 140)}"</span>
+                <span className="text-white">
+                  "{pendingPrompt.slice(0, 140)}"
+                </span>
               </span>
             </div>
           )}
@@ -179,7 +194,11 @@ export function LoginScreen() {
               onClick={google}
               type="button"
             >
-              {busy === "google" ? <Loader2 className="size-5 animate-spin" /> : <GoogleIcon />}
+              {busy === "google" ? (
+                <Loader2 className="size-5 animate-spin" />
+              ) : (
+                <GoogleIcon />
+              )}
               Continue with Google
             </button>
             {!providers.google && (
@@ -190,7 +209,8 @@ export function LoginScreen() {
             )}
 
             <div className="flex items-center gap-3 py-2 text-white/30 text-xs">
-              <span className="h-px flex-1 bg-white/10" /> or <span className="h-px flex-1 bg-white/10" />
+              <span className="h-px flex-1 bg-white/10" /> or{" "}
+              <span className="h-px flex-1 bg-white/10" />
             </div>
 
             <AnimatePresence initial={false} mode="wait">
@@ -216,7 +236,12 @@ export function LoginScreen() {
                   onSubmit={submitEmail}
                 >
                   {emailMode === "signup" && (
-                    <input autoComplete="name" className="nf-input" name="name" placeholder="Your name" />
+                    <input
+                      autoComplete="name"
+                      className="nf-input"
+                      name="name"
+                      placeholder="Your name"
+                    />
                   )}
                   <input
                     autoComplete="email"
@@ -227,7 +252,11 @@ export function LoginScreen() {
                     type="email"
                   />
                   <input
-                    autoComplete={emailMode === "signup" ? "new-password" : "current-password"}
+                    autoComplete={
+                      emailMode === "signup"
+                        ? "new-password"
+                        : "current-password"
+                    }
                     className="nf-input"
                     minLength={8}
                     name="password"
@@ -240,12 +269,16 @@ export function LoginScreen() {
                     disabled={busy !== null}
                     type="submit"
                   >
-                    {busy === "email" && <Loader2 className="size-4 animate-spin" />}
+                    {busy === "email" && (
+                      <Loader2 className="size-4 animate-spin" />
+                    )}
                     {emailMode === "signup" ? "Create account" : "Sign in"}
                   </button>
                   <button
                     className="w-full text-center text-sm text-white/50 hover:text-white"
-                    onClick={() => setEmailMode(emailMode === "signup" ? "signin" : "signup")}
+                    onClick={() =>
+                      setEmailMode(emailMode === "signup" ? "signin" : "signup")
+                    }
                     type="button"
                   >
                     {emailMode === "signup"
@@ -257,7 +290,10 @@ export function LoginScreen() {
             </AnimatePresence>
 
             {error && (
-              <p className="rounded-lg border border-red-400/30 bg-red-500/10 px-3 py-2 text-red-200 text-sm" role="alert">
+              <p
+                className="rounded-lg border border-red-400/30 bg-red-500/10 px-3 py-2 text-red-200 text-sm"
+                role="alert"
+              >
                 {error}
               </p>
             )}

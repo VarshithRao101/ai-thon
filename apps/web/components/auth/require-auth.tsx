@@ -3,8 +3,8 @@
 import { usePathname, useRouter } from "next/navigation";
 import { type ReactNode, useEffect } from "react";
 import { BeeMark } from "@/components/brand/brand-lockup";
-import { useSession } from "@/lib/auth-client";
 import { isGuest } from "@/lib/auth/guest";
+import { useSession } from "@/lib/auth-client";
 
 /** The builder and dashboard are for signed-in users only: everyone else goes to /login. */
 export function RequireAuth({ children }: { children: ReactNode }) {

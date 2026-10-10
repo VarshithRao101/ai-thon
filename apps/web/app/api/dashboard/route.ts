@@ -97,7 +97,9 @@ export const GET = tenantRoute("dashboard.read", async (ctx) => {
     const [anchored] = await tx
       .select({ count: sql<number>`count(*)::int` })
       .from(receipts)
-      .where(and(eq(receipts.workspaceId, ws), eq(receipts.status, "anchored")));
+      .where(
+        and(eq(receipts.workspaceId, ws), eq(receipts.status, "anchored"))
+      );
 
     const apps = await tx
       .select({ type: integrations.type, status: integrations.status })

@@ -85,5 +85,16 @@ A phone with mobile data (also a hotspot backup), the Telegram group open on a s
 4. Save, then press **Test run**: it should answer 202.
 - Report: "done 10".
 
+## 13. Google sign-in (10 min)
+Users sign in with Google, so the app needs an OAuth client.
+1. https://console.cloud.google.com, in the same `n-flow` project → **APIs & Services → OAuth consent screen**: User type **External**, app name **N-Flow**, your support email. Scopes: leave the defaults (email, profile, openid). Then press **Publish app** so anyone (judges) can sign in; basic scopes need no Google review.
+2. **Credentials → Create credentials → OAuth client ID → Web application**, name `N-Flow web`.
+   - Authorized JavaScript origins: `http://localhost:3000` and `https://<your-app>.vercel.app`
+   - Authorized redirect URIs: `http://localhost:3000/api/auth/callback/google` and `https://<your-app>.vercel.app/api/auth/callback/google`
+3. Copy the **Client ID** and **Client secret** into `apps/web/.env.local`:
+   `GOOGLE_CLIENT_ID=`, `GOOGLE_CLIENT_SECRET=`, `NEXT_PUBLIC_GOOGLE_CLIENT_ID=` (the same Client ID) and `NEXT_PUBLIC_AUTH_PROVIDERS=google,email`.
+4. Restart the app. The **Continue with Google** button on `/login` turns on. Claude copies these to Vercel with `pnpm cloud:env`.
+- Report: "done 8b".
+
 ## Check your progress
 `pnpm keys:check` lists which `.env.local` keys are filled (names only). Each connection in the app has a **Test** button.
