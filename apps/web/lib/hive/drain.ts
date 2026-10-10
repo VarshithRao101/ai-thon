@@ -1,6 +1,9 @@
 import "server-only";
 
+import { max } from "drizzle-orm";
 import { after } from "next/server";
+import { adminDb } from "@/lib/db/admin";
+import { ledgerBatches } from "@/lib/db/schema";
 import { anchorOnce } from "@/lib/ledger/anchorer";
 import { getBoss } from "./boss";
 import { isServerlessHive } from "./mode";
@@ -147,8 +150,27 @@ export async function drainHive(options: DrainOptions = {}): Promise<void> {
   }
 }
 
-/** Anchor every pending receipt now (a couple of batches at most). */
+/** Milliseconds since the newest batch was started (Infinity if none). */
+async function msSinceLastBatch(): Promise<number> {
+  const [row] = await adminDb()
+    .select({ at: max(ledgerBatches.createdAt) })
+    .from(ledgerBatches);
+  return row?.at
+    ? Date.now() - new Date(row.at).getTime()
+    : Number.POSITIVE_INFINITY;
+}
+
+/**
+ * Anchor every pending receipt now (a couple of batches at most).
+ * ANCHOR_MIN_INTERVAL_MS (e.g. 55000 on Vercel) spaces transactions out: runs
+ * inside the window wait for the next minute tick and share one batch, so a
+ * small testnet balance lasts. Receipts are never lost, only anchored later.
+ */
 async function anchorPending(): Promise<void> {
+  const minInterval = Number(process.env.ANCHOR_MIN_INTERVAL_MS ?? 0);
+  if (minInterval > 0 && (await msSinceLastBatch()) < minInterval) {
+    return;
+  }
   for (let pass = 0; pass < 3; pass++) {
     try {
       const outcome = await anchorOnce();

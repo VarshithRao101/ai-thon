@@ -197,6 +197,8 @@ function productionValues(url: string): Record<string, string> {
     REQUIRE_RLS: "true",
     HIVE_MODE: "serverless",
     DEMO_TAMPER_ENABLED: "true",
+    // One anchor transaction per minute at most; runs in between share it.
+    ANCHOR_MIN_INTERVAL_MS: "55000",
     NEXT_PUBLIC_AUTH_PROVIDERS: local.GOOGLE_CLIENT_ID
       ? "google,email"
       : "email",
