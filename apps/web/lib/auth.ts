@@ -131,6 +131,17 @@ export const auth = betterAuth({
   account: {
     accountLinking: { enabled: true, trustedProviders: ["google"] },
   },
+  // Brute-force protection on sign-in and sign-up (D-056); per instance.
+  rateLimit: {
+    enabled: true,
+    window: 60,
+    max: 120,
+    customRules: {
+      "/sign-in/email": { window: 60, max: 10 },
+      "/sign-up/email": { window: 60, max: 10 },
+      "/sign-in/social": { window: 60, max: 20 },
+    },
+  },
   socialProviders: {
     github: {
       clientId: process.env.GITHUB_CLIENT_ID || "",

@@ -3,6 +3,7 @@ import { nanoid } from "nanoid";
 import { NextResponse } from "next/server";
 import { HttpError, tenantRoute } from "@/lib/api/route";
 import { recordAudit } from "@/lib/audit";
+import { assertWorkflowCredit } from "@/lib/billing/usage";
 import { workflows } from "@/lib/db/schema";
 import { tdb } from "@/lib/db/tenant";
 import { generateId } from "@/lib/utils/id";
@@ -71,6 +72,7 @@ function updateEdgeReferences(
 export const POST = tenantRoute<{ workflowId: string }>(
   "workflows.duplicate",
   async (ctx, _request, { workflowId }) => {
+    await assertWorkflowCredit();
     const created = await tdb(async (tx) => {
       // RLS: visible only if it is in this workspace or public.
       const [source] = await tx

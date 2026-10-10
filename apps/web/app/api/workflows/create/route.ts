@@ -3,6 +3,7 @@ import { nanoid } from "nanoid";
 import { NextResponse } from "next/server";
 import { HttpError, tenantRoute } from "@/lib/api/route";
 import { recordAudit } from "@/lib/audit";
+import { assertWorkflowCredit } from "@/lib/billing/usage";
 import { workflows } from "@/lib/db/schema";
 import { tdb } from "@/lib/db/tenant";
 import { generateId } from "@/lib/utils/id";
@@ -29,6 +30,10 @@ export const POST = tenantRoute(
     const body = await request.json();
     if (!(body.name && body.nodes && body.edges)) {
       throw new HttpError(400, "Name, nodes, and edges are required");
+    }
+    // Credits: each plan keeps a limited number of workflows (D-056).
+    if (body.name !== "__current__") {
+      await assertWorkflowCredit();
     }
 
     // Ensure there's always a trigger node (only add one if nodes array is empty)

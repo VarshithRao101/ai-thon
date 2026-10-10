@@ -5,6 +5,7 @@ import { getIntegration } from "@/lib/db/integrations";
 import { runWithTenant } from "@/lib/db/tenant";
 import { connectionTestFor } from "@/lib/integrations/connection-tests";
 import { mergeSecrets } from "@/lib/integrations/secrets";
+import { checkBodySize, checkOrigin, checkRate } from "@/lib/security/guard";
 import type {
   IntegrationConfig,
   IntegrationType,
@@ -31,9 +32,23 @@ export type TestConnectionResult = {
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: validation guards plus the merge-with-stored path, kept linear
 export async function POST(request: Request) {
   try {
+    const blocked = checkOrigin(request) ?? checkBodySize(request);
+    if (blocked) {
+      return NextResponse.json(
+        { error: blocked.message },
+        { status: blocked.status }
+      );
+    }
     const ctx = await getRequestContext(request.headers);
     if (!ctx) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const limited = checkRate(ctx.userId, "integrations.test");
+    if (limited) {
+      return NextResponse.json(
+        { error: limited.message },
+        { status: limited.status }
+      );
     }
     // Testing raw credentials is part of creating a connection.
     if (!can(ctx.role, "integration:manage")) {

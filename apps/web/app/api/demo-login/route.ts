@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { demoLoginEnabled } from "@/lib/auth/demo-login";
+import { checkOrigin, checkRate } from "@/lib/security/guard";
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +32,16 @@ export async function POST(request: Request) {
     return NextResponse.json(
       { error: "Demo sign-in is off: use Google" },
       { status: 404 }
+    );
+  }
+  const blocked = checkOrigin(request);
+  const ip =
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local";
+  const limited = blocked ?? checkRate(ip, "demo-login");
+  if (limited) {
+    return NextResponse.json(
+      { error: limited.message },
+      { status: limited.status }
     );
   }
   const jar = await cookies();

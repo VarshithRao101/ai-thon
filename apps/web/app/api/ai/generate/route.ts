@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { planWorkflow, summarizeCanvas } from "@/lib/ai/copilot";
 import { buildWorkflow } from "@/lib/ai/plan";
 import { HttpError, tenantRoute } from "@/lib/api/route";
+import { consumeAiMessage } from "@/lib/billing/usage";
 import { integrations } from "@/lib/db/schema";
 import { tdb } from "@/lib/db/tenant";
 import {
@@ -46,6 +47,8 @@ export const POST = tenantRoute(
     if (!prompt) {
       throw new HttpError(400, "Describe the automation you want");
     }
+    // Credits: AI messages per plan per month (D-056).
+    await consumeAiMessage();
     const existing = body.existingWorkflow?.nodes?.length
       ? body.existingWorkflow
       : undefined;

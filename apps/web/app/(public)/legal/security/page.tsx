@@ -31,6 +31,19 @@ export default function SecurityPage() {
           <strong>Public forms:</strong> rate limits, a bot trap, consent
           capture, and duplicate-submit protection.
         </li>
+        <li>
+          <strong>Privacy Shield:</strong> emails, phone numbers, Aadhaar, PAN,
+          UPI IDs and card numbers are hidden from AI models.
+        </li>
+        <li>
+          <strong>Write-only secrets:</strong> connector passwords, tokens and
+          keys are never shown again after saving.
+        </li>
+        <li>
+          <strong>Web protections:</strong> a strict Content Security Policy, no
+          framing, HTTPS-only, cross-site request blocking, size limits and rate
+          limits on sign-in, AI and connector actions.
+        </li>
       </ul>
       <h2>Reporting a vulnerability</h2>
       <p>

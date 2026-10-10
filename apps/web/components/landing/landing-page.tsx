@@ -127,18 +127,18 @@ const FEATURES = [
 // Planned pricing from docs/13 (an estimate, not yet validated with customers).
 const PLANS = [
   {
-    name: "Free",
-    price: "₹0",
-    period: "forever",
-    blurb: "Try it out",
+    name: "Starter",
+    price: "₹99",
+    period: "per month",
+    blurb: "Free trial included",
     features: [
-      "3 active workflows",
-      "300 runs a month",
+      "5 workflows",
+      "50 AI messages a month",
       "1 hosted form",
       "Community support",
       "90-day history",
     ],
-    cta: "Start free",
+    cta: "Start free trial",
     featured: false,
   },
   {
@@ -148,7 +148,7 @@ const PLANS = [
     blurb: "Small businesses",
     features: [
       "20 workflows",
-      "5,000 runs a month",
+      "500 AI messages a month",
       "Unlimited forms",
       "AI steps included",
       "Priority runs",
@@ -164,7 +164,7 @@ const PLANS = [
     blurb: "Teams",
     features: [
       "Unlimited workflows",
-      "50,000 runs a month",
+      "5,000 AI messages a month",
       "10 members with roles",
       "Audit log export",
       "Custom form domain",
@@ -764,7 +764,7 @@ export function LandingPage() {
           ))}
         </div>
         <p className="mt-6 text-center text-white/35 text-xs">
-          Free during the preview. Paid plans coming.
+          Every account starts on a free Starter trial. Payments coming soon.
         </p>
       </Section>
 

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { HttpError, tenantRoute } from "@/lib/api/route";
 import { recordAudit } from "@/lib/audit";
 import { createIntegration, getIntegrations } from "@/lib/db/integrations";
+import { normalizeConfig } from "@/lib/integrations/normalize";
 import type {
   IntegrationConfig,
   IntegrationType,
@@ -72,10 +73,15 @@ export const POST = tenantRoute(
     if (!(body.type && body.config)) {
       throw new HttpError(400, "Type and config are required");
     }
+    // Forgiving input: trim, fix common paste mistakes, catch obvious ones.
+    const { config, problems } = normalizeConfig(body.type, body.config);
+    if (problems.length > 0) {
+      throw new HttpError(400, problems.join(". "));
+    }
     const integration = await createIntegration(
       body.name || "",
       body.type,
-      body.config
+      config
     );
     await recordAudit(
       "integration.create",

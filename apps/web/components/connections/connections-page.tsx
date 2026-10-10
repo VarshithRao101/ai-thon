@@ -24,13 +24,18 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { toast } from "sonner";
 import { BeeMark } from "@/components/brand/brand-lockup";
 import { markSigningOut } from "@/lib/auth/guest";
 import { signOut } from "@/lib/auth-client";
+import { normalizeConfig } from "@/lib/integrations/normalize";
 import { cn } from "@/lib/utils";
+
+const BOT_PREFIX = /^bot/i;
+const BOT_TOKEN_SHAPE = /^\d{5,}:[A-Za-z0-9_-]{30,}$/;
 
 type Saved = {
   id: string;
@@ -266,6 +271,12 @@ function AppCard({
     return r.status === "success";
   }, []);
 
+  // Same checks the server runs, shown while typing (lib/integrations/normalize.ts).
+  const problems = useMemo(
+    () => normalizeConfig(app.type, values).problems,
+    [app.type, values]
+  );
+
   // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: validation, save, then test
   const save = async () => {
     const missing = app.fields.filter(
@@ -275,8 +286,8 @@ function AppCard({
       toast.error(`Fill in: ${missing.map((m) => m.label).join(", ")}`);
       return;
     }
-    if (app.type === "google-sheets" && values.serviceAccountJson && !saEmail) {
-      toast.error("That service account key isn't valid JSON");
+    if (problems.length > 0) {
+      toast.error(problems[0] ?? "Check the details");
       return;
     }
     setBusy("save");
@@ -348,6 +359,25 @@ function AppCard({
       setBusy(null);
     }
   };
+
+  // Paste a valid bot token and we look for your chats straight away.
+  const lastToken = useRef("");
+  const botToken = values.botToken;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: run only when the pasted token changes
+  useEffect(() => {
+    const token = (botToken ?? "").trim().replace(BOT_PREFIX, "");
+    if (app.type !== "telegram" || token === lastToken.current) {
+      return;
+    }
+    if (!BOT_TOKEN_SHAPE.test(token)) {
+      return;
+    }
+    lastToken.current = token;
+    const timer = setTimeout(() => {
+      findChats().catch(() => undefined);
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [botToken]);
 
   const tryIt = async () => {
     if (!saved) {
@@ -603,6 +633,13 @@ function AppCard({
                   <Copy className="size-3.5 shrink-0" /> {saEmail}
                 </button>
               </div>
+            )}
+            {problems.length > 0 && (
+              <ul className="space-y-1 rounded-xl border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-amber-100 text-xs">
+                {problems.map((p) => (
+                  <li key={p}>{p}</li>
+                ))}
+              </ul>
             )}
             <button
               className="nf-gold-btn inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 font-semibold text-sm"

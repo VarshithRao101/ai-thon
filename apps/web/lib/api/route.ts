@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { getRequestContext, type RequestContext } from "@/lib/auth/context";
 import { can, type Permission } from "@/lib/auth/rbac";
 import { runWithTenant } from "@/lib/db/tenant";
+import { checkBodySize, checkOrigin, checkRate } from "@/lib/security/guard";
 
 /** Throw from a handler to return a specific status with a safe message. */
 export class HttpError extends Error {
@@ -47,9 +48,17 @@ export function tenantRoute<P = Record<string, never>>(
 ) {
   return async (request: Request, args: RouteArgs<P>): Promise<Response> => {
     try {
+      const blocked = checkOrigin(request) ?? checkBodySize(request);
+      if (blocked) {
+        return jsonError(blocked.status, blocked.message);
+      }
       const ctx = await getRequestContext(request.headers);
       if (!ctx) {
         return jsonError(401, "Unauthorized");
+      }
+      const limited = checkRate(ctx.userId, scope);
+      if (limited) {
+        return jsonError(limited.status, limited.message);
       }
       if (options.permission && !can(ctx.role, options.permission)) {
         return jsonError(403, "Forbidden");
@@ -77,6 +86,10 @@ export function optionalTenantRoute<P = Record<string, never>>(
 ) {
   return async (request: Request, args: RouteArgs<P>): Promise<Response> => {
     try {
+      const blocked = checkOrigin(request) ?? checkBodySize(request);
+      if (blocked) {
+        return jsonError(blocked.status, blocked.message);
+      }
       const ctx = await getRequestContext(request.headers);
       const params = await args.params;
       if (!ctx) {

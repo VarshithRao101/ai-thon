@@ -56,6 +56,22 @@ export function CopilotHome({ ensureSession, onStartBlank, onLeaving }: Props) {
   const [prompt, setPrompt] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
   const [templates, setTemplates] = useState<Template[]>([]);
+  const [aiLeft, setAiLeft] = useState<number | null>(null);
+
+  // Credits: how many AI messages this plan has left this month (D-056).
+  useEffect(() => {
+    fetch("/api/usage", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then(
+        (u: { aiMessages?: { used: number; limit: number | null } } | null) => {
+          const m = u?.aiMessages;
+          if (m && m.limit !== null) {
+            setAiLeft(Math.max(0, m.limit - m.used));
+          }
+        }
+      )
+      .catch(() => undefined);
+  }, []);
 
   // A prompt typed on the landing page or dashboard arrives as ?prompt=.
   useEffect(() => {
@@ -94,7 +110,11 @@ export function CopilotHome({ ensureSession, onStartBlank, onLeaving }: Props) {
       router.replace(`/workflows/${workflow.id}?generating=true`);
     } catch (error) {
       console.error("[home] could not start the Copilot:", error);
-      toast.error("Could not start the Copilot. Please try again.");
+      toast.error(
+        error instanceof Error && error.name === "ApiError"
+          ? error.message
+          : "Could not start the Copilot. Please try again."
+      );
       setBusy(null);
     }
   };
@@ -127,7 +147,11 @@ export function CopilotHome({ ensureSession, onStartBlank, onLeaving }: Props) {
       router.replace(`/workflows/${workflow.id}`);
     } catch (error) {
       console.error("[home] template failed:", error);
-      toast.error("Could not open that template");
+      toast.error(
+        error instanceof Error && error.name === "ApiError"
+          ? error.message
+          : "Could not open that template"
+      );
       setBusy(null);
     }
   };
@@ -160,8 +184,14 @@ export function CopilotHome({ ensureSession, onStartBlank, onLeaving }: Props) {
               value={prompt}
             />
             <div className="flex items-center justify-between gap-2 px-2 pb-1">
-              <span className="hidden text-muted-foreground text-xs sm:inline">
-                Ctrl + Enter to build
+              <span className="text-muted-foreground text-xs">
+                <span className="hidden sm:inline">Ctrl + Enter to build</span>
+                {aiLeft !== null && (
+                  <span className={aiLeft === 0 ? "text-red-400" : ""}>
+                    <span className="hidden sm:inline"> · </span>
+                    {aiLeft} AI {aiLeft === 1 ? "message" : "messages"} left
+                  </span>
+                )}
               </span>
               <Button
                 className="ml-auto h-10 gap-2 font-semibold"

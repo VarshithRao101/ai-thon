@@ -33,6 +33,7 @@ import {
 } from "react";
 import { toast } from "sonner";
 import { BeeMark } from "@/components/brand/brand-lockup";
+import { PlanCard } from "@/components/dashboard/plan-card";
 import { markSigningOut } from "@/lib/auth/guest";
 import { signOut, useSession } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
@@ -686,6 +687,7 @@ export function Dashboard() {
 
           {/* Side column */}
           <aside className="space-y-6">
+            <PlanCard refreshKey={data?.workflows.length} />
             <section className="nf-card rounded-2xl p-5">
               <div className="flex items-center justify-between">
                 <h2 className="font-display font-semibold">Your apps</h2>

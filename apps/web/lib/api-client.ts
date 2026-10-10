@@ -292,7 +292,14 @@ export const aiApi = {
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      // Surface the server's reason (e.g. "You've used all 50 AI messages…").
+      const body = (await response.json().catch(() => ({}))) as {
+        error?: string;
+      };
+      throw new ApiError(
+        response.status,
+        body.error ?? `Request failed (${response.status})`
+      );
     }
 
     if (!response.body) {

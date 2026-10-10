@@ -16,7 +16,8 @@ export type AuditAction =
   | "workflow.publish"
   | "workflow.enable"
   | "workflow.disable"
-  | "run.retry";
+  | "run.retry"
+  | "ai.message";
 
 /**
  * Append to the workspace audit trail (docs/10). Best effort: a failed audit

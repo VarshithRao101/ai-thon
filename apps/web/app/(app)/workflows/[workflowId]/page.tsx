@@ -334,7 +334,11 @@ const WorkflowEditor = ({ params }: WorkflowPageProps) => {
         });
       } catch (error) {
         console.error("Failed to generate workflow:", error);
-        toast.error("Failed to generate workflow");
+        toast.error(
+          error instanceof Error && error.name === "ApiError"
+            ? error.message
+            : "Failed to generate workflow"
+        );
       } finally {
         setIsGenerating(false);
       }

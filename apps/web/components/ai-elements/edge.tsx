@@ -126,18 +126,51 @@ const Animated = ({ id, source, target, style, selected }: EdgeProps) => {
     targetPosition: targetPos,
   });
 
+  // Live run state (D-056): data flowing into a running step glows gold with
+  // travelling packets; a finished hop turns solid; a failed step turns red.
+  const from = (sourceNode.data as { status?: string } | undefined)?.status;
+  const to = (targetNode.data as { status?: string } | undefined)?.status;
+  const flowing = to === "running";
+  const done = from === "success" && to === "success";
+  const failed = to === "error";
+  let stroke = selected ? "var(--muted-foreground)" : "var(--border)";
+  if (flowing || done) {
+    stroke = "#ffc326";
+  } else if (failed) {
+    stroke = "#f87171";
+  }
+
   return (
-    <BaseEdge 
-      id={id} 
-      path={edgePath} 
-      style={{
-        ...style,
-        stroke: selected ? "var(--muted-foreground)" : "var(--border)",
-        strokeWidth: 2,
-        animation: "dashdraw 0.5s linear infinite",
-        strokeDasharray: 5,
-      }}
-    />
+    <>
+      {flowing && (
+        <path
+          className="zeta-edge-glow"
+          d={edgePath}
+          fill="none"
+          stroke="#ffc326"
+          strokeOpacity={0.35}
+          strokeWidth={8}
+        />
+      )}
+      <BaseEdge
+        id={id}
+        path={edgePath}
+        style={{
+          ...style,
+          stroke,
+          strokeWidth: flowing || done ? 2.5 : 2,
+          animation: done ? undefined : `dashdraw ${flowing ? "0.25s" : "0.5s"} linear infinite`,
+          strokeDasharray: done ? undefined : 5,
+          transition: "stroke 0.3s ease",
+        }}
+      />
+      {flowing &&
+        [0, 0.33, 0.66].map((delay) => (
+          <circle fill="#fff1b8" key={delay} r={4} style={{ filter: "drop-shadow(0 0 6px #ffc326)" }}>
+            <animateMotion begin={`${delay}s`} dur="1s" path={edgePath} repeatCount="indefinite" />
+          </circle>
+        ))}
+    </>
   );
 };
 

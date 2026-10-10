@@ -167,7 +167,7 @@ const StatusBadge = ({
   return (
     <div
       className={cn(
-        "absolute top-2 right-2 rounded-full p-1",
+        "zeta-badge-pop absolute top-2 right-2 rounded-full p-1",
         status === "success" && "bg-green-500/50",
         status === "error" && "bg-red-500/50"
       )}

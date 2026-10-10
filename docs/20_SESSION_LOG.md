@@ -141,3 +141,10 @@
 - New `/connections` page: guided Gmail / Google Sheets / Telegram cards with links, Save-and-test, "Send a test" (real Telegram message, email to the signed-in user, sheet row), Telegram "Find my chats", Sheets share-with email from the pasted key. Browser-tested with fake credentials: clear "Login refused … app password" message, status "Needs attention", password not readable via API. Dashboard Connect buttons and nav link here.
 - `@ai-sdk/openai-compatible@1.0.58`: optional last-resort provider via `AI_COMPAT_*` env.
 - 97 unit tests; hive, tenancy, forms, e2e-live green.
+
+## 2026-10-11: credits, easier connectors, run animations, security (D-056)
+- Plans/credits: Starter ₹99 (free trial for every new account), Pro ₹499, Business ₹1,999; workflows kept 5/20/∞, AI messages per month 50/500/5,000. `/api/usage`, dashboard plan card with meters, builder shows "N AI messages left", 402 messages surface in the UI. Live: `node apps/web/scripts/e2e-credits.mjs` — 9/9 (5 workflows then a clear 402, 1 AI message counted, cross-site write 403, 5 MB body 413, security headers present).
+- Connectors: `lib/integrations/normalize.ts` (6 tests); live hints on the Connections page; auto "Find my chats".
+- Canvas run animations (gold pulse + flowing packets + success pop/error shake), screenshot-verified.
+- Security: CSP/HSTS/frame/nosniff/referrer/permissions headers; origin check, body cap and per-user rate limits in `tenantRoute`; Better Auth sign-in/up rate limits (10/min). 3 guard tests.
+- Gates: 106 unit tests, lint, typecheck; hive, forms, tenancy, e2e-live, e2e-credits green (sign-up rate limit means suites need ~1 min between them on one IP).

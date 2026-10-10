@@ -6,6 +6,7 @@ import {
   getIntegration,
   updateIntegration,
 } from "@/lib/db/integrations";
+import { normalizeConfig } from "@/lib/integrations/normalize";
 import { maskSecrets, mergeSecrets } from "@/lib/integrations/secrets";
 import type { IntegrationConfig } from "@/lib/types/integration";
 
@@ -75,7 +76,11 @@ export const PUT = tenantRoute<Params>(
       if (!stored) {
         throw notFound();
       }
-      body.config = mergeSecrets(stored.type, body.config, stored.config);
+      const { config, problems } = normalizeConfig(stored.type, body.config);
+      if (problems.length > 0) {
+        throw new HttpError(400, problems.join(". "));
+      }
+      body.config = mergeSecrets(stored.type, config, stored.config);
     }
     const integration = await updateIntegration(integrationId, body);
     if (!integration) {

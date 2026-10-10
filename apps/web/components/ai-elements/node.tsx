@@ -24,10 +24,12 @@ export const Node = ({ handles, className, status, ...props }: NodeProps) => (
   <Card
     className={cn(
       "node-container relative size-full h-auto w-sm gap-0 rounded-md bg-card p-0 transition-all duration-200",
-      status === "success" && "border-green-500 border-2",
-      status === "error" && "border-red-500 border-2",
+      status === "running" && "zeta-node-running",
+      status === "success" && "zeta-node-success border-2 border-green-500",
+      status === "error" && "zeta-node-error border-2 border-red-500",
       className
     )}
+    data-run-status={status ?? "idle"}
     {...props}
   >
     {status === "running" && <AnimatedBorder />}

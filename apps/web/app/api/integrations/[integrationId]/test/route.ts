@@ -7,6 +7,7 @@ import {
 } from "@/lib/db/integrations";
 import { runWithTenant } from "@/lib/db/tenant";
 import { connectionTestFor } from "@/lib/integrations/connection-tests";
+import { checkBodySize, checkOrigin, checkRate } from "@/lib/security/guard";
 import {
   getCredentialMapping,
   getIntegration as getPluginFromRegistry,
@@ -22,9 +23,23 @@ export async function POST(
   { params }: { params: Promise<{ integrationId: string }> }
 ) {
   try {
+    const blocked = checkOrigin(request) ?? checkBodySize(request);
+    if (blocked) {
+      return NextResponse.json(
+        { error: blocked.message },
+        { status: blocked.status }
+      );
+    }
     const ctx = await getRequestContext(request.headers);
     if (!ctx) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const limited = checkRate(ctx.userId, "integrations.test");
+    if (limited) {
+      return NextResponse.json(
+        { error: limited.message },
+        { status: limited.status }
+      );
     }
     if (!can(ctx.role, "run:operate")) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
