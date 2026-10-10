@@ -27,7 +27,9 @@ async function call(method, path, body, headers = {}) {
   let json = null;
   try {
     json = await res.json();
-  } catch {}
+  } catch {
+    // not JSON
+  }
   return { status: res.status, json, headers: res.headers };
 }
 
