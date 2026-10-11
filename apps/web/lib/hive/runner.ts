@@ -153,6 +153,7 @@ function testInputFor(
     return {
       ...sampleSubmission(formFromConfig(config)),
       submittedAt: submittedAtIst(),
+      submissionNumber: 1,
       consent: true,
       test: true,
     };

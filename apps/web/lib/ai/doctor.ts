@@ -4,7 +4,11 @@ import { generateObject } from "ai";
 import { z } from "zod";
 import { formFromConfig } from "@/lib/forms/schema";
 import type { Definition, DefinitionNode } from "@/lib/hive/definition";
+import { isPlaceholderUrl } from "./placeholder";
 import { COPILOT_ACTIONS } from "./plan";
+
+const URL_IN_TEXT = /https?:\/\/\S+/;
+
 import { isAiConfigured, isAiMock, withAi } from "./provider";
 
 /**
@@ -208,7 +212,8 @@ export async function diagnose(input: DoctorInput): Promise<Diagnosis> {
       if (
         object.fixKey &&
         object.fixValue !== undefined &&
-        allowedKeys.includes(object.fixKey)
+        allowedKeys.includes(object.fixKey) &&
+        !isPlaceholderUrl(object.fixValue)
       ) {
         const value = object.fixValue.replace(REF, (_m, field: string) =>
           triggerRef(trigger, field)
@@ -220,10 +225,20 @@ export async function diagnose(input: DoctorInput): Promise<Diagnosis> {
           label: `${FIELD_LABEL[object.fixKey] ?? object.fixKey} → ${object.fixValue.slice(0, 40)}`,
         };
       }
+      const madeUp = isPlaceholderUrl(node.data.config?.endpoint);
+      let suggestion = object.suggestion;
+      if (madeUp) {
+        suggestion =
+          "Paste the real URL of the service you want to call, or remove this step if you don't need it.";
+      } else if (isPlaceholderUrl(object.suggestion.match(URL_IN_TEXT)?.[0])) {
+        suggestion = "Replace the URL with the real address of your service.";
+      }
       return {
         ...rules,
-        cause: object.cause,
-        suggestion: object.suggestion,
+        cause: madeUp
+          ? "This step calls a made-up address, so there is nothing there to answer."
+          : object.cause,
+        suggestion,
         fix,
         source: "ai" as const,
         model: label,

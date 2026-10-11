@@ -339,8 +339,11 @@ export const TEMPLATES: TemplatePlan[] = [
   },
 ];
 
-/** The template whose keywords best match a request (the hero flow by default). */
-export function closestTemplate(prompt: string): TemplatePlan {
+/** The template that best fits a request, and how many of its keywords matched. */
+export function templateMatch(prompt: string): {
+  template: TemplatePlan;
+  score: number;
+} {
   const text = prompt.toLowerCase();
   let best = TEMPLATES[0] as TemplatePlan;
   let bestScore = 0;
@@ -351,5 +354,10 @@ export function closestTemplate(prompt: string): TemplatePlan {
       bestScore = score;
     }
   }
-  return best;
+  return { template: best, score: bestScore };
+}
+
+/** The template whose keywords best match a request (the hero flow by default). */
+export function closestTemplate(prompt: string): TemplatePlan {
+  return templateMatch(prompt).template;
 }

@@ -1,5 +1,7 @@
+import { and, count, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
-import { runWithTenant } from "@/lib/db/tenant";
+import { workflowExecutions } from "@/lib/db/schema";
+import { runWithTenant, tdb } from "@/lib/db/tenant";
 import { submittedAtIst, validateSubmission } from "@/lib/forms/schema";
 import { allowSubmission, clientKey, loadPublicForm } from "@/lib/forms/server";
 import { startRun } from "@/lib/hive/ingress";
@@ -71,20 +73,33 @@ export async function POST(
         ? body.submissionId
         : undefined;
 
-    const result = await runWithTenant(target.tenant, () =>
-      startRun({
+    const result = await runWithTenant(target.tenant, async () => {
+      // 1 for the first submission, 2 for the second… ("only the first 5").
+      const [prior] = await tdb((tx) =>
+        tx
+          .select({ n: count() })
+          .from(workflowExecutions)
+          .where(
+            and(
+              eq(workflowExecutions.workflowId, target.workflow.id),
+              eq(workflowExecutions.trigger, "form")
+            )
+          )
+      );
+      return startRun({
         workflow: target.workflow,
         trigger: "form",
         input: {
           ...checked.values,
           submittedAt: submittedAtIst(),
+          submissionNumber: (prior?.n ?? 0) + 1,
           consent: Boolean(target.form.consentText),
         },
         userId: target.workflow.userId,
         // A double-click or a retry on a flaky network submits once.
         idempotencyKey: submissionId ? `form:${submissionId}` : undefined,
-      })
-    );
+      });
+    });
     if (!result.ok) {
       return NextResponse.json(
         { error: "This form is not accepting responses right now." },

@@ -153,3 +153,11 @@
 - Connections page: 3 tuned cards + "More apps" (14, searchable) + ZETA AI built in. Live: `node apps/web/scripts/e2e-apps.mjs` — 22/22 (every app saves sealed, never echoes the key, and its real API rejects a placeholder key with a plain message; wrong key kind caught before saving; unknown type refused; Copilot builds Slack, GitHub+Telegram, Stripe+Sheets, Perplexity+Gmail, Firecrawl+Linear flows with real AI).
 - Real keys for the 14 new apps are not tested yet (the owner adds them on the Connections page).
 - Gates: 113 unit tests, lint, typecheck. Golden set re-run: the 3 quota-hit cases pass (33/33 checks).
+
+## 2026-10-11: flows the AI builds must run (D-058) + dashboard
+- Owner's screenshot: "first 5 submissions" became an HTTP step to a made-up URL. Fixed at the source (`submissionNumber`, HTTP only with a real URL), with a repair pass and a self-check round.
+- Golden set 22 → 40 cases (`eval/copilot-golden.json`). Every case passed with real AI: the last full run (`eval/results/copilot-latest.md`) shows 30/40 because 9 cases hit the free-tier quota and 1 (`lpu-email-domain`) used AI classify for an exact check; after a prompt rule for exact text/number checks, those 10 were re-run in small batches and all passed.
+- When the AI is unavailable, the Copilot now uses a template only if it clearly matches (2+ keywords) and never for an edit; otherwise it answers 503 "ZETA's AI is busy right now… nothing was changed" (it used to return the hero template for unrelated requests). Live: `node apps/web/scripts/e2e-first-n.mjs` 4/4 (counter flow built by real AI; submissions numbered 1, 2, 3); forms suite green.
+- Dashboard reorganised; checked at desktop and phone width, no console errors.
+- Gates: 127 web + 31 engine + 6 config unit tests, lint, typecheck.
+- Demo risk: the free Groq tier allows only a few Copilot builds per minute (each build sends ~3k tokens); after bursts, both Groq and the Gemini fallback return quota errors for about a minute. A paid Groq tier or the `AI_COMPAT_*` slot would remove this.

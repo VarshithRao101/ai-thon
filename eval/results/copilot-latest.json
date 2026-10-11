@@ -1,25 +1,25 @@
 {
   "summary": {
-    "at": "2026-10-10T14:57:06.537Z",
+    "at": "2026-10-11T01:32:41.091Z",
     "models": {
       "smart": "openai/gpt-oss-120b",
-      "fast": "qwen/qwen3.8-27b",
+      "fast": "openai/gpt-oss-20b",
       "fallback": "gemini-3.5-flash"
     },
-    "cases": 22,
-    "passed": 21,
-    "checksPassed": 220,
-    "checks": 221,
-    "p50ms": 12003,
-    "p95ms": 22240
+    "cases": 40,
+    "passed": 30,
+    "checksPassed": 502,
+    "checks": 531,
+    "p50ms": 11806,
+    "p95ms": 25426
   },
   "results": [
     {
       "id": "hackathon-registration",
       "passed": true,
-      "ms": 4481,
+      "ms": 3666,
       "model": "groq:openai/gpt-oss-120b",
-      "steps": "trigger:Form > ai/classify > ai/draft-email > smtp-email/send-email > google-sheets/append-row > telegram/send-message",
+      "steps": "trigger:Form > ai/classify > smtp-email/send-email > google-sheets/append-row > telegram/send-message",
       "checks": [
         {
           "name": "real AI (not a template fallback)",
@@ -54,6 +54,18 @@
           "ok": true
         },
         {
+          "name": "no unresolved problems",
+          "ok": true
+        },
+        {
+          "name": "conditions are readable by the engine",
+          "ok": true
+        },
+        {
+          "name": "no HTTP step without a URL from the user",
+          "ok": true
+        },
+        {
           "name": "no broken references",
           "ok": true
         },
@@ -74,7 +86,7 @@
     {
       "id": "lead-scoring-hot",
       "passed": true,
-      "ms": 3290,
+      "ms": 3378,
       "model": "groq:openai/gpt-oss-120b",
       "steps": "trigger:Form > ai/classify > Condition > telegram/send-message",
       "checks": [
@@ -111,6 +123,18 @@
           "ok": true
         },
         {
+          "name": "no unresolved problems",
+          "ok": true
+        },
+        {
+          "name": "conditions are readable by the engine",
+          "ok": true
+        },
+        {
+          "name": "no HTTP step without a URL from the user",
+          "ok": true
+        },
+        {
           "name": "no broken references",
           "ok": true
         },
@@ -131,9 +155,9 @@
     {
       "id": "clinic-booking",
       "passed": true,
-      "ms": 4433,
-      "model": "groq:qwen/qwen3.8-27b",
-      "steps": "trigger:Form > google-sheets/append-row > ai/draft-email > smtp-email/send-email",
+      "ms": 2066,
+      "model": "groq:openai/gpt-oss-120b",
+      "steps": "trigger:Form > google-sheets/append-row > smtp-email/send-email",
       "checks": [
         {
           "name": "real AI (not a template fallback)",
@@ -153,6 +177,18 @@
         },
         {
           "name": "graph valid",
+          "ok": true
+        },
+        {
+          "name": "no unresolved problems",
+          "ok": true
+        },
+        {
+          "name": "conditions are readable by the engine",
+          "ok": true
+        },
+        {
+          "name": "no HTTP step without a URL from the user",
           "ok": true
         },
         {
@@ -176,7 +212,7 @@
     {
       "id": "daily-telegram-update",
       "passed": true,
-      "ms": 1665,
+      "ms": 1782,
       "model": "groq:openai/gpt-oss-120b",
       "steps": "trigger:Schedule > ai/generate > telegram/send-message",
       "checks": [
@@ -205,6 +241,18 @@
           "ok": true
         },
         {
+          "name": "no unresolved problems",
+          "ok": true
+        },
+        {
+          "name": "conditions are readable by the engine",
+          "ok": true
+        },
+        {
+          "name": "no HTTP step without a URL from the user",
+          "ok": true
+        },
+        {
           "name": "no broken references",
           "ok": true
         },
@@ -225,9 +273,9 @@
     {
       "id": "webhook-order",
       "passed": true,
-      "ms": 33939,
-      "model": "google:gemini-3.5-flash",
-      "steps": "trigger:Webhook > google-sheets/append-row > ai/draft-email > smtp-email/send-email",
+      "ms": 2785,
+      "model": "groq:openai/gpt-oss-120b",
+      "steps": "trigger:Webhook > google-sheets/append-row > smtp-email/send-email",
       "checks": [
         {
           "name": "real AI (not a template fallback)",
@@ -250,6 +298,18 @@
           "ok": true
         },
         {
+          "name": "no unresolved problems",
+          "ok": true
+        },
+        {
+          "name": "conditions are readable by the engine",
+          "ok": true
+        },
+        {
+          "name": "no HTTP step without a URL from the user",
+          "ok": true
+        },
+        {
           "name": "no broken references",
           "ok": true
         },
@@ -266,7 +326,7 @@
     {
       "id": "feedback-negative-alert",
       "passed": true,
-      "ms": 2340,
+      "ms": 2899,
       "model": "groq:openai/gpt-oss-120b",
       "steps": "trigger:Form > ai/classify > Condition > telegram/send-message",
       "checks": [
@@ -303,6 +363,18 @@
           "ok": true
         },
         {
+          "name": "no unresolved problems",
+          "ok": true
+        },
+        {
+          "name": "conditions are readable by the engine",
+          "ok": true
+        },
+        {
+          "name": "no HTTP step without a URL from the user",
+          "ok": true
+        },
+        {
           "name": "no broken references",
           "ok": true
         },
@@ -323,7 +395,7 @@
     {
       "id": "job-application",
       "passed": true,
-      "ms": 3187,
+      "ms": 8116,
       "model": "groq:openai/gpt-oss-120b",
       "steps": "trigger:Form > ai/generate > google-sheets/append-row > smtp-email/send-email",
       "checks": [
@@ -352,6 +424,18 @@
           "ok": true
         },
         {
+          "name": "no unresolved problems",
+          "ok": true
+        },
+        {
+          "name": "conditions are readable by the engine",
+          "ok": true
+        },
+        {
+          "name": "no HTTP step without a URL from the user",
+          "ok": true
+        },
+        {
           "name": "no broken references",
           "ok": true
         },
@@ -368,7 +452,7 @@
     {
       "id": "personal-reply",
       "passed": true,
-      "ms": 6718,
+      "ms": 8321,
       "model": "groq:openai/gpt-oss-120b",
       "steps": "trigger:Form > ai/draft-email > smtp-email/send-email",
       "checks": [
@@ -397,6 +481,18 @@
           "ok": true
         },
         {
+          "name": "no unresolved problems",
+          "ok": true
+        },
+        {
+          "name": "conditions are readable by the engine",
+          "ok": true
+        },
+        {
+          "name": "no HTTP step without a URL from the user",
+          "ok": true
+        },
+        {
           "name": "no broken references",
           "ok": true
         },
@@ -421,9 +517,9 @@
     {
       "id": "rsvp-reminder",
       "passed": true,
-      "ms": 15393,
-      "model": "groq:openai/gpt-oss-120b",
-      "steps": "trigger:Form > google-sheets/append-row > smtp-email/send-email > Delay > smtp-email/send-email",
+      "ms": 4736,
+      "model": "groq:openai/gpt-oss-20b",
+      "steps": "trigger:Form > google-sheets/append-row > ai/draft-email > smtp-email/send-email > Delay > ai/draft-email > smtp-email/send-email",
       "checks": [
         {
           "name": "real AI (not a template fallback)",
@@ -458,6 +554,18 @@
           "ok": true
         },
         {
+          "name": "no unresolved problems",
+          "ok": true
+        },
+        {
+          "name": "conditions are readable by the engine",
+          "ok": true
+        },
+        {
+          "name": "no HTTP step without a URL from the user",
+          "ok": true
+        },
+        {
           "name": "no broken references",
           "ok": true
         },
@@ -478,8 +586,8 @@
     {
       "id": "weekly-report",
       "passed": true,
-      "ms": 17025,
-      "model": "groq:openai/gpt-oss-120b",
+      "ms": 3516,
+      "model": "groq:openai/gpt-oss-20b",
       "steps": "trigger:Schedule > ai/generate > telegram/send-message",
       "checks": [
         {
@@ -503,6 +611,18 @@
           "ok": true
         },
         {
+          "name": "no unresolved problems",
+          "ok": true
+        },
+        {
+          "name": "conditions are readable by the engine",
+          "ok": true
+        },
+        {
+          "name": "no HTTP step without a URL from the user",
+          "ok": true
+        },
+        {
           "name": "no broken references",
           "ok": true
         },
@@ -522,14 +642,15 @@
     },
     {
       "id": "support-ticket-priority",
-      "passed": true,
-      "ms": 15190,
-      "model": "groq:openai/gpt-oss-120b",
-      "steps": "trigger:Webhook > ai/classify > google-sheets/append-row > Condition > telegram/send-message",
+      "passed": false,
+      "ms": 8011,
+      "model": null,
+      "steps": "trigger:Webhook > google-sheets/append-row > smtp-email/send-email > telegram/send-message",
       "checks": [
         {
           "name": "real AI (not a template fallback)",
-          "ok": true
+          "ok": false,
+          "detail": "Failed after 2 attempts. Last error: You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. "
         },
         {
           "name": "trigger",
@@ -537,7 +658,8 @@
         },
         {
           "name": "has ai/classify",
-          "ok": true
+          "ok": false,
+          "detail": "missing"
         },
         {
           "name": "has google-sheets/append-row",
@@ -545,7 +667,8 @@
         },
         {
           "name": "has Condition",
-          "ok": true
+          "ok": false,
+          "detail": "missing"
         },
         {
           "name": "has telegram/send-message",
@@ -553,14 +676,28 @@
         },
         {
           "name": "ai/classify before Condition",
-          "ok": true
+          "ok": false,
+          "detail": "not upstream"
         },
         {
           "name": "Condition before telegram/send-message",
-          "ok": true
+          "ok": false,
+          "detail": "not upstream"
         },
         {
           "name": "graph valid",
+          "ok": true
+        },
+        {
+          "name": "no unresolved problems",
+          "ok": true
+        },
+        {
+          "name": "conditions are readable by the engine",
+          "ok": true
+        },
+        {
+          "name": "no HTTP step without a URL from the user",
           "ok": true
         },
         {
@@ -577,15 +714,15 @@
         },
         {
           "name": "condition tests one of the classifier's labels",
-          "ok": true
+          "ok": false
         }
       ]
     },
     {
       "id": "telugu-welcome",
       "passed": true,
-      "ms": 17443,
-      "model": "groq:qwen/qwen3.8-27b",
+      "ms": 10278,
+      "model": "groq:openai/gpt-oss-20b",
       "steps": "trigger:Form > ai/draft-email > smtp-email/send-email > google-sheets/append-row",
       "checks": [
         {
@@ -609,6 +746,18 @@
           "ok": true
         },
         {
+          "name": "no unresolved problems",
+          "ok": true
+        },
+        {
+          "name": "conditions are readable by the engine",
+          "ok": true
+        },
+        {
+          "name": "no HTTP step without a URL from the user",
+          "ok": true
+        },
+        {
           "name": "no broken references",
           "ok": true
         },
@@ -629,8 +778,8 @@
     {
       "id": "hindi-alert",
       "passed": true,
-      "ms": 2274,
-      "model": "groq:openai/gpt-oss-120b",
+      "ms": 16921,
+      "model": "groq:openai/gpt-oss-20b",
       "steps": "trigger:Form > telegram/send-message > google-sheets/append-row",
       "checks": [
         {
@@ -654,6 +803,18 @@
           "ok": true
         },
         {
+          "name": "no unresolved problems",
+          "ok": true
+        },
+        {
+          "name": "conditions are readable by the engine",
+          "ok": true
+        },
+        {
+          "name": "no HTTP step without a URL from the user",
+          "ok": true
+        },
+        {
           "name": "no broken references",
           "ok": true
         },
@@ -670,8 +831,8 @@
     {
       "id": "manual-hello",
       "passed": true,
-      "ms": 11605,
-      "model": "groq:openai/gpt-oss-120b",
+      "ms": 16623,
+      "model": "groq:openai/gpt-oss-20b",
       "steps": "trigger:Manual > telegram/send-message",
       "checks": [
         {
@@ -699,6 +860,18 @@
           "ok": true
         },
         {
+          "name": "no unresolved problems",
+          "ok": true
+        },
+        {
+          "name": "conditions are readable by the engine",
+          "ok": true
+        },
+        {
+          "name": "no HTTP step without a URL from the user",
+          "ok": true
+        },
+        {
           "name": "no broken references",
           "ok": true
         },
@@ -714,9 +887,9 @@
     },
     {
       "id": "extract-enquiry",
-      "passed": false,
-      "ms": 12003,
-      "model": "groq:qwen/qwen3.8-27b",
+      "passed": true,
+      "ms": 13960,
+      "model": "groq:openai/gpt-oss-20b",
       "steps": "trigger:Form > ai/extract > google-sheets/append-row",
       "checks": [
         {
@@ -744,6 +917,18 @@
           "ok": true
         },
         {
+          "name": "no unresolved problems",
+          "ok": true
+        },
+        {
+          "name": "conditions are readable by the engine",
+          "ok": true
+        },
+        {
+          "name": "no HTTP step without a URL from the user",
+          "ok": true
+        },
+        {
           "name": "no broken references",
           "ok": true
         },
@@ -757,15 +942,15 @@
         },
         {
           "name": "sheet row uses ai/extract",
-          "ok": false
+          "ok": true
         }
       ]
     },
     {
       "id": "webinar-parallel",
       "passed": true,
-      "ms": 2970,
-      "model": "groq:openai/gpt-oss-120b",
+      "ms": 18561,
+      "model": "groq:openai/gpt-oss-20b",
       "steps": "trigger:Form > ai/draft-email > smtp-email/send-email > telegram/send-message",
       "checks": [
         {
@@ -793,6 +978,18 @@
           "ok": true
         },
         {
+          "name": "no unresolved problems",
+          "ok": true
+        },
+        {
+          "name": "conditions are readable by the engine",
+          "ok": true
+        },
+        {
+          "name": "no HTTP step without a URL from the user",
+          "ok": true
+        },
+        {
           "name": "no broken references",
           "ok": true
         },
@@ -813,8 +1010,8 @@
     {
       "id": "payment-webhook",
       "passed": true,
-      "ms": 16142,
-      "model": "groq:openai/gpt-oss-120b",
+      "ms": 20715,
+      "model": "groq:openai/gpt-oss-20b",
       "steps": "trigger:Webhook > google-sheets/append-row > ai/draft-email > smtp-email/send-email",
       "checks": [
         {
@@ -838,6 +1035,18 @@
           "ok": true
         },
         {
+          "name": "no unresolved problems",
+          "ok": true
+        },
+        {
+          "name": "conditions are readable by the engine",
+          "ok": true
+        },
+        {
+          "name": "no HTTP step without a URL from the user",
+          "ok": true
+        },
+        {
           "name": "no broken references",
           "ok": true
         },
@@ -854,8 +1063,8 @@
     {
       "id": "attendance-reminder",
       "passed": true,
-      "ms": 14661,
-      "model": "groq:openai/gpt-oss-120b",
+      "ms": 21628,
+      "model": "groq:openai/gpt-oss-20b",
       "steps": "trigger:Schedule > telegram/send-message",
       "checks": [
         {
@@ -879,6 +1088,18 @@
           "ok": true
         },
         {
+          "name": "no unresolved problems",
+          "ok": true
+        },
+        {
+          "name": "conditions are readable by the engine",
+          "ok": true
+        },
+        {
+          "name": "no HTTP step without a URL from the user",
+          "ok": true
+        },
+        {
           "name": "no broken references",
           "ok": true
         },
@@ -898,14 +1119,15 @@
     },
     {
       "id": "course-interest-email",
-      "passed": true,
-      "ms": 14975,
-      "model": "groq:openai/gpt-oss-120b",
-      "steps": "trigger:Form > ai/classify > Condition > ai/draft-email > smtp-email/send-email > Condition > ai/draft-email > smtp-email/send-email > Condition > ai/draft-email > smtp-email/send-email",
+      "passed": false,
+      "ms": 19579,
+      "model": null,
+      "steps": "trigger:Form > ai/classify > ai/draft-email > google-sheets/append-row > smtp-email/send-email > telegram/send-message",
       "checks": [
         {
           "name": "real AI (not a template fallback)",
-          "ok": true
+          "ok": false,
+          "detail": "Failed after 2 attempts. Last error: You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. "
         },
         {
           "name": "trigger",
@@ -928,6 +1150,18 @@
           "ok": true
         },
         {
+          "name": "no unresolved problems",
+          "ok": true
+        },
+        {
+          "name": "conditions are readable by the engine",
+          "ok": true
+        },
+        {
+          "name": "no HTTP step without a URL from the user",
+          "ok": true
+        },
+        {
           "name": "no broken references",
           "ok": true
         },
@@ -947,14 +1181,15 @@
     },
     {
       "id": "crm-http",
-      "passed": true,
-      "ms": 19172,
-      "model": "groq:qwen/qwen3.8-27b",
-      "steps": "trigger:Form > HTTP Request > telegram/send-message",
+      "passed": false,
+      "ms": 24909,
+      "model": null,
+      "steps": "trigger:Form > ai/classify > google-sheets/append-row > Condition > telegram/send-message",
       "checks": [
         {
           "name": "real AI (not a template fallback)",
-          "ok": true
+          "ok": false,
+          "detail": "Failed after 2 attempts. Last error: You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. "
         },
         {
           "name": "trigger",
@@ -962,7 +1197,8 @@
         },
         {
           "name": "has HTTP Request",
-          "ok": true
+          "ok": false,
+          "detail": "missing"
         },
         {
           "name": "has telegram/send-message",
@@ -970,6 +1206,14 @@
         },
         {
           "name": "graph valid",
+          "ok": true
+        },
+        {
+          "name": "no unresolved problems",
+          "ok": true
+        },
+        {
+          "name": "conditions are readable by the engine",
           "ok": true
         },
         {
@@ -986,20 +1230,21 @@
         },
         {
           "name": "HTTP endpoint as asked",
-          "ok": true
+          "ok": false
         }
       ]
     },
     {
       "id": "edit-add-condition",
-      "passed": true,
-      "ms": 4437,
-      "model": "groq:openai/gpt-oss-120b",
-      "steps": "trigger:Form > ai/classify > ai/draft-email > google-sheets/append-row > smtp-email/send-email > Condition > telegram/send-message",
+      "passed": false,
+      "ms": 25427,
+      "model": null,
+      "steps": "trigger:Form > ai/classify > ai/draft-email > google-sheets/append-row > smtp-email/send-email > telegram/send-message",
       "checks": [
         {
           "name": "real AI (not a template fallback)",
-          "ok": true
+          "ok": false,
+          "detail": "Failed after 2 attempts. Last error: You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. "
         },
         {
           "name": "trigger",
@@ -1011,6 +1256,331 @@
         },
         {
           "name": "has smtp-email/send-email",
+          "ok": true
+        },
+        {
+          "name": "has google-sheets/append-row",
+          "ok": true
+        },
+        {
+          "name": "has Condition",
+          "ok": false,
+          "detail": "missing"
+        },
+        {
+          "name": "has telegram/send-message",
+          "ok": true
+        },
+        {
+          "name": "Condition before telegram/send-message",
+          "ok": false,
+          "detail": "not upstream"
+        },
+        {
+          "name": "graph valid",
+          "ok": true
+        },
+        {
+          "name": "no unresolved problems",
+          "ok": true
+        },
+        {
+          "name": "conditions are readable by the engine",
+          "ok": true
+        },
+        {
+          "name": "no HTTP step without a URL from the user",
+          "ok": true
+        },
+        {
+          "name": "no broken references",
+          "ok": true
+        },
+        {
+          "name": "references point at real fields",
+          "ok": true
+        },
+        {
+          "name": "required settings filled",
+          "ok": true
+        },
+        {
+          "name": "condition tests one of the classifier's labels",
+          "ok": false
+        }
+      ]
+    },
+    {
+      "id": "edit-remove-sheet",
+      "passed": false,
+      "ms": 25314,
+      "model": null,
+      "steps": "trigger:Form > ai/classify > ai/draft-email > google-sheets/append-row > smtp-email/send-email > telegram/send-message",
+      "checks": [
+        {
+          "name": "real AI (not a template fallback)",
+          "ok": false,
+          "detail": "Failed after 2 attempts. Last error: You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. "
+        },
+        {
+          "name": "trigger",
+          "ok": true
+        },
+        {
+          "name": "has smtp-email/send-email",
+          "ok": true
+        },
+        {
+          "name": "no google-sheets/append-row",
+          "ok": false,
+          "detail": "present"
+        },
+        {
+          "name": "graph valid",
+          "ok": true
+        },
+        {
+          "name": "no unresolved problems",
+          "ok": true
+        },
+        {
+          "name": "conditions are readable by the engine",
+          "ok": true
+        },
+        {
+          "name": "no HTTP step without a URL from the user",
+          "ok": true
+        },
+        {
+          "name": "no broken references",
+          "ok": true
+        },
+        {
+          "name": "references point at real fields",
+          "ok": true
+        },
+        {
+          "name": "required settings filled",
+          "ok": true
+        },
+        {
+          "name": "email goes to the form's email field",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "first-5-thanks",
+      "passed": true,
+      "ms": 21900,
+      "model": "groq:openai/gpt-oss-20b",
+      "steps": "trigger:Form > Condition > smtp-email/send-email",
+      "checks": [
+        {
+          "name": "real AI (not a template fallback)",
+          "ok": true
+        },
+        {
+          "name": "trigger",
+          "ok": true
+        },
+        {
+          "name": "has Condition",
+          "ok": true
+        },
+        {
+          "name": "has smtp-email/send-email",
+          "ok": true
+        },
+        {
+          "name": "Condition before smtp-email/send-email",
+          "ok": true
+        },
+        {
+          "name": "graph valid",
+          "ok": true
+        },
+        {
+          "name": "no unresolved problems",
+          "ok": true
+        },
+        {
+          "name": "conditions are readable by the engine",
+          "ok": true
+        },
+        {
+          "name": "no HTTP step without a URL from the user",
+          "ok": true
+        },
+        {
+          "name": "condition uses submissionNumber",
+          "ok": true
+        },
+        {
+          "name": "no broken references",
+          "ok": true
+        },
+        {
+          "name": "references point at real fields",
+          "ok": true
+        },
+        {
+          "name": "required settings filled",
+          "ok": true
+        },
+        {
+          "name": "email goes to the form's email field",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "first-3-discount",
+      "passed": true,
+      "ms": 15540,
+      "model": "groq:openai/gpt-oss-20b",
+      "steps": "trigger:Form > google-sheets/append-row > Condition > ai/draft-email > smtp-email/send-email",
+      "checks": [
+        {
+          "name": "real AI (not a template fallback)",
+          "ok": true
+        },
+        {
+          "name": "trigger",
+          "ok": true
+        },
+        {
+          "name": "has Condition",
+          "ok": true
+        },
+        {
+          "name": "has smtp-email/send-email",
+          "ok": true
+        },
+        {
+          "name": "has google-sheets/append-row",
+          "ok": true
+        },
+        {
+          "name": "Condition before smtp-email/send-email",
+          "ok": true
+        },
+        {
+          "name": "graph valid",
+          "ok": true
+        },
+        {
+          "name": "no unresolved problems",
+          "ok": true
+        },
+        {
+          "name": "conditions are readable by the engine",
+          "ok": true
+        },
+        {
+          "name": "no HTTP step without a URL from the user",
+          "ok": true
+        },
+        {
+          "name": "condition uses submissionNumber",
+          "ok": true
+        },
+        {
+          "name": "no broken references",
+          "ok": true
+        },
+        {
+          "name": "references point at real fields",
+          "ok": true
+        },
+        {
+          "name": "required settings filled",
+          "ok": true
+        },
+        {
+          "name": "email goes to the form's email field",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "waitlist-after-50",
+      "passed": true,
+      "ms": 21119,
+      "model": "groq:openai/gpt-oss-20b",
+      "steps": "trigger:Form > Condition > smtp-email/send-email > Condition > smtp-email/send-email",
+      "checks": [
+        {
+          "name": "real AI (not a template fallback)",
+          "ok": true
+        },
+        {
+          "name": "trigger",
+          "ok": true
+        },
+        {
+          "name": "has Condition",
+          "ok": true
+        },
+        {
+          "name": "has smtp-email/send-email",
+          "ok": true
+        },
+        {
+          "name": "2+ smtp-email/send-email",
+          "ok": true
+        },
+        {
+          "name": "graph valid",
+          "ok": true
+        },
+        {
+          "name": "no unresolved problems",
+          "ok": true
+        },
+        {
+          "name": "conditions are readable by the engine",
+          "ok": true
+        },
+        {
+          "name": "no HTTP step without a URL from the user",
+          "ok": true
+        },
+        {
+          "name": "condition uses submissionNumber",
+          "ok": true
+        },
+        {
+          "name": "no broken references",
+          "ok": true
+        },
+        {
+          "name": "references point at real fields",
+          "ok": true
+        },
+        {
+          "name": "required settings filled",
+          "ok": true
+        },
+        {
+          "name": "email goes to the form's email field",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "budget-over-50k",
+      "passed": true,
+      "ms": 2216,
+      "model": "groq:openai/gpt-oss-120b",
+      "steps": "trigger:Form > google-sheets/append-row > Condition > telegram/send-message",
+      "checks": [
+        {
+          "name": "real AI (not a template fallback)",
+          "ok": true
+        },
+        {
+          "name": "trigger",
           "ok": true
         },
         {
@@ -1034,6 +1604,152 @@
           "ok": true
         },
         {
+          "name": "no unresolved problems",
+          "ok": true
+        },
+        {
+          "name": "conditions are readable by the engine",
+          "ok": true
+        },
+        {
+          "name": "no HTTP step without a URL from the user",
+          "ok": true
+        },
+        {
+          "name": "condition uses budget",
+          "ok": true
+        },
+        {
+          "name": "no broken references",
+          "ok": true
+        },
+        {
+          "name": "references point at real fields",
+          "ok": true
+        },
+        {
+          "name": "required settings filled",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "age-18-plus",
+      "passed": true,
+      "ms": 6682,
+      "model": "groq:openai/gpt-oss-20b",
+      "steps": "trigger:Form > Condition > google-sheets/append-row > smtp-email/send-email",
+      "checks": [
+        {
+          "name": "real AI (not a template fallback)",
+          "ok": true
+        },
+        {
+          "name": "trigger",
+          "ok": true
+        },
+        {
+          "name": "has Condition",
+          "ok": true
+        },
+        {
+          "name": "has smtp-email/send-email",
+          "ok": true
+        },
+        {
+          "name": "has google-sheets/append-row",
+          "ok": true
+        },
+        {
+          "name": "Condition before smtp-email/send-email",
+          "ok": true
+        },
+        {
+          "name": "graph valid",
+          "ok": true
+        },
+        {
+          "name": "no unresolved problems",
+          "ok": true
+        },
+        {
+          "name": "conditions are readable by the engine",
+          "ok": true
+        },
+        {
+          "name": "no HTTP step without a URL from the user",
+          "ok": true
+        },
+        {
+          "name": "condition uses age",
+          "ok": true
+        },
+        {
+          "name": "no broken references",
+          "ok": true
+        },
+        {
+          "name": "references point at real fields",
+          "ok": true
+        },
+        {
+          "name": "required settings filled",
+          "ok": true
+        },
+        {
+          "name": "email goes to the form's email field",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "urgent-or-normal",
+      "passed": true,
+      "ms": 10485,
+      "model": "groq:openai/gpt-oss-20b",
+      "steps": "trigger:Form > ai/classify > Condition > telegram/send-message",
+      "checks": [
+        {
+          "name": "real AI (not a template fallback)",
+          "ok": true
+        },
+        {
+          "name": "trigger",
+          "ok": true
+        },
+        {
+          "name": "has ai/classify",
+          "ok": true
+        },
+        {
+          "name": "has Condition",
+          "ok": true
+        },
+        {
+          "name": "has telegram/send-message",
+          "ok": true
+        },
+        {
+          "name": "Condition before telegram/send-message",
+          "ok": true
+        },
+        {
+          "name": "graph valid",
+          "ok": true
+        },
+        {
+          "name": "no unresolved problems",
+          "ok": true
+        },
+        {
+          "name": "conditions are readable by the engine",
+          "ok": true
+        },
+        {
+          "name": "no HTTP step without a URL from the user",
+          "ok": true
+        },
+        {
           "name": "no broken references",
           "ok": true
         },
@@ -1052,11 +1768,11 @@
       ]
     },
     {
-      "id": "edit-remove-sheet",
+      "id": "followup-30-min",
       "passed": true,
-      "ms": 22240,
-      "model": "groq:qwen/qwen3.8-27b",
-      "steps": "trigger:Form > smtp-email/send-email > Delay > smtp-email/send-email",
+      "ms": 10518,
+      "model": "groq:openai/gpt-oss-20b",
+      "steps": "trigger:Form > Delay > ai/draft-email > smtp-email/send-email",
       "checks": [
         {
           "name": "real AI (not a template fallback)",
@@ -1067,15 +1783,35 @@
           "ok": true
         },
         {
+          "name": "has Delay",
+          "ok": true
+        },
+        {
           "name": "has smtp-email/send-email",
           "ok": true
         },
         {
-          "name": "no google-sheets/append-row",
+          "name": "Delay before smtp-email/send-email",
           "ok": true
         },
         {
           "name": "graph valid",
+          "ok": true
+        },
+        {
+          "name": "no unresolved problems",
+          "ok": true
+        },
+        {
+          "name": "conditions are readable by the engine",
+          "ok": true
+        },
+        {
+          "name": "no HTTP step without a URL from the user",
+          "ok": true
+        },
+        {
+          "name": "waits 30 min",
           "ok": true
         },
         {
@@ -1092,6 +1828,698 @@
         },
         {
           "name": "email goes to the form's email field",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "reminder-2-days",
+      "passed": true,
+      "ms": 21265,
+      "model": "groq:openai/gpt-oss-20b",
+      "steps": "trigger:Form > ai/draft-email > smtp-email/send-email > Delay > ai/draft-email > smtp-email/send-email",
+      "checks": [
+        {
+          "name": "real AI (not a template fallback)",
+          "ok": true
+        },
+        {
+          "name": "trigger",
+          "ok": true
+        },
+        {
+          "name": "has Delay",
+          "ok": true
+        },
+        {
+          "name": "has smtp-email/send-email",
+          "ok": true
+        },
+        {
+          "name": "2+ smtp-email/send-email",
+          "ok": true
+        },
+        {
+          "name": "Delay before smtp-email/send-email",
+          "ok": true
+        },
+        {
+          "name": "graph valid",
+          "ok": true
+        },
+        {
+          "name": "no unresolved problems",
+          "ok": true
+        },
+        {
+          "name": "conditions are readable by the engine",
+          "ok": true
+        },
+        {
+          "name": "no HTTP step without a URL from the user",
+          "ok": true
+        },
+        {
+          "name": "waits 2880 min",
+          "ok": true
+        },
+        {
+          "name": "no broken references",
+          "ok": true
+        },
+        {
+          "name": "references point at real fields",
+          "ok": true
+        },
+        {
+          "name": "required settings filled",
+          "ok": true
+        },
+        {
+          "name": "email goes to the form's email field",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "all-three-parallel",
+      "passed": true,
+      "ms": 14010,
+      "model": "groq:openai/gpt-oss-20b",
+      "steps": "trigger:Form > google-sheets/append-row > smtp-email/send-email > telegram/send-message",
+      "checks": [
+        {
+          "name": "real AI (not a template fallback)",
+          "ok": true
+        },
+        {
+          "name": "trigger",
+          "ok": true
+        },
+        {
+          "name": "has google-sheets/append-row",
+          "ok": true
+        },
+        {
+          "name": "has smtp-email/send-email",
+          "ok": true
+        },
+        {
+          "name": "has telegram/send-message",
+          "ok": true
+        },
+        {
+          "name": "graph valid",
+          "ok": true
+        },
+        {
+          "name": "no unresolved problems",
+          "ok": true
+        },
+        {
+          "name": "conditions are readable by the engine",
+          "ok": true
+        },
+        {
+          "name": "no HTTP step without a URL from the user",
+          "ok": true
+        },
+        {
+          "name": "no broken references",
+          "ok": true
+        },
+        {
+          "name": "references point at real fields",
+          "ok": true
+        },
+        {
+          "name": "required settings filled",
+          "ok": true
+        },
+        {
+          "name": "email goes to the form's email field",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "friday-timesheet",
+      "passed": false,
+      "ms": 25426,
+      "model": null,
+      "steps": "trigger:Form > ai/classify > ai/draft-email > google-sheets/append-row > smtp-email/send-email > telegram/send-message",
+      "checks": [
+        {
+          "name": "real AI (not a template fallback)",
+          "ok": false,
+          "detail": "Failed after 2 attempts. Last error: You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. "
+        },
+        {
+          "name": "trigger",
+          "ok": false,
+          "detail": "got Form"
+        },
+        {
+          "name": "has telegram/send-message",
+          "ok": true
+        },
+        {
+          "name": "graph valid",
+          "ok": true
+        },
+        {
+          "name": "no unresolved problems",
+          "ok": true
+        },
+        {
+          "name": "conditions are readable by the engine",
+          "ok": true
+        },
+        {
+          "name": "no HTTP step without a URL from the user",
+          "ok": true
+        },
+        {
+          "name": "no broken references",
+          "ok": true
+        },
+        {
+          "name": "references point at real fields",
+          "ok": true
+        },
+        {
+          "name": "required settings filled",
+          "ok": true
+        },
+        {
+          "name": "cron 0 17 * * 5",
+          "ok": false,
+          "detail": "got \"\""
+        }
+      ]
+    },
+    {
+      "id": "payment-over-1000",
+      "passed": false,
+      "ms": 11806,
+      "model": null,
+      "steps": "trigger:Webhook > google-sheets/append-row > smtp-email/send-email > telegram/send-message",
+      "checks": [
+        {
+          "name": "real AI (not a template fallback)",
+          "ok": false,
+          "detail": "Failed after 2 attempts. Last error: You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. "
+        },
+        {
+          "name": "trigger",
+          "ok": true
+        },
+        {
+          "name": "has google-sheets/append-row",
+          "ok": true
+        },
+        {
+          "name": "has Condition",
+          "ok": false,
+          "detail": "missing"
+        },
+        {
+          "name": "has smtp-email/send-email",
+          "ok": true
+        },
+        {
+          "name": "Condition before smtp-email/send-email",
+          "ok": false,
+          "detail": "not upstream"
+        },
+        {
+          "name": "graph valid",
+          "ok": true
+        },
+        {
+          "name": "no unresolved problems",
+          "ok": true
+        },
+        {
+          "name": "conditions are readable by the engine",
+          "ok": true
+        },
+        {
+          "name": "no HTTP step without a URL from the user",
+          "ok": true
+        },
+        {
+          "name": "condition uses amount",
+          "ok": false,
+          "detail": "no condition"
+        },
+        {
+          "name": "no broken references",
+          "ok": true
+        },
+        {
+          "name": "references point at real fields",
+          "ok": true
+        },
+        {
+          "name": "required settings filled",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "hindi-first-10",
+      "passed": true,
+      "ms": 4942,
+      "model": "groq:openai/gpt-oss-20b",
+      "steps": "trigger:Form > Condition > smtp-email/send-email > google-sheets/append-row",
+      "checks": [
+        {
+          "name": "real AI (not a template fallback)",
+          "ok": true
+        },
+        {
+          "name": "trigger",
+          "ok": true
+        },
+        {
+          "name": "has Condition",
+          "ok": true
+        },
+        {
+          "name": "has smtp-email/send-email",
+          "ok": true
+        },
+        {
+          "name": "has google-sheets/append-row",
+          "ok": true
+        },
+        {
+          "name": "Condition before smtp-email/send-email",
+          "ok": true
+        },
+        {
+          "name": "graph valid",
+          "ok": true
+        },
+        {
+          "name": "no unresolved problems",
+          "ok": true
+        },
+        {
+          "name": "conditions are readable by the engine",
+          "ok": true
+        },
+        {
+          "name": "no HTTP step without a URL from the user",
+          "ok": true
+        },
+        {
+          "name": "condition uses submissionNumber",
+          "ok": true
+        },
+        {
+          "name": "no broken references",
+          "ok": true
+        },
+        {
+          "name": "references point at real fields",
+          "ok": true
+        },
+        {
+          "name": "required settings filled",
+          "ok": true
+        },
+        {
+          "name": "email goes to the form's email field",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "extract-city-route",
+      "passed": true,
+      "ms": 21638,
+      "model": "groq:openai/gpt-oss-20b",
+      "steps": "trigger:Form > ai/extract > google-sheets/append-row > Condition > telegram/send-message",
+      "checks": [
+        {
+          "name": "real AI (not a template fallback)",
+          "ok": true
+        },
+        {
+          "name": "trigger",
+          "ok": true
+        },
+        {
+          "name": "has ai/extract",
+          "ok": true
+        },
+        {
+          "name": "has google-sheets/append-row",
+          "ok": true
+        },
+        {
+          "name": "has Condition",
+          "ok": true
+        },
+        {
+          "name": "has telegram/send-message",
+          "ok": true
+        },
+        {
+          "name": "ai/extract before Condition",
+          "ok": true
+        },
+        {
+          "name": "Condition before telegram/send-message",
+          "ok": true
+        },
+        {
+          "name": "graph valid",
+          "ok": true
+        },
+        {
+          "name": "no unresolved problems",
+          "ok": true
+        },
+        {
+          "name": "conditions are readable by the engine",
+          "ok": true
+        },
+        {
+          "name": "no HTTP step without a URL from the user",
+          "ok": true
+        },
+        {
+          "name": "no broken references",
+          "ok": true
+        },
+        {
+          "name": "references point at real fields",
+          "ok": true
+        },
+        {
+          "name": "required settings filled",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "edit-add-delay",
+      "passed": false,
+      "ms": 18658,
+      "model": null,
+      "steps": "trigger:Form > ai/classify > ai/draft-email > google-sheets/append-row > smtp-email/send-email > telegram/send-message",
+      "checks": [
+        {
+          "name": "real AI (not a template fallback)",
+          "ok": false,
+          "detail": "Failed after 2 attempts. Last error: You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. "
+        },
+        {
+          "name": "trigger",
+          "ok": true
+        },
+        {
+          "name": "has Delay",
+          "ok": false,
+          "detail": "missing"
+        },
+        {
+          "name": "has smtp-email/send-email",
+          "ok": true
+        },
+        {
+          "name": "has google-sheets/append-row",
+          "ok": true
+        },
+        {
+          "name": "Delay before smtp-email/send-email",
+          "ok": false,
+          "detail": "not upstream"
+        },
+        {
+          "name": "graph valid",
+          "ok": true
+        },
+        {
+          "name": "no unresolved problems",
+          "ok": true
+        },
+        {
+          "name": "conditions are readable by the engine",
+          "ok": true
+        },
+        {
+          "name": "no HTTP step without a URL from the user",
+          "ok": true
+        },
+        {
+          "name": "waits 10 min",
+          "ok": false,
+          "detail": "got "
+        },
+        {
+          "name": "no broken references",
+          "ok": true
+        },
+        {
+          "name": "references point at real fields",
+          "ok": true
+        },
+        {
+          "name": "required settings filled",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "edit-hot-and-warm",
+      "passed": false,
+      "ms": 20610,
+      "model": null,
+      "steps": "trigger:Form > ai/classify > google-sheets/append-row > Condition > telegram/send-message",
+      "checks": [
+        {
+          "name": "real AI (not a template fallback)",
+          "ok": false,
+          "detail": "Failed after 2 attempts. Last error: You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. "
+        },
+        {
+          "name": "trigger",
+          "ok": true
+        },
+        {
+          "name": "has ai/classify",
+          "ok": true
+        },
+        {
+          "name": "has Condition",
+          "ok": true
+        },
+        {
+          "name": "has telegram/send-message",
+          "ok": true
+        },
+        {
+          "name": "graph valid",
+          "ok": true
+        },
+        {
+          "name": "no unresolved problems",
+          "ok": true
+        },
+        {
+          "name": "conditions are readable by the engine",
+          "ok": true
+        },
+        {
+          "name": "no HTTP step without a URL from the user",
+          "ok": true
+        },
+        {
+          "name": "no broken references",
+          "ok": true
+        },
+        {
+          "name": "references point at real fields",
+          "ok": true
+        },
+        {
+          "name": "required settings filled",
+          "ok": true
+        },
+        {
+          "name": "condition tests one of the classifier's labels",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "manual-test-row",
+      "passed": true,
+      "ms": 3406,
+      "model": "groq:openai/gpt-oss-20b",
+      "steps": "trigger:Manual > google-sheets/append-row",
+      "checks": [
+        {
+          "name": "real AI (not a template fallback)",
+          "ok": true
+        },
+        {
+          "name": "trigger",
+          "ok": true
+        },
+        {
+          "name": "has google-sheets/append-row",
+          "ok": true
+        },
+        {
+          "name": "graph valid",
+          "ok": true
+        },
+        {
+          "name": "no unresolved problems",
+          "ok": true
+        },
+        {
+          "name": "conditions are readable by the engine",
+          "ok": true
+        },
+        {
+          "name": "no HTTP step without a URL from the user",
+          "ok": true
+        },
+        {
+          "name": "no broken references",
+          "ok": true
+        },
+        {
+          "name": "references point at real fields",
+          "ok": true
+        },
+        {
+          "name": "required settings filled",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "crm-no-url",
+      "passed": true,
+      "ms": 7297,
+      "model": "groq:openai/gpt-oss-20b",
+      "steps": "trigger:Form > ai/draft-email > google-sheets/append-row > smtp-email/send-email",
+      "checks": [
+        {
+          "name": "real AI (not a template fallback)",
+          "ok": true
+        },
+        {
+          "name": "trigger",
+          "ok": true
+        },
+        {
+          "name": "has smtp-email/send-email",
+          "ok": true
+        },
+        {
+          "name": "graph valid",
+          "ok": true
+        },
+        {
+          "name": "no unresolved problems",
+          "ok": true
+        },
+        {
+          "name": "conditions are readable by the engine",
+          "ok": true
+        },
+        {
+          "name": "no HTTP step without a URL from the user",
+          "ok": true
+        },
+        {
+          "name": "no broken references",
+          "ok": true
+        },
+        {
+          "name": "references point at real fields",
+          "ok": true
+        },
+        {
+          "name": "required settings filled",
+          "ok": true
+        },
+        {
+          "name": "email goes to the form's email field",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "lpu-email-domain",
+      "passed": false,
+      "ms": 4741,
+      "model": "groq:openai/gpt-oss-20b",
+      "steps": "trigger:Form > google-sheets/append-row > ai/classify > Condition > telegram/send-message",
+      "checks": [
+        {
+          "name": "real AI (not a template fallback)",
+          "ok": true
+        },
+        {
+          "name": "trigger",
+          "ok": true
+        },
+        {
+          "name": "has Condition",
+          "ok": true
+        },
+        {
+          "name": "has telegram/send-message",
+          "ok": true
+        },
+        {
+          "name": "has google-sheets/append-row",
+          "ok": true
+        },
+        {
+          "name": "Condition before telegram/send-message",
+          "ok": true
+        },
+        {
+          "name": "graph valid",
+          "ok": true
+        },
+        {
+          "name": "no unresolved problems",
+          "ok": true
+        },
+        {
+          "name": "conditions are readable by the engine",
+          "ok": true
+        },
+        {
+          "name": "no HTTP step without a URL from the user",
+          "ok": true
+        },
+        {
+          "name": "condition uses lpu.in",
+          "ok": false,
+          "detail": "{{@classify_email_b4f1:Classify Email.label}} === 'LPU student'"
+        },
+        {
+          "name": "no broken references",
+          "ok": true
+        },
+        {
+          "name": "references point at real fields",
+          "ok": true
+        },
+        {
+          "name": "required settings filled",
           "ok": true
         }
       ]

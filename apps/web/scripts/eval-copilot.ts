@@ -13,6 +13,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { config } from "dotenv";
+import { validateConditionExpression } from "../lib/condition-validator";
 
 config({ path: [".env.local", ".env"], quiet: true });
 
@@ -32,6 +33,10 @@ type Case = {
   conditionOnClassify?: boolean;
   sheetUsesStep?: string;
   httpEndpoint?: string;
+  /** Text every Condition (at least one) must use, e.g. "submissionNumber". */
+  conditionUses?: string;
+  /** Wait time the Delay must have, in minutes. */
+  delayMinutes?: number;
 };
 
 type Node = {
@@ -54,7 +59,12 @@ const TRIGGER_OUTPUTS = new Set([
   "trigger",
   "consent",
   "submissionId",
+  "submissionNumber",
 ]);
+const URL_IN_TEXT = /https?:\/\/[^\s"'<>]+/i;
+// Repair notes that mean the flow would not do what was asked.
+const PROBLEM_NOTE =
+  /can't read|not one of|doesn't produce|needs a recipient|empty message|no columns|needs the labels|no condition yet|needs your real URL/;
 
 function refsIn(value: unknown): { nodeId: string; field: string }[] {
   if (typeof value !== "string") {
@@ -127,6 +137,48 @@ function score(
     add(`${a} before ${b}`, ok, "not upstream");
   }
   add("graph valid", issues.length === 0, issues.join("; "));
+  const problems = built.notes.filter((n) => PROBLEM_NOTE.test(n));
+  add("no unresolved problems", problems.length === 0, problems.join("; "));
+  const conditionsOk = actions
+    .filter((n) => actionOf(n) === "Condition")
+    .every((n) => {
+      let i = 0;
+      const probe = String(n.data.config.condition ?? "").replace(REF, () => {
+        i += 1;
+        return `__v${i}`;
+      });
+      return validateConditionExpression(probe).valid;
+    });
+  add("conditions are readable by the engine", conditionsOk);
+  if (!(c.httpEndpoint || URL_IN_TEXT.test(c.prompt))) {
+    add(
+      "no HTTP step without a URL from the user",
+      ofType("HTTP Request").length === 0,
+      "present"
+    );
+  }
+  if (c.conditionUses) {
+    const exprs = ofType("Condition").map((n) =>
+      String(n.data.config.condition ?? "")
+    );
+    add(
+      `condition uses ${c.conditionUses}`,
+      exprs.some((e) => e.includes(c.conditionUses as string)),
+      exprs.join(" | ") || "no condition"
+    );
+  }
+  if (c.delayMinutes !== undefined) {
+    const waits = ofType("Delay").map(
+      (n) =>
+        Number(n.data.config.delayMinutes ?? 0) +
+        Number(n.data.config.delaySeconds ?? 0) / 60
+    );
+    add(
+      `waits ${c.delayMinutes} min`,
+      waits.some((w) => Math.abs(w - (c.delayMinutes as number)) < 0.01),
+      `got ${waits.join(", ")}`
+    );
+  }
   const dropped = built.notes.filter((n) =>
     n.startsWith("Removed a reference")
   );
@@ -325,9 +377,24 @@ async function main() {
       }
     }
     const t0 = Date.now();
-    const result = await planWorkflow(c.prompt, existing);
+    let result: Awaited<ReturnType<typeof planWorkflow>>;
+    try {
+      result = await planWorkflow(c.prompt, existing);
+    } catch (error) {
+      // AI unavailable and no close template: the Copilot answers "busy".
+      const reason = error instanceof Error ? error.message : String(error);
+      console.log(`SKIP  ${c.id.padEnd(26)} AI unavailable: ${reason}`);
+      results.push({ id: c.id, passed: false, ms: 0, unavailable: true });
+      await new Promise((r) => setTimeout(r, 1500));
+      continue;
+    }
     const ms = Date.now() - t0;
-    const built = buildWorkflow(result.plan, connections);
+    const built = buildWorkflow(
+      result.plan,
+      connections,
+      {},
+      `${c.prompt}\n${existing?.summary ?? ""}`
+    );
     const definition = normalizeDefinition(built.nodes, built.edges);
     const issues = validateGraph(
       toEngineGraph(definition),
@@ -362,7 +429,9 @@ async function main() {
   }
 
   const passedCount = results.filter((r) => r.passed).length;
-  const checkTotals = results.flatMap((r) => r.checks as { ok: boolean }[]);
+  const checkTotals = results.flatMap(
+    (r) => (r.checks ?? []) as { ok: boolean }[]
+  );
   const latencies = results.map((r) => r.ms as number).sort((a, b) => a - b);
   const pct = (p: number) =>
     latencies[
@@ -403,7 +472,7 @@ async function main() {
       "|---|---|---|---|---|",
       ...results.map((r) => {
         const failed = (
-          r.checks as { ok: boolean; name: string; detail?: string }[]
+          (r.checks ?? []) as { ok: boolean; name: string; detail?: string }[]
         ).filter((k) => !k.ok);
         return `| ${r.id} | ${r.passed ? "pass" : "FAIL"} | ${((r.ms as number) / 1000).toFixed(1)} s | ${String(r.steps).replace(/\|/g, "/")} | ${failed.map((f) => `${f.name}${f.detail ? ` (${f.detail.replace(/\|/g, "/").slice(0, 80)})` : ""}`).join("; ")} |`;
       }),

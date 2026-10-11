@@ -17,7 +17,6 @@ import {
   Sparkles,
   Workflow,
   XCircle,
-  Zap,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
@@ -93,7 +92,37 @@ const APPS = [
   },
 ];
 
-const FILTERS = ["All", "Active", "Paused", "Drafts"] as const;
+const FILTERS = ["All", "Active", "Paused", "Drafts", "Failing"] as const;
+
+// Live first, then paused, then drafts; most recently changed first within each.
+function rank(w: { published: boolean; enabled: boolean }): number {
+  if (!w.published) {
+    return 2;
+  }
+  return w.enabled ? 0 : 1;
+}
+
+function matches(
+  w: DashWorkflow,
+  filter: (typeof FILTERS)[number],
+  query: string
+): boolean {
+  if (query && !w.name.toLowerCase().includes(query.toLowerCase())) {
+    return false;
+  }
+  switch (filter) {
+    case "Active":
+      return w.enabled && w.published;
+    case "Paused":
+      return w.published && !w.enabled;
+    case "Drafts":
+      return !w.published;
+    case "Failing":
+      return w.lastStatus === "error";
+    default:
+      return true;
+  }
+}
 
 const RUN_DOT: Record<string, string> = {
   success: "bg-emerald-400",
@@ -254,6 +283,7 @@ function Toggle({
   );
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: one page; each section is plain markup over the same data
 export function Dashboard() {
   const router = useRouter();
   const { data: session } = useSession();
@@ -286,24 +316,15 @@ export function Dashboard() {
     return () => clearInterval(timer);
   }, [load]);
 
-  const filtered = useMemo(() => {
-    const list = data?.workflows ?? [];
-    return list.filter((w) => {
-      if (query && !w.name.toLowerCase().includes(query.toLowerCase())) {
-        return false;
-      }
-      if (filter === "Active") {
-        return w.enabled && w.published;
-      }
-      if (filter === "Paused") {
-        return w.published && !w.enabled;
-      }
-      if (filter === "Drafts") {
-        return !w.published;
-      }
-      return true;
-    });
-  }, [data, filter, query]);
+  const filtered = useMemo(
+    () =>
+      (data?.workflows ?? [])
+        .filter((w) => matches(w, filter, query))
+        .sort(
+          (x, y) => rank(x) - rank(y) || y.updatedAt.localeCompare(x.updatedAt)
+        ),
+    [data, filter, query]
+  );
 
   const loaded = data !== null;
   // biome-ignore lint/correctness/useExhaustiveDependencies: re-run the entrance animation when the filter changes
@@ -356,7 +377,17 @@ export function Dashboard() {
   const first = (user?.name ?? "").split(" ")[0] || "there";
   const workflows = data?.workflows ?? [];
   const active = workflows.filter((w) => w.enabled && w.published).length;
+  const failing = workflows.filter((w) => w.lastStatus === "error").length;
   const connected = new Set(data?.connections ?? []);
+  const moreConnected = [...connected].filter(
+    (t) => !APPS.some((a) => a.type === t)
+  ).length;
+  const runs7d = data?.stats.runs7d ?? 0;
+  const failed7d = data?.stats.failed7d ?? 0;
+  const successRate =
+    runs7d > 0
+      ? Math.round(((data?.stats.succeeded7d ?? 0) / runs7d) * 100)
+      : null;
   const checklist = [
     { done: connected.size > 0, label: "Connect one of your apps" },
     { done: workflows.length > 0, label: "Create a workflow" },
@@ -367,6 +398,7 @@ export function Dashboard() {
     },
   ];
   const progress = checklist.filter((c) => c.done).length;
+  const setupDone = loaded && progress === checklist.length;
 
   return (
     <div className="nf-landing pointer-events-auto relative min-h-dvh bg-[#0a0a0a] text-white">
@@ -381,23 +413,7 @@ export function Dashboard() {
               ZE<span className="text-[#ffc326]">TA</span>
             </span>
           </Link>
-          <nav className="hidden items-center gap-1 text-sm md:flex">
-            <span className="rounded-lg bg-white/[0.06] px-3 py-1.5 text-white">
-              Dashboard
-            </span>
-            <Link
-              className="rounded-lg px-3 py-1.5 text-white/60 hover:bg-white/[0.04] hover:text-white"
-              href="/build"
-            >
-              Builder
-            </Link>
-            <Link
-              className="rounded-lg px-3 py-1.5 text-white/60 hover:bg-white/[0.04] hover:text-white"
-              href="/connections"
-            >
-              Connections
-            </Link>
-          </nav>
+          <NavLinks className="hidden md:flex" />
           <div className="flex items-center gap-2">
             <Link
               className="nf-gold-btn hidden items-center gap-1.5 rounded-xl px-3.5 py-2 font-semibold text-sm sm:inline-flex"
@@ -436,10 +452,11 @@ export function Dashboard() {
             </div>
           </div>
         </div>
+        <NavLinks className="flex justify-center border-white/[0.06] border-t px-4 py-2 md:hidden" />
       </header>
 
       <main className="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10">
-        {/* Greeting + composer */}
+        {/* 1. Build: greeting, composer, and setup (or the plan once set up) */}
         <motion.section
           animate={{ opacity: 1, y: 0 }}
           className="nf-card relative overflow-hidden rounded-3xl p-6 sm:p-9"
@@ -447,7 +464,7 @@ export function Dashboard() {
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
         >
           <div className="nf-orb nf-orb-a opacity-60" />
-          <div className="relative grid gap-8 lg:grid-cols-[1.4fr_1fr] lg:items-end">
+          <div className="relative grid gap-8 lg:grid-cols-[1.4fr_1fr] lg:items-center">
             <div>
               <p className="text-sm text-white/50">
                 {greeting()}, {first}
@@ -474,63 +491,102 @@ export function Dashboard() {
                   Build <ArrowRight className="size-4" />
                 </button>
               </form>
-            </div>
-            <div className="rounded-2xl border border-white/10 bg-black/30 p-5">
-              <div className="flex items-center justify-between">
-                <p className="font-medium text-sm">Getting started</p>
-                <span className="text-white/45 text-xs">{progress}/4</span>
-              </div>
-              <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10">
-                <motion.div
-                  animate={{ width: `${(progress / 4) * 100}%` }}
-                  className="h-full rounded-full bg-gradient-to-r from-[#ffd34d] to-[#ff9f1c]"
-                  initial={{ width: 0 }}
-                  transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-                />
-              </div>
-              <ul className="mt-4 space-y-2.5 text-sm">
-                {checklist.map((c) => (
-                  <li className="flex items-center gap-2.5" key={c.label}>
-                    {c.done ? (
-                      <CheckCircle2 className="size-4 text-[#ffc326]" />
-                    ) : (
-                      <CircleDashed className="size-4 text-white/30" />
-                    )}
-                    <span
-                      className={
-                        c.done ? "text-white/50 line-through" : "text-white/80"
-                      }
-                    >
-                      {c.label}
-                    </span>
-                  </li>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {IDEAS.map((idea) => (
+                  <button
+                    className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-white/60 text-xs transition hover:border-[#ffc326]/40 hover:text-white"
+                    key={idea.label}
+                    onClick={() => setPrompt(idea.prompt)}
+                    type="button"
+                  >
+                    {idea.label}
+                  </button>
                 ))}
-              </ul>
+              </div>
             </div>
+            {setupDone ? (
+              <PlanCard refreshKey={data?.workflows.length} />
+            ) : (
+              <div className="rounded-2xl border border-white/10 bg-black/30 p-5">
+                <div className="flex items-center justify-between">
+                  <p className="font-medium text-sm">Getting started</p>
+                  <span className="text-white/45 text-xs">
+                    {progress}/{checklist.length}
+                  </span>
+                </div>
+                <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10">
+                  <motion.div
+                    animate={{
+                      width: `${(progress / checklist.length) * 100}%`,
+                    }}
+                    className="h-full rounded-full bg-gradient-to-r from-[#ffd34d] to-[#ff9f1c]"
+                    initial={{ width: 0 }}
+                    transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+                  />
+                </div>
+                <ul className="mt-4 space-y-2.5 text-sm">
+                  {checklist.map((c) => (
+                    <li className="flex items-center gap-2.5" key={c.label}>
+                      {c.done ? (
+                        <CheckCircle2 className="size-4 text-[#ffc326]" />
+                      ) : (
+                        <CircleDashed className="size-4 text-white/30" />
+                      )}
+                      <span
+                        className={
+                          c.done
+                            ? "text-white/50 line-through"
+                            : "text-white/80"
+                        }
+                      >
+                        {c.label}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         </motion.section>
 
-        {/* Stats */}
+        {/* 2. Health at a glance */}
         <section className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
           {[
-            { label: "Workflows", value: workflows.length, icon: Workflow },
-            { label: "Active now", value: active, icon: Zap },
             {
-              label: "Runs, last 7 days",
-              value: data?.stats.runs7d ?? 0,
-              icon: Activity,
+              label: "Workflows",
+              value: workflows.length,
+              icon: Workflow,
+              note: `${active} active`,
             },
             {
-              label: "Succeeded, 7 days",
-              value: data?.stats.succeeded7d ?? 0,
+              label: "Runs, last 7 days",
+              value: runs7d,
+              icon: Activity,
+              note: "every step logged",
+            },
+            {
+              label: "Success rate, 7 days",
+              value: successRate,
+              suffix: "%",
               icon: CheckCircle2,
+              note: successRate === null ? "no runs yet" : "of finished runs",
+            },
+            {
+              label: "Failed, 7 days",
+              value: failed7d,
+              icon: XCircle,
+              note: failed7d > 0 ? "open Run Doctor" : "all clear",
+              alert: failed7d > 0,
             },
           ].map((s, i) => {
             const Icon = s.icon;
             return (
               <motion.div
                 animate={{ opacity: 1, y: 0 }}
-                className="nf-card rounded-2xl p-5"
+                className={cn(
+                  "nf-card rounded-2xl p-5",
+                  s.alert && "border-red-400/30"
+                )}
                 initial={{ opacity: 0, y: 14 }}
                 key={s.label}
                 transition={{ delay: 0.1 + i * 0.06, duration: 0.5 }}
@@ -539,28 +595,42 @@ export function Dashboard() {
                   <span className="text-xs uppercase tracking-wider">
                     {s.label}
                   </span>
-                  <Icon className="size-4 text-[#ffc326]/80" />
+                  <Icon
+                    className={cn(
+                      "size-4",
+                      s.alert ? "text-red-300" : "text-[#ffc326]/80"
+                    )}
+                  />
                 </div>
-                <p className="mt-3 font-display font-semibold text-3xl tabular-nums">
-                  {loaded ? (
-                    <CountUp value={s.value} />
+                <p
+                  className={cn(
+                    "mt-3 font-display font-semibold text-3xl tabular-nums",
+                    s.alert && "text-red-200"
+                  )}
+                >
+                  {loaded && s.value !== null ? (
+                    <>
+                      <CountUp value={s.value} />
+                      {s.suffix}
+                    </>
                   ) : (
                     <span className="text-white/20">-</span>
                   )}
                 </p>
+                <p className="mt-1 text-white/40 text-xs">{s.note}</p>
               </motion.div>
             );
           })}
         </section>
 
+        {/* 3. Work: workflows beside what they are doing right now */}
         <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_360px]">
-          {/* Workflows */}
           <section>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <h2 className="font-display font-semibold text-xl">
                 Your workflows
               </h2>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <div className="relative">
                   <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-white/35" />
                   <input
@@ -594,7 +664,10 @@ export function Dashboard() {
                           }}
                         />
                       )}
-                      <span className="relative">{f}</span>
+                      <span className="relative">
+                        {f}
+                        {f === "Failing" && failing > 0 && ` ${failing}`}
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -623,59 +696,12 @@ export function Dashboard() {
                   />
                 ))}
               {filtered.map((w) => (
-                <Link
-                  className="nf-card nf-spotlight group relative flex min-h-[176px] flex-col rounded-2xl p-5 transition-transform hover:-translate-y-0.5"
-                  data-card
-                  href={`/workflows/${w.id}`}
+                <WorkflowCard
+                  busy={busyToggle === w.id}
                   key={w.id}
-                  onPointerMove={(event) => {
-                    const rect = event.currentTarget.getBoundingClientRect();
-                    event.currentTarget.style.setProperty(
-                      "--x",
-                      `${event.clientX - rect.left}px`
-                    );
-                    event.currentTarget.style.setProperty(
-                      "--y",
-                      `${event.clientY - rect.top}px`
-                    );
-                  }}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        {w.enabled && w.published ? (
-                          <span className="nf-live-dot size-2 rounded-full bg-emerald-400" />
-                        ) : (
-                          <span className="size-2 rounded-full bg-white/25" />
-                        )}
-                        <span className="text-[11px] text-white/45 uppercase tracking-wider">
-                          {workflowState(w)} · {w.trigger}
-                        </span>
-                      </div>
-                      <h3 className="mt-2 truncate font-semibold text-white">
-                        {w.name}
-                      </h3>
-                      {w.description && (
-                        <p className="mt-1 line-clamp-2 text-sm text-white/50">
-                          {w.description}
-                        </p>
-                      )}
-                    </div>
-                    <Toggle
-                      disabled={busyToggle === w.id}
-                      on={w.enabled && w.published}
-                      onChange={() => toggle(w)}
-                    />
-                  </div>
-                  <div className="mt-auto flex items-center justify-between pt-5 text-white/45 text-xs">
-                    <span className="flex items-center gap-3">
-                      <span>{w.steps} steps</span>
-                      <span>{w.runs} runs</span>
-                      <span>{timeAgo(w.lastRunAt)}</span>
-                    </span>
-                    <StatusPill status={w.lastStatus} />
-                  </div>
-                </Link>
+                  onToggle={() => toggle(w)}
+                  w={w}
+                />
               ))}
             </div>
             {loaded && filtered.length === 0 && workflows.length > 0 && (
@@ -685,111 +711,272 @@ export function Dashboard() {
             )}
           </section>
 
-          {/* Side column */}
-          <aside className="space-y-6">
-            <PlanCard refreshKey={data?.workflows.length} />
-            <section className="nf-card rounded-2xl p-5">
-              <div className="flex items-center justify-between">
-                <h2 className="font-display font-semibold">Your apps</h2>
-                <KeyRound className="size-4 text-[#ffc326]/80" />
-              </div>
-              <p className="mt-1 text-white/45 text-xs leading-relaxed">
-                Workflows run with your own credentials, encrypted per workspace
-                and never shown again after saving. Privacy Shield hides
-                personal data from the AI.
-              </p>
-              <ul className="mt-4 space-y-2">
-                {APPS.map((app) => {
-                  const Icon = app.icon;
-                  const ok = connected.has(app.type);
-                  return (
-                    <li
-                      className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-2.5"
-                      key={app.type}
+          <section className="nf-card h-fit rounded-2xl p-5 lg:sticky lg:top-20">
+            <div className="flex items-center justify-between">
+              <h2 className="font-display font-semibold">Recent runs</h2>
+              <span className="flex items-center gap-1.5 text-white/40 text-xs">
+                <span className="nf-live-dot size-1.5 rounded-full bg-[#ffc326]" />{" "}
+                live
+              </span>
+            </div>
+            <ol className="relative mt-4 max-h-[520px] space-y-1 overflow-y-auto before:absolute before:top-2 before:bottom-2 before:left-[7px] before:w-px before:bg-white/10">
+              <AnimatePresence initial={false}>
+                {(data?.recentRuns ?? []).map((r) => (
+                  <motion.li
+                    animate={{ opacity: 1, x: 0 }}
+                    initial={{ opacity: 0, x: -8 }}
+                    key={r.id}
+                    layout
+                  >
+                    <Link
+                      className="flex items-start gap-3 rounded-lg p-1.5 hover:bg-white/[0.03]"
+                      href={`/workflows/${r.workflowId}`}
                     >
                       <span
                         className={cn(
-                          "grid size-9 place-items-center rounded-lg",
-                          ok
-                            ? "bg-[#ffc326] text-[#0a0a0a]"
-                            : "bg-white/[0.06] text-white/60"
+                          "relative mt-1 size-[15px] shrink-0 rounded-full border-2 border-[#0a0a0a]",
+                          RUN_DOT[r.status] ?? "bg-amber-300"
                         )}
-                      >
-                        <Icon className="size-4" />
-                      </span>
+                      />
                       <span className="min-w-0 flex-1">
-                        <span className="block font-medium text-sm">
-                          {app.label}
-                        </span>
-                        <span className="block truncate text-white/40 text-xs">
-                          {ok ? "Connected" : app.hint}
-                        </span>
-                      </span>
-                      {ok ? (
-                        <CheckCircle2 className="size-4 text-emerald-400" />
-                      ) : (
-                        <Link
-                          className="rounded-lg border border-[#ffc326]/40 px-2.5 py-1 font-medium text-[#ffe08a] text-xs hover:bg-[#ffc326]/10"
-                          href={`/connections#${app.type}`}
-                        >
-                          Connect
-                        </Link>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
-            </section>
-
-            <section className="nf-card rounded-2xl p-5">
-              <div className="flex items-center justify-between">
-                <h2 className="font-display font-semibold">Recent runs</h2>
-                <span className="flex items-center gap-1.5 text-white/40 text-xs">
-                  <span className="nf-live-dot size-1.5 rounded-full bg-[#ffc326]" />{" "}
-                  live
-                </span>
-              </div>
-              <ol className="relative mt-4 space-y-1 before:absolute before:top-2 before:bottom-2 before:left-[7px] before:w-px before:bg-white/10">
-                <AnimatePresence initial={false}>
-                  {(data?.recentRuns ?? []).map((r) => (
-                    <motion.li
-                      animate={{ opacity: 1, x: 0 }}
-                      initial={{ opacity: 0, x: -8 }}
-                      key={r.id}
-                      layout
-                    >
-                      <div className="flex items-start gap-3 rounded-lg p-1.5 hover:bg-white/[0.03]">
-                        <span
-                          className={cn(
-                            "relative mt-1 size-[15px] shrink-0 rounded-full border-2 border-[#0a0a0a]",
-                            RUN_DOT[r.status] ?? "bg-amber-300"
-                          )}
-                        />
-                        <Link
-                          className="min-w-0 flex-1"
-                          href={`/workflows/${r.workflowId}`}
-                        >
-                          <span className="block truncate text-sm">
+                        <span className="flex items-center justify-between gap-2">
+                          <span className="truncate text-sm">
                             {r.workflowName}
                           </span>
-                          <span className="flex items-center gap-2 text-white/40 text-xs">
-                            {timeAgo(r.startedAt)} · {r.trigger ?? "manual"}
+                          <span className="shrink-0 text-[11px] text-white/35">
+                            {timeAgo(r.startedAt)}
                           </span>
-                        </Link>
-                      </div>
-                    </motion.li>
-                  ))}
-                </AnimatePresence>
-                {loaded && (data?.recentRuns.length ?? 0) === 0 && (
-                  <li className="pl-7 text-sm text-white/40">
-                    Runs appear here the moment they start.
+                        </span>
+                        <span className="block truncate text-white/40 text-xs">
+                          {r.status === "error" && r.error
+                            ? r.error
+                            : `${RUN_LABEL[r.status] ?? r.status} · ${r.trigger ?? "manual"}${r.duration ? ` · ${r.duration}` : ""}`}
+                        </span>
+                      </span>
+                    </Link>
+                  </motion.li>
+                ))}
+              </AnimatePresence>
+              {loaded && (data?.recentRuns.length ?? 0) === 0 && (
+                <li className="pl-7 text-sm text-white/40">
+                  Runs appear here the moment they start.
+                </li>
+              )}
+            </ol>
+          </section>
+        </div>
+
+        {/* 4. Setup: apps and plan */}
+        <div
+          className={cn(
+            "mt-8 grid gap-6",
+            setupDone ? "" : "lg:grid-cols-[1fr_360px]"
+          )}
+        >
+          <section className="nf-card rounded-2xl p-5">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h2 className="flex items-center gap-2 font-display font-semibold">
+                  <KeyRound className="size-4 text-[#ffc326]/80" /> Your apps
+                </h2>
+                <p className="mt-1 text-white/45 text-xs leading-relaxed">
+                  Your own credentials, encrypted per workspace and never shown
+                  again. Privacy Shield hides personal data from the AI.
+                </p>
+              </div>
+              <Link
+                className="inline-flex items-center gap-1 text-[#ffe08a] text-xs hover:underline"
+                href="/connections"
+              >
+                Manage connections <ArrowRight className="size-3.5" />
+              </Link>
+            </div>
+            <ul
+              className={cn(
+                "mt-4 grid gap-2 sm:grid-cols-2",
+                setupDone && "xl:grid-cols-4"
+              )}
+            >
+              {APPS.map((app) => {
+                const Icon = app.icon;
+                const ok = connected.has(app.type);
+                return (
+                  <li
+                    className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-2.5"
+                    key={app.type}
+                  >
+                    <span
+                      className={cn(
+                        "grid size-9 place-items-center rounded-lg",
+                        ok
+                          ? "bg-[#ffc326] text-[#0a0a0a]"
+                          : "bg-white/[0.06] text-white/60"
+                      )}
+                    >
+                      <Icon className="size-4" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block font-medium text-sm">
+                        {app.label}
+                      </span>
+                      <span className="block truncate text-white/40 text-xs">
+                        {ok ? "Connected" : app.hint}
+                      </span>
+                    </span>
+                    {ok ? (
+                      <CheckCircle2 className="size-4 text-emerald-400" />
+                    ) : (
+                      <Link
+                        className="rounded-lg border border-[#ffc326]/40 px-2.5 py-1 font-medium text-[#ffe08a] text-xs hover:bg-[#ffc326]/10"
+                        href={`/connections#${app.type}`}
+                      >
+                        Connect
+                      </Link>
+                    )}
                   </li>
-                )}
-              </ol>
-            </section>
-          </aside>
+                );
+              })}
+              <li>
+                <Link
+                  className="flex h-full items-center gap-3 rounded-xl border border-white/15 border-dashed p-2.5 text-white/60 transition hover:border-[#ffc326]/40 hover:text-white"
+                  href="/connections#app-search"
+                >
+                  <span className="grid size-9 place-items-center rounded-lg bg-white/[0.04]">
+                    <Plus className="size-4" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-medium text-sm">
+                      14 more apps
+                    </span>
+                    <span className="block truncate text-white/40 text-xs">
+                      {moreConnected > 0
+                        ? `${moreConnected} connected`
+                        : "Slack, GitHub, Stripe…"}
+                    </span>
+                  </span>
+                </Link>
+              </li>
+            </ul>
+          </section>
+          {!setupDone && <PlanCard refreshKey={data?.workflows.length} />}
         </div>
       </main>
     </div>
+  );
+}
+
+const IDEAS = [
+  {
+    label: "Hackathon registration",
+    prompt:
+      "When someone registers for our hackathon, pick their track with AI, email them, add them to our sheet and alert our Telegram group",
+  },
+  {
+    label: "Thank the first 5",
+    prompt:
+      "When someone fills our form, send a thank-you email only to the first 5 submissions and add everyone to our sheet",
+  },
+  {
+    label: "Hot lead alert",
+    prompt:
+      "Score every new lead from my form as hot, warm or cold with AI, log it in the sheet and alert Telegram for hot leads",
+  },
+  {
+    label: "Daily 9 AM update",
+    prompt:
+      "Every morning at 9, post a short AI-written update to our Telegram group",
+  },
+];
+
+const RUN_LABEL: Record<string, string> = {
+  success: "Succeeded",
+  error: "Failed",
+  running: "Running",
+  queued: "Queued",
+  waiting: "Waiting",
+  skipped: "Skipped",
+};
+
+function NavLinks({ className }: { className?: string }) {
+  const item =
+    "rounded-lg px-3 py-1.5 text-white/60 hover:bg-white/[0.04] hover:text-white";
+  return (
+    <nav className={cn("items-center gap-1 text-sm", className)}>
+      <span className="rounded-lg bg-white/[0.06] px-3 py-1.5 text-white">
+        Dashboard
+      </span>
+      <Link className={item} href="/build">
+        Builder
+      </Link>
+      <Link className={item} href="/connections">
+        Connections
+      </Link>
+    </nav>
+  );
+}
+
+function WorkflowCard({
+  w,
+  busy,
+  onToggle,
+}: {
+  w: DashWorkflow;
+  busy: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <Link
+      className={cn(
+        "nf-card nf-spotlight group relative flex min-h-[176px] flex-col rounded-2xl p-5 transition-transform hover:-translate-y-0.5",
+        w.lastStatus === "error" && "border-red-400/25"
+      )}
+      data-card
+      href={`/workflows/${w.id}`}
+      onPointerMove={(event) => {
+        const rect = event.currentTarget.getBoundingClientRect();
+        event.currentTarget.style.setProperty(
+          "--x",
+          `${event.clientX - rect.left}px`
+        );
+        event.currentTarget.style.setProperty(
+          "--y",
+          `${event.clientY - rect.top}px`
+        );
+      }}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            {w.enabled && w.published ? (
+              <span className="nf-live-dot size-2 rounded-full bg-emerald-400" />
+            ) : (
+              <span className="size-2 rounded-full bg-white/25" />
+            )}
+            <span className="text-[11px] text-white/45 uppercase tracking-wider">
+              {workflowState(w)} · {w.trigger}
+            </span>
+          </div>
+          <h3 className="mt-2 truncate font-semibold text-white">{w.name}</h3>
+          {w.description && (
+            <p className="mt-1 line-clamp-2 text-sm text-white/50">
+              {w.description}
+            </p>
+          )}
+        </div>
+        <Toggle
+          disabled={busy}
+          on={w.enabled && w.published}
+          onChange={onToggle}
+        />
+      </div>
+      <div className="mt-auto flex items-center justify-between pt-5 text-white/45 text-xs">
+        <span className="flex items-center gap-3">
+          <span>{w.steps} steps</span>
+          <span>{w.runs} runs</span>
+          <span>{timeAgo(w.lastRunAt)}</span>
+        </span>
+        <StatusPill status={w.lastStatus} />
+      </div>
+    </Link>
   );
 }

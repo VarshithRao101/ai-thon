@@ -1,5 +1,7 @@
 import { z } from "zod";
 import { DEFAULT_FIELDS } from "@/lib/forms/schema";
+import { isPlaceholderUrl } from "./placeholder";
+import { repairPlan } from "./repair";
 
 /**
  * Copilot plans (docs/09). The model fills a small, schema-validated plan; the
@@ -117,9 +119,25 @@ export type CatalogEntry = {
 };
 export type Catalog = Readonly<Record<string, CatalogEntry>>;
 
-/** The plan schema, limited to the built-in actions plus `extra`. */
-export function makePlanSchema(extra: Catalog = {}) {
-  const ids = [...Object.keys(COPILOT_ACTIONS), ...Object.keys(extra)] as [
+const URL_IN_TEXT = /https?:\/\/[^\s"'<>]+/i;
+
+/**
+ * Built-in actions for a request. HTTP Request is only offered when the
+ * request (or the workflow being edited) has a real URL: without one a model
+ * invents an endpoint, and that step can never work.
+ */
+export function baseCatalog(request = ""): Catalog {
+  if (URL_IN_TEXT.test(request) || request.includes("HTTP Request")) {
+    return COPILOT_ACTIONS;
+  }
+  const { "HTTP Request": _http, ...rest } = COPILOT_ACTIONS;
+  return rest;
+}
+
+/** The plan schema, limited to the actions for this request plus `extra`. */
+export function makePlanSchema(extra: Catalog = {}, request?: string) {
+  const base = request === undefined ? COPILOT_ACTIONS : baseCatalog(request);
+  const ids = [...Object.keys(base), ...Object.keys(extra)] as [
     string,
     ...string[],
   ];
@@ -183,8 +201,9 @@ export const planSchema = makePlanSchema();
 export type CopilotPlan = z.infer<typeof planSchema>;
 
 /** The catalog as compact text for the system prompt. */
-export function catalogPrompt(extra: Catalog = {}): string {
-  return Object.entries({ ...COPILOT_ACTIONS, ...extra } as Catalog)
+export function catalogPrompt(extra: Catalog = {}, request?: string): string {
+  const base = request === undefined ? COPILOT_ACTIONS : baseCatalog(request);
+  return Object.entries({ ...base, ...extra } as Catalog)
     .map(([id, a]) => {
       const keys = Object.entries(a.config)
         .map(([k, v]) => `${k}: ${v}`)
@@ -237,6 +256,7 @@ const TRIGGER_BUILTINS = new Set([
   "trigger",
   "consent",
   "submissionId",
+  "submissionNumber",
 ]);
 const CAMEL_BREAK = /([a-z0-9])([A-Z])/g;
 const NUMBER_KEY = /(amount|budget|age|count|number|quantity)/;
@@ -335,13 +355,15 @@ function cleanId(raw: string, taken: Set<string>): string {
  */
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: a single deterministic pass (ids, edges, references, layout); splitting it hides the order
 export function buildWorkflow(
-  plan: CopilotPlan,
+  input: CopilotPlan,
   connections: Partial<Record<string, string>> = {},
-  extra: Catalog = {}
+  extra: Catalog = {},
+  request = ""
 ): BuiltWorkflow {
   const catalog: Catalog = { ...COPILOT_ACTIONS, ...extra };
   const entry = (action: string) => catalog[action] as CatalogEntry;
   const notes: string[] = [];
+  const plan = repairPlan(input, catalog, notes);
   const suffix = rand();
   const triggerId = `trigger_${suffix}`;
   const triggerLabel =
@@ -464,6 +486,16 @@ export function buildWorkflow(
       if (key in entry(s.action).config) {
         config[key] = rewrite(value.replace(/\\n/g, "\n"), upstream);
       }
+    }
+    if (
+      s.action === "HTTP Request" &&
+      isPlaceholderUrl(config.endpoint) &&
+      !request.includes(String(config.endpoint))
+    ) {
+      config.endpoint = "";
+      notes.push(
+        `"${labelOf.get(s.cleanId)}" needs your real URL (the AI won't make one up)`
+      );
     }
     const integration =
       CONNECTED_ACTIONS[s.action] ?? entry(s.action).integration;

@@ -81,7 +81,13 @@ export const POST = tenantRoute(
         : undefined,
       extra
     );
-    const built = buildWorkflow(result.plan, connections, extra);
+    const built = buildWorkflow(
+      result.plan,
+      connections,
+      extra,
+      `${prompt}
+${existing ? summarizeCanvas(existing.nodes ?? []) : ""}`
+    );
     const definition = normalizeDefinition(built.nodes, built.edges);
     const issues = validateGraph(
       toEngineGraph(definition),
